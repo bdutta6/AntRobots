@@ -2,7 +2,7 @@
 //this will enable to program each robot individually 
 #define RobotSelector_h
 
-#define ROBOT_B
+#define ROBOT_E
 //Robot A is on COM 3,  radio on COM 8
 //Robot B is on COM 11, radio on COM 7
 //Robot C is on COM 10, radio on COM 6
