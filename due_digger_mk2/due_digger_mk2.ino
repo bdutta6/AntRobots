@@ -23,24 +23,6 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 //read this forum http://forum.arduino.cc/index.php?topic=314647.0
 
 */
-// #define TEST_MODE 1 //uncomment to include test methods
-
-
-#include "TestVals.h" // // TESTING VARIABLES DEFINED HERE
-
-// // testing = 1, running code = 0
-// #define TEST_IMU 0 // use this to calibrate direction headings  (377-381))
-// #define TEST_SWITCHES 0
-// #define TEST_FORCE 0
-// #define TEST_MAG 0
-// // remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
-// #define TEST_CAP 0
-// #define TEST_SWITCHES 0 // Ross: I think this testing approach is deprecated. Use TEST_CAP instead
-// #define TEST_DRIVE_MOTORS 0 		
-// #define TEST_SERVO_MOTORS 0
-// #define TEST_CAMERA 0
-// #define TEST_GRIPPER_SENSOR 0
-// #define TEST_POWER_SENSORS 0
 
 #define FIO_LINK 1
 
@@ -70,6 +52,7 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 // #define MANUAL_ON 1
 // ********** BEGIN {LIBRARY IMPORT} **********
 /* note: included libraries with "" must be in the same folder with .ino sketch, while external <> libraries must be in the arduino library folder (either documents>arduino or program files>arduino */
+// #include "TestVals.h" // // TESTING VARIABLES DEFINED HERE
 // #include "RobotSelector.h" //load appropriate robot specific definitions and constants 
 #include "MotorBoard.h"   //loads a custom library to set up drive motors
 //power relay, switches, drive methods, vision methods have def.h files
@@ -3039,7 +3022,7 @@ return turning_case;//exit
 // ********** END   {INTERRUPT ROUTINES} ----------
 
 // ********** BEGIN {TEST AND DEBUG} **********
-#ifdef TEST_MODE
+//#ifdef TEST_MODE
 void TestDriveMotors(){
 WDT_Restart(WDT);
 Serial.println(F("Forward"));
@@ -3062,16 +3045,16 @@ Left(DEFAULT_TURNING_SPEED); delay(2000);
 Stop(); delay(1000);
 }
 void TestPDController(){
-while(1){
-WDT_Restart(WDT);
- GetDetectedSigs(); //poll camera
-  if(TRAIL1){
-  Input=x1; //grab input
-  PD.Compute(); //updates Rout
-  Serial.print("Out: \t");
-  Serial.println(Output);
-  }
- }
+	while(1){
+	WDT_Restart(WDT);
+	 GetDetectedSigs(); //poll camera
+		if(TRAIL1){
+		Input=x1; //grab input
+		PD.Compute(); //updates Rout
+		Serial.print("Out: \t");
+		Serial.println(Output);
+		}
+	 }
 }
 
 
@@ -3242,7 +3225,7 @@ Serial.print(F('\t'));
 Serial.print(F("Voltage \t"));
 Serial.println(V);
 }
-#endif
+//#endif
 
 void myDelay(unsigned long delayTime){
 /* this function is an improvement of delay() function, but non blocking
