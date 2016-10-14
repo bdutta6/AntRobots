@@ -31,7 +31,7 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 #define TEST_SWITCHES 0 // remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
 #define TEST_FORCE 0
 #define TEST_MAG 0
-#define TEST_CAP 1
+#define TEST_CAP 0
 
 #define FIO_LINK 1
 
@@ -210,18 +210,18 @@ int StartIndicatorAddr = 0;
 
 
 void WDT_Setup (){ // my default time is 18 seconds
-  double desiredTimeout = 18; //15 seconds - resets when exiting tunnel //10 seconds 
+	//15 seconds - resets when exiting tunnel
+  	double desiredTimeout = 18;
 
-  double timeout2 =(int)( desiredTimeout * 227);  //227
+  	double timeout2 =(int)( desiredTimeout * 227);  //227
   
-  timeout2 = 0x0fff2000 + timeout2; // 0xfff2000 is very inportant
-  WDT_Enable(WDT,timeout2);  
-  
-  // number of loops:
-  // 0x0fff2000 0
-  // 0x0fff200f 231
-  // 0x0fff2fff 2981
-  // WDT_Restart(WDT); //USE THIS TO RESET WATCHDOG EVERYWHERE
+  	timeout2 = 0x0fff2000 + timeout2; // 0xfff2000 is very inportant
+  	WDT_Enable(WDT,timeout2);  
+  	// number of loops:
+	// 0x0fff2000 0
+	// 0x0fff200f 231
+	// 0x0fff2fff 2981
+	// WDT_Restart(WDT); //USE THIS TO RESET WATCHDOG EVERYWHERE
 
 }    
 
@@ -1057,83 +1057,82 @@ void Dig(){
 	unsigned long digStart=millis();
 	while (!(RUSensor.IsDetected() || LUSensor.IsDetected() || RDSensor.IsDetected() || LDSensor.IsDetected())){
 		if( (millis() - digStart) > 5000 ){ //for some reason, if the hall effect sensor on gripper doesn't see anything for too long, terminate dig function
-		WDT_Restart(WDT); //JSP
-		return;
+			WDT_Restart(WDT); //JSP
+			return;
 		}
 		Forward(BASE_SPEED); // Go Forward until the hall effect sensor on gripper touches the cohesive material
 	 }
 	 
 		if (RUSensor.IsDetected()){
-		Arm.PitchGo(MID_ROW_ANGLE + 4);
+			Arm.PitchGo(MID_ROW_ANGLE + 4);
 		}
 		else if (LUSensor.IsDetected()){
-		Arm.PitchGo(MID_ROW_ANGLE + 2);
+			Arm.PitchGo(MID_ROW_ANGLE + 2);
 		}
 		else if (RDSensor.IsDetected()){
-		Arm.PitchGo(MID_ROW_ANGLE);
+			Arm.PitchGo(MID_ROW_ANGLE);
 		}
 		else{
-		Arm.PitchGo(MID_ROW_ANGLE - 2);
+			Arm.PitchGo(MID_ROW_ANGLE - 2);
 		}
 
 	int i = 0; //JSP
 	while (i < 3){
-	Arm.GripperGo(OPEN_POS);
-	Forward(BASE_SPEED);
-	delay(200);
-	Arm.GripperGo(MID_POS);
-	Forward(BASE_SPEED);
-	delay(200);
-	i = i + 1;
+		Arm.GripperGo(OPEN_POS);
+		Forward(BASE_SPEED);
+		delay(200);
+		Arm.GripperGo(MID_POS);
+		Forward(BASE_SPEED);
+		delay(200);
+		i = i + 1;
 	} //JSP
 }
 
 
 void exitTunnel(){
-WDT_Restart(WDT);
-fioWrite(MASTER_EXIT_TUNNEL);
-Arm.PitchGo(HIGH_ROW_ANGLE);
-// Backward(255); myDelay(3000); 
-// TurnHeading(OUT_DIRECTION); //turn towards dumping area
-// Stop(); myDelay(1000); //debug myDelay
-// enable_GoingOutMode();
-// HeadSensor.threshold=940; //return threshold to its original value 
-unsigned long exitStart=millis(); //grab a time to enable timeout 
-bool inTunnel=true; //am I in the tunnel?, assume that we are to start 
+	WDT_Restart(WDT);
+	fioWrite(MASTER_EXIT_TUNNEL);
+	Arm.PitchGo(HIGH_ROW_ANGLE);
+	// Backward(255); myDelay(3000); 
+	// TurnHeading(OUT_DIRECTION); //turn towards dumping area
+	// Stop(); myDelay(1000); //debug myDelay
+	// enable_GoingOutMode();
+	// HeadSensor.threshold=940; //return threshold to its original value 
+	unsigned long exitStart=millis(); //grab a time to enable timeout 
+	bool inTunnel=true; //am I in the tunnel?, assume that we are to start 
 
  while(inTunnel){
- WDT_Restart(WDT);
- GetDetectedSigs(); //get the colors
- Backward(BASE_SPEED); //go backward
- delay(100);
-  // if(TUNNEL_START){//have I spotted the end of the tunnel marker?
-   // if(Areat > 3000){//check here if the area is larger then thresh or seen this for X amount of time //3000 too high
-   // break; //exit out of the method 
-   // }  
-  // }
- WDT_Restart(WDT); //JSP
-  if( (millis() - exitStart) > 10000 ){ //temporarily timeout //used to be 10
-	WDT_Restart(WDT); //JSP
-  inTunnel = false;
-	//break;
-  }
-  
-  if(CONTACT){
-	WDT_Restart(WDT);
-	handleContact();
-   
 	 WDT_Restart(WDT);
-   exitStart+=3500;//3000 //add time to compensate
-  }
- } 
-// Backward(255); delay(1000); myDelay(2000); Stop();
-WDT_Restart(WDT); //JSP
-//HeadSensor.threshold=700; //return threshold to its original value. may add a second check //JSP
-current_target_heading=OUT_DIRECTION;
-preferGyro=true; 
-//TurnHeading(current_target_heading);
-enable_turnReversalMode(3); //3 denotes that the robot will go into going_out mode after turn reversal mode
-return;
+	 GetDetectedSigs(); //get the colors
+	 Backward(BASE_SPEED); //go backward
+	 delay(100);
+	  // if(TUNNEL_START){//have I spotted the end of the tunnel marker?
+	   // if(Areat > 3000){//check here if the area is larger then thresh or seen this for X amount of time //3000 too high
+	   // break; //exit out of the method 
+	   // }  
+	  // }
+	 WDT_Restart(WDT); //JSP
+	 if( (millis() - exitStart) > 10000 ){ //temporarily timeout //used to be 10
+			WDT_Restart(WDT); //JSP
+	  		inTunnel = false;
+			//break;
+	 }
+	  
+	if(CONTACT){
+		WDT_Restart(WDT);
+		handleContact();
+	   	WDT_Restart(WDT);
+	   	exitStart+=3500;//3000 //add time to compensate
+	 }
+	} 
+	// Backward(255); delay(1000); myDelay(2000); Stop();
+	WDT_Restart(WDT); //JSP
+	//HeadSensor.threshold=700; //return threshold to its original value. may add a second check //JSP
+	current_target_heading=OUT_DIRECTION;
+	preferGyro=true; 
+	//TurnHeading(current_target_heading);
+	enable_turnReversalMode(3); //3 denotes that the robot will go into going_out mode after turn reversal mode
+	return;
 }
 //----------------------------------------------------
 void GoingOutMode(){
@@ -1445,12 +1444,12 @@ void leaveChargingStation(){
 }
 
 void GoingCharging(){
-numOfConsequitiveBackwardKicks=0;
-WDT_Restart(WDT);
- if ( seekCharging() ){
- enable_ChargingMode();
- return;
- }
+	numOfConsequitiveBackwardKicks=0;
+	WDT_Restart(WDT);
+ 	if ( seekCharging() ){
+ 		enable_ChargingMode();
+ 		return;
+ 	}
 }//end going charging
 
 //----------------------------------------------------
