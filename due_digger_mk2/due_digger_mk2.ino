@@ -28,7 +28,7 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 // TESTING VARIABLES DEFINED HERE
 // testing = 1, running code = 0
 #define TEST_IMU 0
-#define TEST_SWITCHES 0 // remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
+#define TEST_SWITCHES 1 // remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
 #define TEST_FORCE 0
 #define TEST_MAG 0
 #define TEST_CAP 0
@@ -3197,6 +3197,7 @@ void TestSwitches(){
 	}
 
 }
+
 void TestPowerRelay(){
 WDT_Restart(WDT);
 Relay.PowerOff(); //turn the power to the robot on
