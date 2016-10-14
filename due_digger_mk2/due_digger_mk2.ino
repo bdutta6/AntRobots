@@ -28,10 +28,13 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 // TESTING VARIABLES DEFINED HERE
 // testing = 1, running code = 0
 #define TEST_IMU 0
-#define TEST_SWITCHES 1 // remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
+#define TEST_SWITCHES 1
 #define TEST_FORCE 0
 #define TEST_MAG 0
+// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
 #define TEST_CAP 0
+#define TEST_SWITCHES 0 // Ross: I think this testing approach is deprecated. Use TEST_CAP instead
+
 
 #define FIO_LINK 1
 
