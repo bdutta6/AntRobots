@@ -2,6 +2,7 @@
 #define TEST_MODE 1
 
 // testing = 1, running code = 0
+#define TEST_IMU 1 // use this to calibrate direction headings  (377-381))
 #define TEST_SWITCHES 0
 #define TEST_FORCE 0
 #define TEST_MAG 0

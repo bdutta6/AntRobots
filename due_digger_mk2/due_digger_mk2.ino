@@ -9,7 +9,7 @@ Last Modified Date: 05/26/2016
 
 Modified by : Ross Warkentin - testing_branch personal
 email: ross.warkentin@gmail.com
-Last Modified Date: 10/11/2016
+Last Modified Date: 10/14/2016
 
 Property of CRABLAB, Georgia Institute of Technology, School of Physics
 [2013]-[2014]
@@ -23,18 +23,24 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 //read this forum http://forum.arduino.cc/index.php?topic=314647.0
 
 */
-#define TEST_MODE 1 //uncomment to include test methods
+// #define TEST_MODE 1 //uncomment to include test methods
 
-// TESTING VARIABLES DEFINED HERE
-// testing = 1, running code = 0
-#define TEST_IMU 0
-#define TEST_SWITCHES 1
-#define TEST_FORCE 0
-#define TEST_MAG 0
-// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
-#define TEST_CAP 0
-#define TEST_SWITCHES 0 // Ross: I think this testing approach is deprecated. Use TEST_CAP instead
 
+#include "TestVals.h" // // TESTING VARIABLES DEFINED HERE
+
+// // testing = 1, running code = 0
+// #define TEST_IMU 0 // use this to calibrate direction headings  (377-381))
+// #define TEST_SWITCHES 0
+// #define TEST_FORCE 0
+// #define TEST_MAG 0
+// // remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
+// #define TEST_CAP 0
+// #define TEST_SWITCHES 0 // Ross: I think this testing approach is deprecated. Use TEST_CAP instead
+// #define TEST_DRIVE_MOTORS 0 		
+// #define TEST_SERVO_MOTORS 0
+// #define TEST_CAMERA 0
+// #define TEST_GRIPPER_SENSOR 0
+// #define TEST_POWER_SENSORS 0
 
 #define FIO_LINK 1
 
@@ -266,9 +272,9 @@ void setup(){
 	// }
 	/* initiate servos and move them to test  */
 	Arm.Attach();       //hook up servos to pwm pins
-	//while(1){
-	//TestServoMotors();
-	//}
+	while(TEST_SERVO_MOTORS){
+		TestServoMotors();
+	}
 	Arm.PitchGo(HIGH_ROW_ANGLE); delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
 	//Arm.GripperGo(MID_POS); delay(500);
 	//Arm.GripperGo(OPEN_POS); delay(200);
@@ -286,11 +292,11 @@ void setup(){
 		TestSwitches();
 	}
 
-	/*
-	while(1){
-	TestDriveMotors();
+	
+	while(TEST_DRIVE_MOTORS){
+		TestDriveMotors();
 	}
-	*/
+	
 
 
 	//For Force Sensitive Resistor Test and Calibration
@@ -372,9 +378,9 @@ void setup(){
 	// //// TestIRsensorReadings();
 	 // TestIRSensors();
 	 // }
-	// while(1){
-	// TestPowerSensors();
-	// }
+		while(TEST_POWER_SENSORS){
+			TestPowerSensors();
+		}
 
 	// getDetectedContacts(); //poll camera for a potential fix 
 	// checkCamera(); //commented out, redundant.
@@ -489,15 +495,6 @@ void setup(){
 	// TestIRSensors();
 
 	// }
-
-	/*
-	//DIRECTION
-	//WDT_Restart(WDT);// use these to calibrate direction headings  (377-381))
-	while(1){
-	TestIMU();
-	WDT_Restart(WDT);
-	}
-	*/
 
 	/*  while(1){
 	 if(CHARGER){
@@ -632,11 +629,15 @@ void setup(){
 	Serial.print("\t angle \t");
 	Serial.println(angle);
 	} */
-	//while(1){
-	//Serial.println(analogRead(FGripperPin));
-	// TestGripperSensor();
-	// WDT_Restart(WDT);
-	//}
+
+	// while(TEST_GRIPPER_SENSOR){
+		// Serial.println(analogRead(FGripperPin)); // what is FGRIPPERPIN?
+		// TestGripperSensor();
+		// WDT_Restart(WDT);
+	// }
+
+
+
 	// #define DEBUG 1
 
 	// #if DEBUG
@@ -721,11 +722,12 @@ void setGyroRef(unsigned long* lastTime,float* refRatePtr){
 // ********** BEGIN (MAIN SCRIPT} **********
 
 void loop(){
-	// while(1)
-	// { //there are two types of programmers ...... 
-	// TestCamera();
-	// WDT_Restart(WDT);
-	// }
+	
+	while(TEST_CAMERA){ //there are two types of programmers ...... 
+		TestCamera();
+		WDT_Restart(WDT);
+	}
+	
 	Serial.println("main loop");
 
 	if(goingIn){
@@ -736,13 +738,13 @@ void loop(){
 		GoingInMode();
 	}
 
- if(diggingMode){
-Serial.println("diggingMode");
-  while(diggingMode){
-  DiggingMode();
-	//Serial.println("Digging Mode"); // JSP //bani commented
-  }
- }
+	if(diggingMode){
+		Serial.println("diggingMode");
+		while(diggingMode){
+			DiggingMode();
+			//Serial.println("Digging Mode"); // JSP //bani commented
+		}
+	}
 
  if(dumpingMode){
 Serial.println("dumpingmode");
@@ -3089,35 +3091,34 @@ Arm.PitchGo(LOW_ROW_ANGLE); delay(1500); //Arm.PitchGo(100); //JSP Delete
 
 }
 void TestCamera(){
-while(1){
-WDT_Restart(WDT);
-// GetDetectedSigs();
-  static int i = 0;
-  int j;
-  uint16_t blocks;
-  char buf[32]; 
-  
-  blocks = pixy.getBlocks();
+	while(1){
+	WDT_Restart(WDT);
+	// GetDetectedSigs();
+		static int i = 0;
+		int j;
+		uint16_t blocks;
+		char buf[32]; 
+		
+		blocks = pixy.getBlocks();
 
-  //Serial.println(blocks);// debug
-  if (blocks)
-  {
-    i++;
-    
-    if (i%50==0)
-    {
-      sprintf(buf, "Detected %d:\n", blocks);
-      Serial.print(buf);
-      for (j=0; j<blocks; j++)
-      {
-        sprintf(buf, "  block %d: ", j);
-        Serial.print(buf); 
-        pixy.blocks[j].print();
-      }
-    }
-  }  
-
-}
+		//Serial.println(blocks);// debug
+		if (blocks)
+		{
+			i++;
+			
+			if (i%50==0)
+			{
+				sprintf(buf, "Detected %d:\n", blocks);
+				Serial.print(buf);
+				for (j=0; j<blocks; j++)
+				{
+					sprintf(buf, "  block %d: ", j);
+					Serial.print(buf); 
+					pixy.blocks[j].print();
+				}
+			}
+		}  
+	}
 
 }
 void TestIMU(){
@@ -3202,31 +3203,33 @@ void TestSwitches(){
 }
 
 void TestPowerRelay(){
-WDT_Restart(WDT);
-Relay.PowerOff(); //turn the power to the robot on
-delay(5000);
-WDT_Restart(WDT);
-Relay.PowerOn(); //turn the power to the robot on
-delay(5000);
+	WDT_Restart(WDT);
+	Relay.PowerOff(); //turn the power to the robot on
+	delay(5000);
+	WDT_Restart(WDT);
+	Relay.PowerOn(); //turn the power to the robot on
+	delay(5000);
 }
-/*void TestIRSensors(){
-int R=analogRead(IRsensorRightPin);
-int L=analogRead(IRsensorLeftPin);
-Serial.print(F("L   ")); Serial.print(L);
-Serial.print(F("\t"));
-Serial.print(F("R   ")); Serial.print(R); 
-Serial.print(F("\t"));
 
-Serial.print(IRleft.isHigh());
-Serial.print(F("\t"));
-Serial.print(IRright.isHigh());
-Serial.println();
-}*/
+// void TestIRSensors(){
+// int R=analogRead(IRsensorRightPin);
+// int L=analogRead(IRsensorLeftPin);
+// Serial.print(F("L   ")); Serial.print(L);
+// Serial.print(F("\t"));
+// Serial.print(F("R   ")); Serial.print(R); 
+// Serial.print(F("\t"));
+
+// Serial.print(IRleft.isHigh());
+// Serial.print(F("\t"));
+// Serial.print(IRright.isHigh());
+// Serial.println();
+// }
+
 void TestGripperSensor(){
-WDT_Restart(WDT);
-//int val=HeadSensor.Read(); //JSP
-// int val=analogRead(GripperSensorPin);
-//Serial.println(val); //JSP
+	WDT_Restart(WDT);
+	//int val=HeadSensor.Read(); //JSP
+	// int val=analogRead(GripperSensorPin);
+	//Serial.println(val); //JSP
 }
 
 void TestPowerSensors(){
@@ -3511,10 +3514,6 @@ void ManualControl(){
   } 
  }
 }
-
-
-
-
 //end for capacitive sensor
 
 
