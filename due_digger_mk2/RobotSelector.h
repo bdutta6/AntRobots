@@ -3,7 +3,7 @@
 #define RobotSelector_h
 
 // TESTING VARIABLES DEFINED HERE
-// #define TEST_MODE 1
+#define TEST_MODE 1
 
 // testing = 1, running code = 0
 #define TEST_IMU 0 // use this to calibrate direction headings  (377-381))
@@ -19,7 +19,7 @@
 #define TEST_GRIPPER_SENSOR 0
 #define TEST_POWER_SENSORS 0
 
-#define ROBOT_E
+#define ROBOT_D
 //Robot A is on COM 3,  radio on COM 8
 //Robot B is on COM 11, radio on COM 7
 //Robot C is on COM 10, radio on COM 6

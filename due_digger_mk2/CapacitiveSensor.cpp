@@ -299,22 +299,22 @@ int CapacitiveSensor:: getDetectedContacts(){
 		switchState=switchState | SWITCH_H_MASK_WALL;  //bitwise OR  operation
 	}
 	
-	Serial.println(F("pin0   pin1   pin2   pin3   pin4   pin5   pin6   pin7"));
-	Serial.print(pin0);
-	Serial.print("   ");
-	Serial.print(pin1);
-	Serial.print("   ");
-	Serial.print(pin2);
-	Serial.print("   ");
-	Serial.print(pin3);
-	Serial.print("   ");
-	Serial.print(pin4);
-	Serial.print("   ");
-	Serial.print(pin5);
-	Serial.print("   ");
-	Serial.print(pin6);
-	Serial.print("   ");
-	Serial.println(pin7);
+	// Serial.println(F("pin0   pin1   pin2   pin3   pin4   pin5   pin6   pin7"));
+	// Serial.print(pin0);
+	// Serial.print("   ");
+	// Serial.print(pin1);
+	// Serial.print("   ");
+	// Serial.print(pin2);
+	// Serial.print("   ");
+	// Serial.print(pin3);
+	// Serial.print("   ");
+	// Serial.print(pin4);
+	// Serial.print("   ");
+	// Serial.print(pin5);
+	// Serial.print("   ");
+	// Serial.print(pin6);
+	// Serial.print("   ");
+	// Serial.println(pin7);
 	   
 	//set_register(0x5A, 0x5C, ChargeCurrent); //enable electrode charging on all pins again
 	return switchState;

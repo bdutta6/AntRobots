@@ -247,147 +247,142 @@ void readDataFromDue(){
 // need to add error handling 
   fioSerial.listen();
   while (fioSerial.available()){ //is timeout working properly?
-  char c = fioSerial.read();
-	
-	
-	
-  inData += c;
-  // Serial.println(c,HEX); //debug
-   if ( c == '\n'){ //new line char, also 0xA in hex  //print ln sends '\r' and \'n'
-   byte inHigh = char2hex(inData[0]);
-   byte inLow = char2hex(inData[1]);
-   hexData = ((inHigh << 4) | inLow);
+		char c = fioSerial.read();
+		inData += c;
+		// Serial.println(c,HEX); //debug
+		if ( c == '\n'){ //new line char, also 0xA in hex  //print ln sends '\r' and \'n'
+			byte inHigh = char2hex(inData[0]);
+			byte inLow = char2hex(inData[1]);
+			hexData = ((inHigh << 4) | inLow);
 	 
-	 
-	 //begin enable this part when calibrating/testing the capacitive sensor
-	 Serial.println(inData);
-	 lcd.clear();
-	 lcd.setBrightness(30);
-   //lcd.print(inData,HEX);
-	 lcd.print(inData);
-	 writeSDcard('D',hexData,millis());
-	 
-	 //lcd.clear();
-	 //lcd.setBrightness(30);
-   //lcd.print(inData,HEX);
-	 //lcd.print(inData);
+			bool testing_cap = false; 	 // if you want to test the capacitive sensors, test testing_cap to true, and if-statements will be used to control the flow of the program to help debug
+			if(testing_cap){ // if we are testing the capacitor, we will enter this clause
+				Serial.println(inData);
+				lcd.clear();
+				lcd.setBrightness(30);
+				lcd.print(inData);
+				writeSDcard('D',hexData,millis());
+		 
+				lcd.clear();
+				lcd.setBrightness(30);
+				lcd.print(inData);
+			}
 	 //end enable this part when calibrating/testing the capacitive sensor
 	 
 	 
-	switch(hexData){
-	case DUE_ALIVE:	
-	break;
-	
-	// //begin disable this part when calibrating/testing the capacitive sensor
-	// case RESET_REQUEST:
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("RESET_REQUEST!!");
-	// resetDue();
-	// isCheckTriggered=false; //reset flag	
-	// break;
-	
-	// case CHECK_START:
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("CHECK_START!!");
-	// isCheckTriggered=true; //set flag 
-	// whenCheckStart=millis(); //grab time 
-	// break;
-	
-	// case CHECK_END:
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("CHECK_END!!");
-	// isCheckTriggered=false; //reset flag	
-	// break;
-	
-	// // case DISP_GOING_IN:
-	// // writeLCD('GO'); //reset flag	
-	// // break;
-	
-	// // case DISP_DIGGING:
-	// // writeLCD('DI'); //reset flag	
-	// // break;
-	
-	// case FRONT_SIDE_ANT:
-	// writeSDcard('N',hexData,millis());
-	// writeStringSDcard('N',"Front Ant Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("FRONT, ANT");
-	// break;//JSP
-	
-	// case RIGHT_SIDE_ANT:
-	// writeSDcard('N',hexData,millis()); 
-	// writeStringSDcard('N',"Right Ant Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("RIGHT, ANT");
-	// break;//BANI
-	
-	// case LEFT_SIDE_ANT:
-	// writeSDcard('N',hexData,millis()); 
-	// writeStringSDcard('N',"Left Ant Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("LEFT, ANT");
-	// break;//BANI
-	
-  // case BACK_SIDE_ANT:
-	// writeSDcard('N',hexData,millis());
-	// writeStringSDcard('N',"Back Ant Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("BACK, ANT");
-	// break;//BANI
-	
-	// case FRONT_SIDE_WALL:
-	// writeSDcard('N',hexData,millis()); 
-	// writeStringSDcard('N',"Front Wall Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("FRONT, WALL");
-	// break;//JSP
-	
-	// case RIGHT_SIDE_WALL:
-	// writeSDcard('N',hexData,millis()); 
-	// writeStringSDcard('N',"Right Wall Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("RIGHT, WALL");
-	// break;//BANI
-	
-	// case LEFT_SIDE_WALL:
-	// writeSDcard('N',hexData,millis()); 
-	// writeStringSDcard('N',"Left Wall Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("LEFT, WALL");
-	// break;//BANI
-	
-  // case BACK_SIDE_WALL: //BANI
-	// writeSDcard('N',hexData,millis());
-	// writeStringSDcard('N',"Back Wall Contact", millis());
-	// lcd.clear();
-	// lcd.setBrightness(30);
-  // lcd.print("BACK, WALL");
-	// break;//BANI
-	
-	// default:
-  // //Comm.Send('M',hexData,millis()); //send out via xbee
-  // writeSDcard('M',hexData,millis());
-	// // delay(500);
-	// writeLCD(hexData);//bani
-
-  // break;
+			switch(hexData){
+				case DUE_ALIVE:	
+					break;
+		
+				if(!testing_cap){ 		//begin disable this part when calibrating/testing the capacitive sensor
+					case RESET_REQUEST:
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("RESET_REQUEST!!");
+						resetDue();
+						isCheckTriggered=false; //reset flag	
+						break;
+		
+					case CHECK_START:
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("CHECK_START!!");
+						isCheckTriggered=true; //set flag 
+						whenCheckStart=millis(); //grab time 
+						break;
+		
+					case CHECK_END:
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("CHECK_END!!");
+						isCheckTriggered=false; //reset flag	
+						break;
+		
+				// case DISP_GOING_IN:
+				// writeLCD('GO'); //reset flag	
+				// break;
+				
+				// case DISP_DIGGING:
+				// writeLCD('DI'); //reset flag	
+				// break;
+		
+					case FRONT_SIDE_ANT:
+						writeSDcard('N',hexData,millis());
+						writeStringSDcard('N',"Front Ant Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("FRONT, ANT");
+						break;//JSP
+		
+					case RIGHT_SIDE_ANT:
+						writeSDcard('N',hexData,millis()); 
+						writeStringSDcard('N',"Right Ant Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("RIGHT, ANT");
+						break;//BANI
+		
+					case LEFT_SIDE_ANT:
+						writeSDcard('N',hexData,millis()); 
+						writeStringSDcard('N',"Left Ant Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("LEFT, ANT");
+						break;//BANI
+					
+					case BACK_SIDE_ANT:
+						writeSDcard('N',hexData,millis());
+						writeStringSDcard('N',"Back Ant Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("BACK, ANT");
+						break;//BANI
+					
+					case FRONT_SIDE_WALL:
+						writeSDcard('N',hexData,millis()); 
+						writeStringSDcard('N',"Front Wall Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("FRONT, WALL");
+						break;//JSP
+					
+					case RIGHT_SIDE_WALL:
+						writeSDcard('N',hexData,millis()); 
+						writeStringSDcard('N',"Right Wall Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("RIGHT, WALL");
+						break;//BANI
+					
+					case LEFT_SIDE_WALL:
+						writeSDcard('N',hexData,millis()); 
+						writeStringSDcard('N',"Left Wall Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("LEFT, WALL");
+						break;//BANI
+					
+					case BACK_SIDE_WALL: //BANI
+						writeSDcard('N',hexData,millis());
+						writeStringSDcard('N',"Back Wall Contact", millis());
+						lcd.clear();
+						lcd.setBrightness(30);
+						lcd.print("BACK, WALL");
+						break;//BANI
+					
+					default:
+						//Comm.Send('M',hexData,millis()); //send out via xbee
+						writeSDcard('M',hexData,millis());
+						// delay(500);
+						writeLCD(hexData);//bani
+						break;
+				}
 	// //end disable this part when calibrating/testing capacitive sensor
-	
-  }
-   whenLastComm = millis();
-   inData = "";//reset dummy character storage 
-   hexData = 0x00; //reset hex data and ready it for bit shifting
-   }
+			}
+			whenLastComm = millis();
+			inData = "";//reset dummy character storage 
+			hexData = 0x00; //reset hex data and ready it for bit shifting
+		}
   }
 } 
 
@@ -433,9 +428,9 @@ void writeLCD(int lcddata) { //this function written by bani
   switch (lcddata) {
     case MASTER_GOING_IN:
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Going In");
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Going In");
      	// mySerial.write(254); // move cursor to beginning of first line//BANI
       // mySerial.write(128);//BANI
 
