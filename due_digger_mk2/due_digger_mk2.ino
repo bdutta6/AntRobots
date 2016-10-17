@@ -2017,25 +2017,29 @@ bool CheckPower(){
 
 //----------------------------------------------------
 void TurnHeading(float desired_heading){
-	int numOfInstances = 0; //counter variable used as a quick and dirty method to filter out random false positives. 
+
+
+	int numOfInstances = 0; // We will is numOfInstances to keep track of the number of consecutive times we compute that we aligned with desired_heading. This is a quick and dirty method to filter out random false positives. 
 	WDT_Restart(WDT);
 	fioWrite(MASTER_TURN_REVERSAL);
 	//checkIMU(); //check we are talking to IMU //Likely to be the cause for reset at exit tunnel // removed by JSP
-	unsigned long watchdog2Timer=millis(); //2 minute time out timer, exit out of here if the robot fails to turn in 2 minutes 
+	unsigned long watchdog2Timer=millis(); // 2 minute time out timer, exit out of here if the robot fails to turn in 2 minutes 
 	/* this method will make the robot turn to a given angle bearing using
 		magnetometer and gyroscope as a feedback
 		user also passes in 0 if we want the robot to turn left, or 1 if turn right. Default is set to left   */
-	int instructionChanges=0; //initiate variable to keep track of how many 
-	bool turning=true; //local flag to keep turning, really not needed anymore 
+	int instructionChanges = 0; //initiate variable to keep track of how many 
+	
+	// Ross: are either of the following two lines still necessary? turning is 
+	bool turning = true; //local flag to keep turning, really not needed anymore 
 	unsigned long interrupt_mask_timer=millis(); //used to make sure switches interrupts are not serviced too fast
 	dof.readMag(); //update magnetometer registers
 	float current_heading=getHeading((float) dof.mx, (float) dof.my); //get a compass direction, value returned is from 0 to 360 degrees
 
 	//autonomously pick the best direction to initiate turning
-	turn_reversal_direction=pickDirection(current_heading,desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
-	unsigned long time_start=millis(); //initiate timer to keep robot turning if there is a turning progress
-	unsigned long action_timeout=millis(); //watchdog timer, make sure that the robot is not stuck, forcing new actions if the robot have not done anything in a while 
-	Arm.PitchGo(HIGH_ROW_ANGLE); //raise the arm to decrease overall length // JSP
+	turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
+	unsigned long time_start = millis(); // initiate timer to keep robot turning if there is a turning progress
+	unsigned long action_timeout = millis(); // watchdog timer, make sure that the robot is not stuck, forcing new actions if the robot have not done anything in a while 
+	Arm.PitchGo(HIGH_ROW_ANGLE); // raise the arm to decrease overall length // JSP
 	WDT_Restart(WDT);
 
 	//initiate gyro integration vars here
@@ -2053,13 +2057,13 @@ void TurnHeading(float desired_heading){
 		if( isWantedHeading(desired_heading) && !preferGyro ){ //check if the robot is facing desired heading direction
 			numOfInstances++;
 			Serial.println("Not PreferGyro");
-			if(numOfInstances>2){//5 before //make sure there is at least this many samples
+			if(numOfInstances > 2){//5 before //make sure there is at least this many samples
 				WDT_Restart(WDT);
 				turning=false;
-				Stop(); delay(100); //debugging stop 
+				// Stop(); delay(100); //debugging stop 
 				Forward(BASE_SPEED); //anti stuck 
 				Arm.PitchGo(HIGH_ROW_ANGLE); //straighten out 
-				preferGyro=false; //invoke default state
+				preferGyro = false; //invoke default state // not sure why this is necessary, because you can't get to this line if preferGyro is true...
 				break; //escape while(turning) loop
 			}
 		}
@@ -2331,68 +2335,105 @@ GetDetectedSigs(); //poll camera, get latest vision info
 FollowLane();//poll camera and call PD
 //return;
 }
+
+
 //----------------------------------------------------
 bool isWantedHeading(float desired_heading){
-/* this method accepts a desired heading angle and returns a boolean variable
-wether or not the robot is facing in desired angle, give or take 
-a pre-defined tolerance (+- DIRECTION_UNCERTAINTY). This method grabs a latest magnetometer data
-for comparison purposes
-IT IS ASSUMED THAT DIRECTION UNCERTAINTY IS SMALL, meaning cant have low bound <0 and high bound >360 at the same time
-tested with fake data and it works. 11/5/2014
- */
-//get heading
-WDT_Restart(WDT);
-dof.readMag(); //update magnetometer registers
-float heading=getHeading((float) dof.mx, (float) dof.my);
-float lowBound =desired_heading - DIRECTION_UNCERTAINTY;
-float highBound=desired_heading + DIRECTION_UNCERTAINTY; 
+	/* this method accepts a desired heading angle and returns a boolean variable
+	whether or not the robot is facing in desired angle, give or take 
+	a pre-defined tolerance (+- DIRECTION_UNCERTAINTY). This method grabs a latest magnetometer data
+	for comparison purposes
+	IT IS ASSUMED THAT DIRECTION UNCERTAINTY IS SMALL, meaning cant have low bound <0 and high bound >360 at the same time
+	tested with fake data and it works. 11/5/2014
+	*/
+	//get heading
+	WDT_Restart(WDT);
+	dof.readMag(); //update magnetometer registers
+	float heading=getHeading((float) dof.mx, (float) dof.my);
+	float lowBound = desired_heading - DIRECTION_UNCERTAINTY;
+	float highBound = desired_heading + DIRECTION_UNCERTAINTY; 
 
-if (lowBound >= 0 && highBound <=360 ){//case without wrap-around singularities
- if( heading >= lowBound && heading <= highBound){ return true;} //
- else{return false;} 
-}
+	if (lowBound >= 0 && highBound <= 360 ){//case without wrap-around singularities
+		if( heading >= lowBound && heading <= highBound){
+			return true;
+		}
+		else{
+			return false;
+		} 
+	}
 
-if (highBound > 360){ //such as desired 355+- 10 degrees
- if( heading >= lowBound && heading <= 360){ return true;}
- if( heading >=0 && heading <= highBound-360){ return true;}
- else{return false;}
-}
+	if (highBound > 360){ //such as desired 355+- 10 degrees
+		if( heading >= lowBound && heading <= 360){
+			return true;
+		}
+		if( heading >=0 && heading <= highBound-360){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
 
-if(lowBound < 0){ //such as 5+-10 degrees
- if( heading >=0 && heading <= highBound){ return true;}
- if( heading-360 >=lowBound && heading-360 <=0) {return true;}
- else{return false;}
-}
-WDT_Restart(WDT);
+	if(lowBound < 0){ //such as 5+-10 degrees
+		if( heading >=0 && heading <= highBound){
+			return true;
+		}
+		if( heading-360 >=lowBound && heading-360 <=0) {
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	WDT_Restart(WDT);
 }
 
 bool pickDirection(float current_heading, float desired_heading){
-/* this method will autonomously pick the best direction to turn based 
-on angular distance */
-//flipped original 0's to 1's
-WDT_Restart(WDT);
-bool turning_case;
-if( (current_heading) < 180 ){
-  if ( (desired_heading)<180 ) {
-   if( desired_heading < current_heading){ turning_case=0; return turning_case;}
-   else{ turning_case=1; return turning_case;}
-  }
-  if ( (desired_heading)>180 ) {
-   if (desired_heading > (180 + current_heading) ){ turning_case=0; return turning_case;}
-   else{ turning_case=1; return turning_case;}
-  }  
+	/* this method will autonomously pick the best direction to turn based 
+	on angular distance */
+	//flipped original 0's to 1's
+	WDT_Restart(WDT);
+	bool turning_case;
+	if( (current_heading) < 180 ){
+		if ( (desired_heading)<180 ) {
+			if( desired_heading < current_heading){
+				turning_case=0;
+				return turning_case;
+			}
+			else{
+				turning_case=1; return turning_case;
+			}
+		}
+		if ( (desired_heading)>180 ) {
+			if (desired_heading > (180 + current_heading) ){
+				turning_case=0; return turning_case;
+			}
+			else{
+				turning_case=1; return turning_case;
+			}
+		}  
+	}
+	if( (current_heading) > 180 ){
+		if ( (desired_heading)<180 ) { //check this <
+			if( (current_heading-desired_heading) >180 ){
+				turning_case=1; return turning_case;
+			}
+			else{
+				turning_case=0;
+				return turning_case;
+			}
+		}
+		if ( (desired_heading)>180 ) {
+			if (desired_heading > ( current_heading) ){
+				turning_case=1; return turning_case;
+			}
+			else{ turning_case=0;
+				return turning_case;
+			}
+		}   
+	}
 }
-if( (current_heading) > 180 ){
-  if ( (desired_heading)<180 ) { //check this <
-   if( (current_heading-desired_heading) >180 ){ turning_case=1; return turning_case;}
-   else{ turning_case=0; return turning_case;}
-  }
-  if ( (desired_heading)>180 ) {
-   if (desired_heading > ( current_heading) ){ turning_case=1; return turning_case;}
-   else{ turning_case=0; return turning_case;}
-  }   
-}
-}
+
 //----------------------------------------------------
 float getHeading(float hx, float hy){
 /* this method grabs magnetometer data from gyroscope and returns a bearing angle
@@ -3113,27 +3154,29 @@ return turning_case;//exit
 // ********** BEGIN {TEST AND DEBUG} **********
 //#ifdef TEST_MODE
 void TestDriveMotors(){
-	WDT_Restart(WDT);
-	Serial.println(F("Forward"));
-	Forward(BASE_SPEED); delay(2000);
-	Stop(); delay(1000);
+	while(1){
+		WDT_Restart(WDT);
+		Serial.println(F("Forward"));
+		Forward(BASE_SPEED); delay(2000);
+		Stop(); delay(1000);
 
-	WDT_Restart(WDT);
-	Serial.println(F("Backward"));
-	Backward(BASE_SPEED); delay(2000);
-	Stop(); delay(1000);
+		WDT_Restart(WDT);
+		Serial.println(F("Backward"));
+		Backward(BASE_SPEED); delay(2000);
+		Stop(); delay(1000);
 
-	WDT_Restart(WDT);
-	Serial.println(F("Right"));
-	Right(DEFAULT_TURNING_SPEED); delay(2000);
-	Stop(); delay(1000);
+		WDT_Restart(WDT);
+		Serial.println(F("Right"));
+		Right(DEFAULT_TURNING_SPEED); delay(2000);
+		Stop(); delay(1000);
 
-	WDT_Restart(WDT);
-	Serial.println(F("Left"));     
-	Left(DEFAULT_TURNING_SPEED); delay(2000); 
-	Stop(); delay(1000);
+		WDT_Restart(WDT);
+		Serial.println(F("Left"));     
+		Left(DEFAULT_TURNING_SPEED); delay(2000); 
+		Stop(); delay(1000);
+
+		}
 }
-
 
 void TestPDController(){
 	while(1){

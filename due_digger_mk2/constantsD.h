@@ -6,7 +6,7 @@
 #define CHARGING_GROUND_TRAP 100 //minimum area the robot must see
 #define CHARGING_TARGET_THRESH 1000 //minimum area to start driving to a docking station
 #define CHARGING_DOCKING_THRESH 20000 //area needs to be seen to initate docking  //unused i think
-#define LOWEST_ALLOWABLE_VOLTAGE 3.3 //5v Power is lost when battery level reaches 3v, step up chip no longer functions  //3.3 too low
+#define LOWEST_ALLOWABLE_VOLTAGE 3.4 //5v Power is lost when battery level reaches 3v, step up chip no longer functions  //3.3 too low
 #define CHARGED_VOLTAGE 3.8 // 3.65 appears to be the max voltage  //3.79 was too high
 
 
@@ -67,7 +67,7 @@
 #define PD_SAMPLE_TIME 80 //80
 #define BASE_SPEED 160 //worked okay with 100, 200
 #define PV_adjmax 205  //155
-#define PD_expected_limit 600 
+#define PD_expected_limit 600
 
 #define drivingForward  1
 #define drivingBackward 2
