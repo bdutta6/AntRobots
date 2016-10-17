@@ -178,6 +178,22 @@ Voltmeter Voltage;
 int checkPowerCount = 0; //variable to prevent robot from going charging due to a random voltage drop 
 #define CHECK_POWER_CNT_THRESH 500
 
+// This enumeration is used in the switch-case statements in loop() to conduct any necessary tests
+enum Test {
+	TEST_IMU, 
+	TEST_FORCE,
+	TEST_MAG,
+	TEST_CAP, 					// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
+	TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
+	TEST_DRIVE_MOTORS, 
+	TEST_SERVO_MOTORS, 
+	TEST_CAMERA, 
+	TEST_GRIPPER_SENSOR,
+	TEST_POWER_SENSORS, 
+	TEST_TURN_HEADING,
+	TEST_NOTHING,
+};
+
 //--- set up IR distance sensors
 //IRsensor IRright(IRsensorRightPin);
 //IRsensor IRleft(IRsensorLeftPin);
@@ -225,6 +241,7 @@ void setup(){
 		int someRandValue=analogRead(A4); //read ADC val from the unused pin
 		randomSeed(someRandValue); //set up random generator seed ///input can be changed to analogRead(int unused analog pin);
 	#endif
+	
 	// pullResetPinHigh(); //set reset pin to 3.3v
 	// analogReadResolution(10); // Later, change argument to 12 for 12 bit resolution, recalibrate thresholds
 	/* establish serial communication */
@@ -254,9 +271,9 @@ void setup(){
 	// }
 	/* initiate servos and move them to test  */
 	Arm.Attach();       //hook up servos to pwm pins
-	while(TEST_SERVO_MOTORS){
-		TestServoMotors();
-	}
+	// while(TEST_SERVO_MOTORS){
+		// TestServoMotors();
+	// }
 	Arm.PitchGo(HIGH_ROW_ANGLE); delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
 	//Arm.GripperGo(MID_POS); delay(500);
 	//Arm.GripperGo(OPEN_POS); delay(200);
@@ -270,25 +287,25 @@ void setup(){
 	// initiateSwitches(); //sets up pins for contact switches
 	
 	// set TEST_SWITCHES to 1 to execute this loop
-	while(TEST_SWITCHES){
-		TestSwitches();
-	}
+	// while(TEST_SWITCHES){
+		// TestSwitches();
+	// }
 
 	
-	while(TEST_DRIVE_MOTORS){
-		TestDriveMotors();
-	}
+	// while(TEST_DRIVE_MOTORS){
+		// TestDriveMotors();
+	// }
 	
 
 
-	//For Force Sensitive Resistor Test and Calibration
-	while(TEST_FORCE){
-		Serial.println(analogRead(ForceSensor));	
-		if(CheckPayload()){
-		Serial.println("Payload Detected");
-		}
-		delay(200);
-	}
+	// //For Force Sensitive Resistor Test and Calibration
+	// while(TEST_FORCE){
+		// Serial.println(analogRead(ForceSensor));	
+		// if(CheckPayload()){
+		// Serial.println("Payload Detected");
+		// }
+		// delay(200);
+	// }
 
 
 	//start i2c bus stuff. CALL dof.begin() LAST, because it starts actually sending data
@@ -360,9 +377,9 @@ void setup(){
 	// //// TestIRsensorReadings();
 	 // TestIRSensors();
 	 // }
-		while(TEST_POWER_SENSORS){
-			TestPowerSensors();
-		}
+		// while(TEST_POWER_SENSORS){
+			// TestPowerSensors();
+		// }
 
 	// getDetectedContacts(); //poll camera for a potential fix 
 	// checkCamera(); //commented out, redundant.
@@ -464,9 +481,9 @@ void setup(){
 	// Backward(BASE_SPEED); //dumb fix for a rare situation when the robot is pressed against cotton and for whatever reason the robot keeps going in a reset loop
 	// delay(2000); //CHECKING DIRECTION
 
-	while(TEST_IMU){
-		TestIMU();
-	}
+	// while(TEST_IMU){
+		// TestIMU();
+	// }
 
 	//Serial.println("Started Program");
 	// enable_RestingMode();
@@ -558,39 +575,39 @@ void setup(){
 	*/
 
 
-	//for magnetometer MAG3110 sensor test and calibration
-	while(TEST_MAG){
-		WDT_Restart(WDT);
-		Serial.println(FSensor.Detected());
-	}
+	// //for magnetometer MAG3110 sensor test and calibration
+	// while(TEST_MAG){
+		// WDT_Restart(WDT);
+		// Serial.println(FSensor.Detected());
+	// }
 
-	//for capacitive sensor test and calibration
-	while(TEST_CAP){
-		int testPanel = 1; // takes on values from 0 up to and including 7
-		WDT_Restart(WDT);
-		//Serial.println(CONTACT); //print all contact
-		Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
+	// //for capacitive sensor test and calibration
+	// while(TEST_CAP){
+		// int testPanel = 1; // takes on values from 0 up to and including 7
+		// WDT_Restart(WDT);
+		// //Serial.println(CONTACT); //print all contact
+		// Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
 		
-		fioWriteInt(CapSensor.getOneContact(testPanel)); //send the capacitive sensor value to fio.
-		//Serial.println(CapSensor.readTouch()); //print the touch status of all pins.
-		delay(1000);
-		//if (CONTACT){
-		//enable_GoingInMode();
-		//handleContact();
-		//}
-	}
+		// fioWriteInt(CapSensor.getOneContact(testPanel)); //send the capacitive sensor value to fio.
+		// //Serial.println(CapSensor.readTouch()); //print the touch status of all pins.
+		// delay(1000);
+		// //if (CONTACT){
+		// //enable_GoingInMode();
+		// //handleContact();
+		// //}
+	// }
 
 
 
-	// while(1){
-	// WDT_Restart(WDT);
-	// Forward(BASE_SPEED);
-	// delay(5000);
-	// TurnHeading(OUT_DIRECTION);
-	// WDT_Restart(WDT);
-	// Forward(BASE_SPEED);
-	// delay(5000);
-	// TurnHeading(IN_DIRECTION);
+	// while(TEST_TURN_HEADING){
+		// WDT_Restart(WDT);
+		// Forward(BASE_SPEED);
+		// delay(5000);
+		// TurnHeading(OUT_DIRECTION);
+		// WDT_Restart(WDT);
+		// Forward(BASE_SPEED);
+		// delay(5000);
+		// TurnHeading(IN_DIRECTION);
 	// }
 
 
@@ -659,7 +676,7 @@ void StartLorenzRun(){
 			#endif   
     }
    }
-	}//end of while 
+	}	//end of while 
 } //end setup loop 
 
 
@@ -704,16 +721,88 @@ void setGyroRef(unsigned long* lastTime,float* refRatePtr){
 // ********** BEGIN (MAIN SCRIPT} **********
 
 void loop(){
-	
-	Serial.println("main loop");
 
+	Serial.println("main loop");
 	
-	while(TEST_CAMERA){ //there are two types of programmers ...
-		Serial.println("Testing camera...");
-		TestCamera();
-		WDT_Restart(WDT);
+	// This is advantageous in that adding a new test is as simple as adding a test state to the global enumeration and adding a test method to a separate test.cpp file (does not currently exist)
+	// enumeration defined in global declaration, and TEST_CASE is in RobotSelector
+	switch(TEST_CASE){
+		case TEST_IMU:
+			TestIMU();
+			break;
+		case TEST_SWITCHES:
+			TestSwitches();
+			break;
+		case TEST_FORCE:
+				//For Force Sensitive Resistor Test and Calibration
+			while(1){
+				Serial.println(analogRead(ForceSensor));	
+				if(CheckPayload()){
+					Serial.println("Payload Detected");
+				}
+				delay(200);
+			}
+			break;
+		case TEST_MAG:
+			//for magnetometer MAG3110 sensor test and calibration
+			while(1){
+				WDT_Restart(WDT);
+				Serial.println(FSensor.Detected());
+			}
+			break;
+		case TEST_CAMERA:
+			Serial.println("Testing camera...");
+			TestCamera();
+			WDT_Restart(WDT);
+			break;
+		case TEST_CAP:
+				//for capacitive sensor test and calibration
+			while(1){
+				int testPanel = 1; // takes on values from 0 up to and including 7
+				WDT_Restart(WDT);
+				//Serial.println(CONTACT); //print all contact
+				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
+				
+				fioWriteInt(CapSensor.getOneContact(testPanel)); //send the capacitive sensor value to fio.
+				//Serial.println(CapSensor.readTouch()); //print the touch status of all pins.
+				delay(1000);
+				//if (CONTACT){
+				//enable_GoingInMode();
+				//handleContact();
+				//}
+				}
+			break;
+		case TEST_DRIVE_MOTORS:
+			TestDriveMotors();		
+			break;
+		case TEST_SERVO_MOTORS:
+			break;
+		case TEST_GRIPPER_SENSOR:
+			// Serial.println(analogRead(FGripperPin)); // FGripperPin not defined
+			// TestGripperSensor();
+			// WDT_Restart(WDT);
+			break;			
+		case TEST_POWER_SENSORS:
+			TestPowerSensors();
+			break;
+		case TEST_TURN_HEADING:
+			WDT_Restart(WDT);
+			Forward(BASE_SPEED);
+			delay(5000);
+			TurnHeading(OUT_DIRECTION);
+			WDT_Restart(WDT);
+			Forward(BASE_SPEED);
+			delay(5000);
+			TurnHeading(IN_DIRECTION);
+			break;
+		case TEST_NOTHING:
+			Serial.println("Test intentionally ignored");
+			break;	
+		default:
+			Serial.println("Default test case. TEST_CASE not properly assigned?");
+			break;
 	}
-	
+		
 	if(goingIn){
 		Serial.println("Going in...");
 		KP=Kp; //reset gain
