@@ -786,14 +786,16 @@ void loop(){
 			TestPowerSensors();
 			break;
 		case TEST_TURN_HEADING:
-			WDT_Restart(WDT);
-			Forward(BASE_SPEED);
-			delay(5000);
-			TurnHeading(OUT_DIRECTION);
-			WDT_Restart(WDT);
-			Forward(BASE_SPEED);
-			delay(5000);
-			TurnHeading(IN_DIRECTION);
+			TestTurnHeading();
+			// TurnHeading(IN_DIRECTION);
+			// WDT_Restart(WDT);
+			// Forward(BASE_SPEED);
+			// delay(5000);
+			// TurnHeading(OUT_DIRECTION);
+			// WDT_Restart(WDT);
+			// Forward(BASE_SPEED);
+			// delay(5000);
+			// TurnHeading(IN_DIRECTION);
 			break;
 		case TEST_NOTHING:
 			Serial.println("Test intentionally ignored");
@@ -807,7 +809,6 @@ void loop(){
 		Serial.println("Going in...");
 		KP=Kp; //reset gain
 		current_target_heading = IN_DIRECTION;
-		//Serial.println("Going In Mode"); // JSP
 		GoingInMode();
 	}
 
@@ -897,14 +898,16 @@ void GoingInMode(){
 		WDT_Restart(WDT);
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS); //JSP
+		
+		
 		if (CheckPayload()){
-			current_target_heading=OUT_DIRECTION;
+			current_target_heading = OUT_DIRECTION;
 			preferGyro = true;
 			enable_turnReversalMode(3);
-			return;
+			return; // if there is something in the gripper, then we need to exit goingInMode
 		}
  
-		//Checks for Contact
+		// Checks for Contact
 		if(CONTACT){
 			WDT_Restart(WDT);
 			handleContact();
@@ -2017,23 +2020,28 @@ bool CheckPower(){
 
 //----------------------------------------------------
 void TurnHeading(float desired_heading){
-
-
-	int numOfInstances = 0; // We will is numOfInstances to keep track of the number of consecutive times we compute that we aligned with desired_heading. This is a quick and dirty method to filter out random false positives. 
+	
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// int numOfInstances = 0; // We will is numOfInstances to keep track of the number of consecutive times we compute that we aligned with desired_heading. This is a quick and dirty method to filter out random false positives. 
 	WDT_Restart(WDT);
+	
 	fioWrite(MASTER_TURN_REVERSAL);
 	//checkIMU(); //check we are talking to IMU //Likely to be the cause for reset at exit tunnel // removed by JSP
+	
 	unsigned long watchdog2Timer=millis(); // 2 minute time out timer, exit out of here if the robot fails to turn in 2 minutes 
+		
+	
 	/* this method will make the robot turn to a given angle bearing using
 		magnetometer and gyroscope as a feedback
 		user also passes in 0 if we want the robot to turn left, or 1 if turn right. Default is set to left   */
 	int instructionChanges = 0; //initiate variable to keep track of how many 
 	
-	// Ross: are either of the following two lines still necessary? turning is 
-	bool turning = true; //local flag to keep turning, really not needed anymore 
+	// Ross: is the following line still necessary? interrupt_mask_timer is only updated, but the value is not used
+	// bool turning = true; //local flag to keep turning, really not needed anymore 
 	unsigned long interrupt_mask_timer=millis(); //used to make sure switches interrupts are not serviced too fast
+	
 	dof.readMag(); //update magnetometer registers
-	float current_heading=getHeading((float) dof.mx, (float) dof.my); //get a compass direction, value returned is from 0 to 360 degrees
+	float current_heading = getHeading((float) dof.mx, (float) dof.my); //get a compass direction, value returned is from 0 to 360 degrees
 
 	//autonomously pick the best direction to initiate turning
 	turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
@@ -2043,69 +2051,81 @@ void TurnHeading(float desired_heading){
 	WDT_Restart(WDT);
 
 	//initiate gyro integration vars here
-	float angle=0;
-	float refRate=0;
-	unsigned long  gyroTime=millis();
+	float angle = 0;
+	float refRate = 0;
+	unsigned long  gyroTime = millis();
 	setGyroRef(&gyroTime,&refRate);
+	
+		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process End ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	while(turning){
+	bool turning = true; //local flag to keep turning, really not needed anymore
+	int numOfInstances = 0; // We will is numOfInstances to keep track of the number of consecutive times we compute that we aligned with desired_heading. This is a quick and dirty method to filter out random false positives. 
+	int requiredNumOfInstances = 1;
+	
+	while(turning){ // while turning is still true
+	
 		//---make sure that the gyro is still working
-		WDT_Restart(WDT);
+		WDT_Restart(WDT); // repeat this so that the board is not reset in the middle of a turn
+		
 		//checkIMU(); //likely to be the cause for reset at exit tunnel // removed by JSP
 
 		//---check if we are facing correct direction
-		if( isWantedHeading(desired_heading) && !preferGyro ){ //check if the robot is facing desired heading direction
+		// isWantedHeading returns true if we are indeed facing the correct direction (right?)
+		if(isWantedHeading(desired_heading) && !preferGyro ){ //check if the robot is facing desired heading direction
 			numOfInstances++;
 			Serial.println("Not PreferGyro");
-			if(numOfInstances > 2){//5 before //make sure there is at least this many samples
+			if(numOfInstances >= requiredNumOfInstances){//5 before //make sure there is at least this many samples
 				WDT_Restart(WDT);
-				turning=false;
+				turning = false;
 				// Stop(); delay(100); //debugging stop 
 				Forward(BASE_SPEED); //anti stuck 
 				Arm.PitchGo(HIGH_ROW_ANGLE); //straighten out 
-				preferGyro = false; //invoke default state // not sure why this is necessary, because you can't get to this line if preferGyro is true...
+				preferGyro = false; //invoke default state // not sure why this line is here, because you can't get to this line if preferGyro is true...
 				break; //escape while(turning) loop
 			}
 		}
+		
 		else{
-			numOfInstances=0;
+			numOfInstances = 0;
 		}
  
-		if(preferGyro){//duct tape solution to do 180 degree turns
+		if(preferGyro){ //duct tape solution to do 180 degree turns
 			Serial.println("PreferGyro");
 			bool output=countGyro(&angle,&gyroTime,&refRate);
 			Serial.println(output);
 				if(output){
 					WDT_Restart(WDT);
-					turning=false;
+					turning = false;
 					Stop(); delay(100); //debugging stop 
 					Forward(BASE_SPEED); //anti stuck 
 					Arm.PitchGo(HIGH_ROW_ANGLE);
-					preferGyro=true; //invoke default state
+					preferGyro = true; //invoke default state
 					break; //escape while(turning) loop
 				}
  
 		}
- //////temporarily suppressed this
-// //---check if this method has been running for too long 
- // if( (millis() - watchdog2Timer) > 300000){ //five minute timeout 
- // fioWrite(RESET_REQUEST);
- // delay(2000);
- // arduinoReset(); //desperate measure
- // return; //and hope for the best 
- // } 
+		
+		//////temporarily suppressed this
+		// //---check if this method has been running for too long 
+		// if( (millis() - watchdog2Timer) > 300000){ //five minute timeout 
+			// fioWrite(RESET_REQUEST);
+			// delay(2000);
+			// arduinoReset(); //desperate measure
+			// return; //and hope for the best 
+		// } 
 
-//---exception handling for charging mode: function return 
- // if(goingCharging){ //check if charging beacon is seen, or desired charger is touched
-  // if( CHARGER){//bumped into charging station by accident. potential bug if the robot ends up in a funny orientation 
-  // WDT_Restart(WDT);
-	// Stop(); delay(100); //hit the breaks. potentially a bug since this will not set appropriate flags in goingCharging mode. avoiding using global vars
-  // //Relay.PowerOff(); //kill the power, software will eventually kick in Charing Mode
-  // Arm.PitchGo(MID_ROW_ANGLE); //return arm to a horizontal position 
-  // preferGyro=false; //invoke default state
-	// return; //exit function   
-  // }
- // }
+		//---exception handling for charging mode: function return 
+		// if(goingCharging){ //check if charging beacon is seen, or desired charger is touched
+			// if( CHARGER){//bumped into charging station by accident. potential bug if the robot ends up in a funny orientation 
+				// WDT_Restart(WDT);
+				// Stop(); delay(100); //hit the breaks. potentially a bug since this will not set appropriate flags in goingCharging mode. avoiding using global vars
+				// //Relay.PowerOff(); //kill the power, software will eventually kick in Charing Mode
+				// Arm.PitchGo(MID_ROW_ANGLE); //return arm to a horizontal position 
+				// preferGyro=false; //invoke default state
+				// return; //exit function   
+			// }
+		// }
+		
 		if(restingMode){
 		//if(DUMPING_SWITCH){
 			if(CHARGER){                  //BANI
@@ -2119,15 +2139,15 @@ void TurnHeading(float desired_heading){
 			}
 		}
  
- // if(goingOut){
-  // if(DUMPING_SWITCH){
-  // WDT_Restart(WDT);
-	// Stop(); delay(100); //hit the breaks
-  // Arm.PitchGo(MID_ROW_ANGLE); //straighten out 
-  // preferGyro=true; //invoke default state
-	// return;
-  // }
- // }
+	// if(goingOut){
+		// if(DUMPING_SWITCH){
+			// WDT_Restart(WDT);
+			// Stop(); delay(100); //hit the breaks
+			// Arm.PitchGo(MID_ROW_ANGLE); //straighten out 
+			// preferGyro=true; //invoke default state
+			// return;
+		// }
+	// }
 
 		//--- execute a turning command
 		switch (turn_reversal_direction){
@@ -2177,9 +2197,10 @@ void TurnHeading(float desired_heading){
 			interrupt_mask_timer=millis(); //reset timer
 			time_start=millis(); //reset timeout timer, let the robot keep on turning
 			action_timeout=millis(); //reset watchdog timer 
-  // continue; //go toward next loop iteration so that new turning direction can be executed 
-  //} 
+			// continue; //go toward next loop iteration so that new turning direction can be executed 
+		//} 
 		} 
+		
 		if(DUMPING_SWITCH){
 			WDT_Restart(WDT);
 			Stop(); delay(100); //pressing against something
@@ -2194,7 +2215,8 @@ void TurnHeading(float desired_heading){
 		dof.readGyro(); //update gyro registers
 		if( abs( dof.calcGyro(dof.gz) ) >= SLOW_TURNING_RATE ){ //if robot is making progress turning
 			time_start=millis(); //reset timeout timer, let the robot keep on turning
-		} 
+		}
+		
 		if( ( millis()-time_start) > TURNING_TIMEOUT ){ //gyro does not detect turning, switch turning command instruction
 			instructionChanges++; //increase counter
 	
@@ -3154,6 +3176,7 @@ return turning_case;//exit
 // ********** BEGIN {TEST AND DEBUG} **********
 //#ifdef TEST_MODE
 void TestDriveMotors(){
+	// captures the program here and repeats
 	while(1){
 		WDT_Restart(WDT);
 		Serial.println(F("Forward"));
@@ -3211,8 +3234,8 @@ void TestServoMotors(){
 
 void TestCamera(){
 	while(1){
-	WDT_Restart(WDT);
-	// GetDetectedSigs();
+		WDT_Restart(WDT);
+		// GetDetectedSigs();
 		static int i = 0;
 		int j;
 		uint16_t blocks;
@@ -3224,7 +3247,7 @@ void TestCamera(){
 		if (blocks){
 			i++;
 			
-			if (i%50==0){
+			if (i%50 == 0){
 				sprintf(buf, "Detected %d:\n", blocks);
 				Serial.print(buf);
 				for (j=0; j<blocks; j++){
@@ -3236,6 +3259,8 @@ void TestCamera(){
 		}  
 	}
 }
+
+
 void TestIMU(){
 	WDT_Restart(WDT);
 
@@ -3344,6 +3369,22 @@ void TestGripperSensor(){
 	//int val=HeadSensor.Read(); //JSP
 	// int val=analogRead(GripperSensorPin);
 	//Serial.println(val); //JSP
+}
+
+void TestTurnHeading(){
+	preferGyro = false;
+	while(1){
+			
+			WDT_Restart(WDT); // prevent from resetting
+
+			TurnHeading(IN_DIRECTION); // turn towards the bed
+			Forward(BASE_SPEED); delay(1000); Stop();	// drive forward for a total of one second
+
+			WDT_Restart(WDT); // prevent from resetting - not sure how long TurnHeading() will take
+
+			TurnHeading(OUT_DIRECTION); // turn towards the exit of the tunnel
+			Forward(BASE_SPEED); delay(1000); Stop();	// drive forward for a total of one second
+	}
 }
 
 void TestPowerSensors(){
