@@ -425,7 +425,7 @@ void writeLCD(int lcddata) { //this function written by bani
 	//mySerial.listen();
 	//while (mySerial.available() > 0) {
 	
-  switch (lcddata) {
+	switch (lcddata) {
     case MASTER_GOING_IN:
 		
 			lcd.clear();
@@ -445,66 +445,69 @@ void writeLCD(int lcddata) { //this function written by bani
 			
     case MASTER_DIGGING:
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Digging");
-      // mySerial.write(254); // move cursor to beginning of first line//BANI
-      // mySerial.write(128);//BANI
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Digging");
+				// mySerial.write(254); // move cursor to beginning of first line//BANI
+				// mySerial.write(128);//BANI
 
-      // mySerial.write("                "); // clear display//BANI
-      // mySerial.write("                ");//BANI
+				// mySerial.write("                "); // clear display//BANI
+				// mySerial.write("                ");//BANI
 
-      // mySerial.write(254); // move cursor to beginning of first line//BANI 
-      // mySerial.write(128);//BANI
- 
-      // mySerial.print("Digging_Mode");
-      break;
-   case MASTER_GOING_OUT:
+				// mySerial.write(254); // move cursor to beginning of first line//BANI 
+				// mySerial.write(128);//BANI
+	 
+				// mySerial.print("Digging_Mode");
+			break;
+		case MASTER_GOING_OUT:
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Going Out");
-		break;
-		 
-	 case MASTER_DUMPING:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Going Out");
+			break;
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Dumping");
-		break;
+		case MASTER_DUMPING:
 		
-	 case MASTER_GOING_CHARGING:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Dumping");
+			break;
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("GoingToCharge");
-		break;
+		case MASTER_GOING_CHARGING:
 		
-	 case MASTER_CHARGING:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("GoingToCharge");
+			break;
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Charging");
-		break;
+		case MASTER_CHARGING:
 		
-	 case MASTER_TURN_REVERSAL:
-	 lcd.clear();
-	 lcd.setBrightness(30);
-	 lcd.print("Turn Reversal");
-	 break;
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Charging");
+			break;
+		
+		case MASTER_TURN_REVERSAL:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Turn Reversal");
+			break;
 	 
 	 case MASTER_EXIT_TUNNEL:
-	 lcd.clear();
-	 lcd.setBrightness(30);
-	 lcd.print("Exit Tunnel");
-	 break;
+		 lcd.clear();
+		 lcd.setBrightness(30);
+		 lcd.print("Exit Tunnel");
+		 break;
 	 
 	 default:
+		// lcd.clear();
+		// lcd.setBrightness(30);
+		// lcd.print("DEFAULT"); delay(1000);
     lcd.clear();
 		lcd.setBrightness(30);
-    lcd.print(lcddata,HEX);
-  break;
-  }
+    lcd.print(lcddata, HEX);
+		break;
+	}
 
 	
 //}

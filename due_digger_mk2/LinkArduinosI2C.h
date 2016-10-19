@@ -9,7 +9,7 @@ void initiateFioSerial(){
 }
 
 void fioWrite(int protocolCode){
-	Serial.print(F("fioWrite() method called. Protocol is...")); Serial.println(protocolCode);
+	// Serial.print(F("fioWrite() method called. Protocol is...")); Serial.println(protocolCode);
 	Serial2.println(protocolCode, HEX);
 }
 
