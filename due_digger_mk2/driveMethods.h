@@ -177,35 +177,39 @@ int pwmL=BASE_SPEED - (int)Output; //Note the sign of PV is different comparing 
 }
 //----------------------------------------------------
 void FollowLane(){
-WDT_Restart(WDT);
-/* this method will make the robot to follow a pheromone trail, calls PID controller method
-DriveForward(int x). 
-Every so often the robot does a dash/kick forward to help it travel faster and 
-go over obstacles (loose GM) better */
-// Serial.println("your pixy camera is not working");
-GetDetectedSigs(); //poll camera
-// Serial.println(" ;-) "); //VADIM
- if(goingIn){
-  if(COTTON){
-   if(Area7>200){ //150
-   DriveForward(x7);
-	 // Serial.print('c');
-	 // Serial.print("\t");
-	 // Serial.println(x7);
-   return;
-   }
-  }
- }
+	WDT_Restart(WDT);
+	/* this method will make the robot to follow a pheromone trail, calls PID controller method
+	DriveForward(int x). 
+	Every so often the robot does a dash/kick forward to help it travel faster and 
+	go over obstacles (loose GM) better */
+	// Serial.println("your pixy camera is not working");
+	GetDetectedSigs(); //poll camera
+	// Serial.println(" ;-) "); //VADIM
+	if(goingIn){
+		if(COTTON){ // area7 is associated with the area of cotton seen
+			if(Area7>200){ //150
+				DriveForward(x7);
+				// Serial.print('c');
+				// Serial.print("\t");
+				// Serial.println(x7);
+				return;
+			}
+		}
+	}
 
- if(TRAIL1){
-  if(Area1>150){
-  DriveForward(x1);
-	// Serial.print('t');
-	// Serial.print("\t");
-	// Serial.println(x1);
-  }
- return;
- }
+	if(TRAIL1){
+		if(Area1>150){
+			DriveForward(x1);
+			// Serial.print('t');
+			// Serial.print("\t");
+			// Serial.println(x1);
+		}
+		
+		if(Area1<150){
+			Serial.println("Cannot find pheremone trail");
+		}
+		return;
+	}
  // else{ //got rid of this portion of the code, could be giving us current spikes
   // if( (millis()-last_dash) > 1500){
   // Forward(255); delay(100); //dash
