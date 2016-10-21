@@ -858,7 +858,9 @@ void loop(){
 	}
  
 	if (turnReversalMode){
+		// TurnHeadingRoss(current_target_heading);
 		TurnHeading(current_target_heading);
+
 	}
 
 }//end main loop
@@ -867,7 +869,7 @@ void loop(){
 // ********** BEGIN (MODE DEFINITION} **********
 //----------------------------------------------------
 void GoingInMode(){
-	Serial.println(F("Beginning of GoingInMode()"));
+	Serial.println(F("Beginning of GoingInMode() - 1"));
 
 	WDT_Restart(WDT);
 	numOfConsequitiveBackwardKicks = 0;
@@ -899,13 +901,20 @@ void GoingInMode(){
 	// add head bump sensor
 	//start counting IR side how long
 	//unsigned long whenSawTrails()=millis();
+	Serial.println(F("goingIn is..."));
+
+	
 	while(goingIn){
+		Serial.println("In goingIn while-loop");
+
+
 		WDT_Restart(WDT);
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS); //JSP
 		
 		
 		if (CheckPayload()){
+			Serial.println("Something found in payload");
 			current_target_heading = OUT_DIRECTION;
 			preferGyro = true; // 
 			enable_turnReversalMode(3); // this sets the variable nextMode to 3, which corresponds to goingOut. This sets a variable that will remember which mode the robot should enter after turning around...?
@@ -914,14 +923,17 @@ void GoingInMode(){
  
 		// Checks for Contact
 		if(CONTACT){
+			Serial.println("Something contacted");
 			WDT_Restart(WDT);
 			handleContact();
 		}
 		
 		FollowLane(); //poll camera and call PD
-		GetDetectedSigs(); //poll camera, get latest vision info
+		// GetDetectedSigs(); //poll camera, get latest vision info
  
 		if(DUMPING_SWITCH){//BANI
+			Serial.println("Dumping switch");
+
 			//if(CHARGER ){
 			Backward(BASE_SPEED); delay(1000); //move back
 			//TurnHeading(IN_DIRECTION); //turn back in
@@ -931,6 +943,8 @@ void GoingInMode(){
 		} 
 
 		if(CHARGER){
+			Serial.println("Charging if-statement");
+
 			//Serial.println("charger");
 			//Serial.println("Charger!!!"); // JSP //BANI
 			Stop(); delay(100);
@@ -956,6 +970,8 @@ void GoingInMode(){
 
 		//--- handle wrong way directions
 		if(checkWrongDirections()){
+			Serial.println("checkWrongDirections()returns true");
+
 			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
 		}	
 
@@ -975,6 +991,7 @@ void GoingInMode(){
  // }
  
 		if( checkHeadSensor() ){
+			Serial.println("checkHeadSensor() returns true");
 			return; //found soemthing, lets dig 
 		}
 		/* 
@@ -984,6 +1001,8 @@ void GoingInMode(){
 		*/
   
 		#if ALLOW_USELESS_RUNS //prob bugged
+			Serial.println("ALLOW_USELESS_RUNS is true");
+
 			if( millis() - whenModeStart > USELESS_RUN_THRESH){
 				//bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
 				bool goBack = true; // force the robot to go back 
@@ -1846,9 +1865,6 @@ the robot is facing the wrong direction and dirCheckFlag is false. A side result
 
 1 is returned if IN_DIRECTION or OUT_DIRECTION and dirCheckFlag is true
 
-I would not be surprise if this method will likely cause and error. isWantedHeading has a tolerance, and you need to make sure
-that all of your direction headings are at least this tolerance apart.
-
 Important parameters in this method:
 dirCheckFlag
 dirCheckTimer
@@ -1943,58 +1959,58 @@ void turnIMUoff(){
 	digitalWrite(IMUpower,LOW);
 }
 
-void checkIMU(){
-	//commented function calls out. Looks like it does more bad than good
-	WDT_Restart(WDT);
-	/* this method checks if there is a connection with IMU. If not,
-		this method will make the robot attempt to re-establish connection */
-	//Rewrite this. have a variable in the IMU class which starts a timer if status is bad. then if the !=0x49D4 is seen for a long time, mash reset button. No more instantaneous crap
-	uint16_t IMUstatus = dof.checkStatus(); //write to whoAmI register and see if there is response
-	if( IMUstatus == 0x49D4){
-		return; //no problem, exit this method 
-	} 
-	Stop(); //hold on a second... something is not right with IMU
-	// char powerCycles=0;
-	while(IMUstatus != 0x49D4){
+// void checkIMU(){
+	// //commented function calls out. Looks like it does more bad than good
+	// WDT_Restart(WDT);
+	// /* this method checks if there is a connection with IMU. If not,
+		// this method will make the robot attempt to re-establish connection */
+	// //Rewrite this. have a variable in the IMU class which starts a timer if status is bad. then if the !=0x49D4 is seen for a long time, mash reset button. No more instantaneous crap
+	// uint16_t IMUstatus = dof.checkStatus(); //write to whoAmI register and see if there is response
+	// if( IMUstatus == 0x49D4){
+		// return; //no problem, exit this method 
+	// } 
+	// Stop(); //hold on a second... something is not right with IMU
+	// // char powerCycles=0;
+	// while(IMUstatus != 0x49D4){
 
-		unsigned long statusTroubleStart=millis(); //grab time when this reading started
-			while( millis() - statusTroubleStart < 2000){//wait and hope that this problem is resolved
-				IMUstatus = dof.checkStatus(); //check status again 
-				if(IMUstatus == 0x49D4){
-					Forward(BASE_SPEED); //anti stuck kick
-					WDT_Restart(WDT);
-					return; //problem solved 
-				}
-			delay(100); 
-		}
-		turnIMUoff(); //turn the pin off 
-		delay(3000);
-		fioWrite(RESET_REQUEST); //WATCHDOG DOESNT SEEM TO RESET I2C
-		delay(3000);	
+		// unsigned long statusTroubleStart=millis(); //grab time when this reading started
+			// while( millis() - statusTroubleStart < 2000){//wait and hope that this problem is resolved
+				// IMUstatus = dof.checkStatus(); //check status again 
+				// if(IMUstatus == 0x49D4){
+					// Forward(BASE_SPEED); //anti stuck kick
+					// WDT_Restart(WDT);
+					// return; //problem solved 
+				// }
+			// delay(100); 
+		// }
+		// turnIMUoff(); //turn the pin off 
+		// delay(3000);
+		// fioWrite(RESET_REQUEST); //WATCHDOG DOESNT SEEM TO RESET I2C
+		// delay(3000);	
 		
-		while(1){
-			//watchdog timer, do your thing 
-		}
-		/*  fioWrite(RESET_REQUEST);
-		 delay(3000);
-		 fioWrite(RESET_REQUEST); //resend for redundancy to make sure that the command was recieved. 
-		 delay(3000);
-		 fioWrite(RESET_REQUEST);
-		 delay(3000); */
+		// while(1){
+			// //watchdog timer, do your thing 
+		// }
+		// /*  fioWrite(RESET_REQUEST);
+		 // delay(3000);
+		 // fioWrite(RESET_REQUEST); //resend for redundancy to make sure that the command was recieved. 
+		 // delay(3000);
+		 // fioWrite(RESET_REQUEST);
+		 // delay(3000); */
 
-		 // arduinoReset(); //situation is hopeless. Mash reset button  
-			// Relay.PowerOff(); //turn the power off 
-			// delay(1000); //wait a little
-			// Wire.endTransmission();    // stop transmitting, force the bus to relax
-			// delay(3000);
-			// Relay.PowerOn(); //turn the power back on
-			// delay(1000);
-			// IMUstatus = dof.begin(); // attempt rebooting 
-			// delay(1000);
-			// powerCycles++; //record attempt 
-		} 
-	return; 
-}
+		 // // arduinoReset(); //situation is hopeless. Mash reset button  
+			// // Relay.PowerOff(); //turn the power off 
+			// // delay(1000); //wait a little
+			// // Wire.endTransmission();    // stop transmitting, force the bus to relax
+			// // delay(3000);
+			// // Relay.PowerOn(); //turn the power back on
+			// // delay(1000);
+			// // IMUstatus = dof.begin(); // attempt rebooting 
+			// // delay(1000);
+			// // powerCycles++; //record attempt 
+		// } 
+	// return; 
+// }
 
 //----------------------------------------------------
 //----------------------------------------------------
@@ -2064,6 +2080,12 @@ bool CheckPower(){
 void TurnHeadingRoss(float desired_heading){
 
 	Serial.println("In TurnHeadingRoss()");
+	
+	
+		turnIMUoff(); //turn the pin off 
+		delay(1000);
+		turnIMUon();
+	
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	WDT_Restart(WDT);
@@ -2123,6 +2145,11 @@ void TurnHeadingRoss(float desired_heading){
 			Drive.RightForward(50);
 		}
 		
+		if(CONTACT){//if contact switches are pressed 
+			Stop(); // Stop the motors
+			WDT_Restart(WDT); // Reset the WDT
+			handleContact(); // call handleContact() method to determine/execute appropriate response to contact
+		} 
 		// delay(50); Stop();
 		WDT_Restart(WDT);
 
@@ -2703,7 +2730,7 @@ void handleContact(){
 		else if ((FS & SWITCH_ANT_MASK) == 0b0000000000000000){
 			// the contact is wall
 			#ifdef FIO_LINK
-			fioWrite(FRONT_SIDE_WALL);
+				fioWrite(FRONT_SIDE_WALL);
 			#endif
 		}
 	}
@@ -3394,9 +3421,13 @@ void TestServoMotors(){
 
 
 void TestCamera(){
+	Serial.println("In TestCamera()...");
+
 	while(1){
+		Serial.println("In while-loop");
+
 		WDT_Restart(WDT);
-		// GetDetectedSigs();
+		GetDetectedSigs();
 		static int i = 0;
 		int j;
 		uint16_t blocks;
@@ -3423,29 +3454,30 @@ void TestCamera(){
 
 
 void TestIMU(){
-	WDT_Restart(WDT);
+	while(1){
+		WDT_Restart(WDT);
 
-	 //update magnetometer registers
-	dof.readMag();
-	float heading=getHeading((float) dof.mx, (float) dof.my);
+		 //update magnetometer registers
+		dof.readMag();
+		float heading=getHeading((float) dof.mx, (float) dof.my);
 
- // print the magnetometer data to serial
-	Serial.print(F("mx  "));
-	Serial.print(dof.mx);
-	Serial.print(F(" my "));
-	Serial.print(dof.my);
-	Serial.print(F(" H "));
-	Serial.print(heading);
+	 // print the magnetometer data to serial
+		Serial.print(F("mx  "));
+		Serial.print(dof.mx);
+		Serial.print(F(" my "));
+		Serial.print(dof.my);
+		Serial.print(F(" H "));
+		Serial.print(heading);
 
-	// update the gyro registers
-	dof.readGyro();
-	float gyroZ=dof.calcGyro(dof.gz);
-	
-	// Print the gyro data to serial
-	Serial.print(F(" G  "));
-	Serial.println(gyroZ);
+		// update the gyro registers
+		dof.readGyro();
+		float gyroZ=dof.calcGyro(dof.gz);
+		
+		// Print the gyro data to serial
+		Serial.print(F(" G  "));
+		Serial.println(gyroZ);
+	}
 }
-
 void TestGyro(){
 	WDT_Restart(WDT);
 	Serial.print(F("G  "));

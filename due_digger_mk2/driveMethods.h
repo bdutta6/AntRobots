@@ -177,6 +177,8 @@ int pwmL=BASE_SPEED - (int)Output; //Note the sign of PV is different comparing 
 }
 //----------------------------------------------------
 void FollowLane(){
+	Serial.println("In FollowLane()...");
+
 	WDT_Restart(WDT);
 	/* this method will make the robot to follow a pheromone trail, calls PID controller method
 	DriveForward(int x). 
@@ -199,6 +201,7 @@ void FollowLane(){
 
 	if(TRAIL1){
 		if(Area1>150){
+			Serial.println("Driving forward");
 			DriveForward(x1);
 			// Serial.print('t');
 			// Serial.print("\t");
@@ -206,7 +209,7 @@ void FollowLane(){
 		}
 		
 		if(Area1<150){
-			Serial.println("Cannot find pheremone trail");
+			Serial.println("Cannot find pheromone trail");
 		}
 		return;
 	}
