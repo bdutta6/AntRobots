@@ -2082,9 +2082,10 @@ void TurnHeadingRoss(float desired_heading){
 	Serial.println("In TurnHeadingRoss()");
 	
 	
-		turnIMUoff(); //turn the pin off 
+		turnIMUoff(); //turn the pin off
 		delay(1000);
 		turnIMUon();
+		dof.begin();
 	
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2152,6 +2153,8 @@ void TurnHeadingRoss(float desired_heading){
 		} 
 		// delay(50); Stop();
 		WDT_Restart(WDT);
+			Stop();
+			delay(50);
 
 	} while (!isWantedHeading(desired_heading));
 	Stop();
