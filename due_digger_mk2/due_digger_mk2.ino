@@ -3462,20 +3462,21 @@ void TestIMU(){
 		float heading=getHeading((float) dof.mx, (float) dof.my);
 
 	 // print the magnetometer data to serial
-		Serial.print(F("mx  "));
-		Serial.print(dof.mx);
-		Serial.print(F(" my "));
-		Serial.print(dof.my);
+		// Serial.print(F("mx  "));
+		// Serial.print(dof.mx);
+		// Serial.print(F(" my "));
+		// Serial.print(dof.my);
 		Serial.print(F(" H "));
-		Serial.print(heading);
+		Serial.println(heading);
 
 		// update the gyro registers
 		dof.readGyro();
 		float gyroZ=dof.calcGyro(dof.gz);
+		delay(1000);
 		
 		// Print the gyro data to serial
-		Serial.print(F(" G  "));
-		Serial.println(gyroZ);
+		// Serial.print(F(" G  "));
+		// Serial.println(gyroZ);
 	}
 }
 void TestGyro(){
