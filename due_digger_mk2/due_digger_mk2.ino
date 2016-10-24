@@ -2,7 +2,6 @@
 
 Author : Vadim Linevich
 email  : vadim.linevich@gmail.com
-
 Modified by : Jungsoo Park
 email : ryanryan0906@hotmail.com
 Last Modified Date: 05/26/2016
@@ -271,15 +270,12 @@ void setup(){
 	//Wire.begin(); //for capacitive sensor
 	//mpr121_setup(); //for capacitive sensor
 
-	// while(1){
-	// // TestDigitalProximity();
-	// TestGripperSensor();
-	// }
 	/* initiate servos and move them to test  */
 	Arm.Attach();       //hook up servos to pwm pins
 	// while(TEST_SERVO_MOTORS){
 		// TestServoMotors();
 	// }
+	
 	Arm.PitchGo(HIGH_ROW_ANGLE); delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
 	//Arm.GripperGo(MID_POS); delay(500);
 	//Arm.GripperGo(OPEN_POS); delay(200);
@@ -291,28 +287,7 @@ void setup(){
 	Arm.PitchGo(HIGH_ROW_ANGLE);
 	/* initiate various boolean sttate variables */
 	// initiateSwitches(); //sets up pins for contact switches
-	
-	// set TEST_SWITCHES to 1 to execute this loop
-	// while(TEST_SWITCHES){
-		// TestSwitches();
-	// }
-
-	
-	// while(TEST_DRIVE_MOTORS){
-		// TestDriveMotors();
-	// }
-	
-
-
-	// //For Force Sensitive Resistor Test and Calibration
-	// while(TEST_FORCE){
-		// Serial.println(analogRead(ForceSensor));	
-		// if(CheckPayload()){
-		// Serial.println("Payload Detected");
-		// }
-		// delay(200);
-	// }
-
+		
 
 	//start i2c bus stuff. CALL dof.begin() LAST, because it starts actually sending data
 	// initiateMaster(); //start i2c bus , probably redundant 
@@ -346,8 +321,6 @@ void setup(){
 	Setpoint = 160; //x coordinate of the center of the camera, 160=320/2
 
 
-
-
 	last_dash = millis();        //initiate timer to keep track of last robot dash forward
 	//checkIMU(); //same as mashing reset button   //commented out because its redundnant
 
@@ -376,8 +349,6 @@ void setup(){
 	/* initiate IR sensors */
 	//IRright.detectionThresh=RIGHT_IR_THRESH; //set calibration for IR sensors  //360
 	//IRleft.detectionThresh=LEFT_IR_THRESH; //380  //415
-
-
 
 	// while(1){
 	// //// TestIRsensorReadings();
@@ -858,8 +829,8 @@ void loop(){
 	}
  
 	if (turnReversalMode){
-		// TurnHeadingRoss(current_target_heading);
-		TurnHeading(current_target_heading);
+		TurnHeadingRoss(current_target_heading);
+		// TurnHeading(current_target_heading);
 
 	}
 
@@ -1240,9 +1211,13 @@ void exitTunnel(){
 
 //----------------------------------------------------
 void GoingOutMode(){
+
+	// TurnHeadingRoss(current_target_heading); // should be OUT_DIRECTION
+	
 	WDT_Restart(WDT);
 	Arm.PitchGo(HIGH_ROW_ANGLE);
 	numOfConsequitiveBackwardKicks=0;
+	
 	#ifdef FIO_LINK
 		fioWrite(MASTER_GOING_OUT); //report going out
 	#endif 
@@ -2082,10 +2057,10 @@ void TurnHeadingRoss(float desired_heading){
 	Serial.println("In TurnHeadingRoss()");
 	
 	
-		turnIMUoff(); //turn the pin off
-		delay(1000);
-		turnIMUon();
-		dof.begin();
+		// turnIMUoff(); //turn the pin off
+		// delay(1000);
+		// turnIMUon();
+		// dof.begin();
 	
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2121,12 +2096,17 @@ void TurnHeadingRoss(float desired_heading){
 	Serial.print("Initial diff_heading = ");
 	Serial.println(diff_heading);
 	
+	int switchTurnDirection = millis();
+	int switchTime = 5000;
+	
 	
 	do {
 	
 		// update heading differences
 		dof.readMag(); //update magnetometer registers
 		current_heading = getHeading((float) dof.mx, (float) dof.my);
+		turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
+
 		Serial.println("---------------------------------------------------------");
 		Serial.print("desired_heading = "); 	Serial.println(desired_heading);
 		Serial.print("current_heading = "); 	Serial.println(current_heading);
@@ -2150,15 +2130,20 @@ void TurnHeadingRoss(float desired_heading){
 			Stop(); // Stop the motors
 			WDT_Restart(WDT); // Reset the WDT
 			handleContact(); // call handleContact() method to determine/execute appropriate response to contact
-		} 
+		}
+		
+		if(millis()-switchTurnDirection > switchTime){
+			WDT_Restart(WDT); // Reset the WDT
+			turn_reversal_direction = !turn_reversal_direction;
+		}
 		// delay(50); Stop();
 		WDT_Restart(WDT);
-			Stop();
-			delay(50);
+			// Stop();
+			// delay(50);
 
 	} while (!isWantedHeading(desired_heading));
 	Stop();
-	delay(3000);
+	// delay(3000);
 		
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process End ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
@@ -2184,6 +2169,49 @@ void TurnHeadingRoss(float desired_heading){
 	// }
 
 	Serial.println("Exiting TurnHeadingRoss");
+	
+	
+	//Determines the next mode in which the robot will go in, and set it accordingly
+	switch(nextMode){
+		case 1:
+			enable_GoingInMode(); //1 denotes the robot will go into going_in mode after turn reversal
+			break;
+
+		case 2:
+			enable_DiggingMode();//2 denotes the robot will go into digging mode after turn reversal //never used
+			break;
+
+		case 3:
+			enable_GoingOutMode();//3 denotes the robot will go into going_out mode after turn reversal
+			break;
+
+		case 4:
+			enable_DumpingMode();//4 denotes the robot will go into dumping mode after turn reversal //never used
+			break;
+
+		case 5:
+			enable_GoingCharging();//5 denotes the robot will go into going_charging mode after turn reversal
+			break;
+
+		case 6:
+			enable_RestingMode();//6 denotes the robot will go into resting mode after turn reversal //never used
+			break;
+
+		case 7:
+			enable_exitTunnelMode();//7 denotes the robot will go into exit tunnel mode after turn reversal //never used
+			break;
+
+		case 10:
+			//does not change the mode
+			Serial.println(F("Case 10 used - mode not updated"));
+			break;
+
+		default:
+			//does not change the mode
+			Serial.println(F("Default used - mode not updated"));
+			break;
+	}
+	
 	return;
 }
 
@@ -2902,7 +2930,8 @@ void handleContact(){
 			case (BL | LSB):
 			case (BR | BL | RSB | LSB):
 				Stop(); delay(1000);//DIGGING_INTERRUPT_DELAY //this will affect lastDriveState, thats why we use another variable
-  //switch(currentDriveState){
+  
+	//switch(currentDriveState){
   //case drivingForward:
   //Forward(BASE_SPEED); //can add speed memory as well
   //break;
@@ -2919,14 +2948,17 @@ void handleContact(){
   //Stop();
   //break;
   //}
+	
 			break;
 		}
-	logContacts(start_of_contact); return; 
+		logContacts(start_of_contact);
+		return; 
 	}
 	//------------------------------
 	else if(dumpingMode){
-	// do nothing, actually its not even called 
-	logContacts(start_of_contact); return;  //NEW LINE
+		// do nothing, actually its not even called 
+		logContacts(start_of_contact);
+		return;
 	}
 	else if(chargingMode){
 	// int currentDriveState=lastDriveState; //grab current state
@@ -3471,11 +3503,19 @@ void TestIMU(){
 		// Serial.print(dof.my);
 		Serial.print(F(" H "));
 		Serial.println(heading);
+		
+		
+		Serial.println(heading); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
+		fioWriteInt(heading); //send the capacitive sensor value to fio.
+		//Serial.println(CapSensor.readTouch()); //print the touch status of all pins.
+		delay(1000);
+
+		
 
 		// update the gyro registers
-		dof.readGyro();
-		float gyroZ=dof.calcGyro(dof.gz);
-		delay(1000);
+		// dof.readGyro();
+		// float gyroZ=dof.calcGyro(dof.gz);
+		// delay(1000);
 		
 		// Print the gyro data to serial
 		// Serial.print(F(" G  "));
@@ -3576,15 +3616,17 @@ void TestTurnHeading(){
 	while(1){
 			
 		WDT_Restart(WDT); // prevent from resetting
-
+		
+		fioWrite(MASTER_GOING_IN); //report over radio 
 		TurnHeadingRoss(IN_DIRECTION); // turn towards the bed
-		// Forward(BASE_SPEED); delay(5000); Stop();	// drive forward for a total of one second
-		delay(5000);
+		Forward(BASE_SPEED); delay(4000); Stop();	// drive forward for a total of one second
+		
 		WDT_Restart(WDT); // prevent from resetting - not sure how long TurnHeading() will take
+		
+		fioWrite(MASTER_GOING_OUT); //report over radio 
 		TurnHeadingRoss(OUT_DIRECTION); // turn towards the exit of the tunnel
-		delay(5000);
+		Forward(BASE_SPEED); delay(4000); Stop();	// drive forward for a total of one second
 
-		// Forward(BASE_SPEED); delay(5000); Stop();	// drive forward for a total of one second
 	}
 }
 
