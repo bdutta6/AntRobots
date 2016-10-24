@@ -24,7 +24,7 @@
 // TEST_POWER_SENSORS, 
 // TEST_TURN_HEADING,
 // TEST_NOTHING,
-#define TEST_CASE TEST_TURN_HEADING
+#define TEST_CASE TEST_NOTHING
 
 #define ROBOT_B
 // Robot A is on COM 3,  radio on COM 8
