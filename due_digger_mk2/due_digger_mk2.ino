@@ -196,8 +196,8 @@ enum Test {
 float initial_heading;
 float target_heading;
 float diff_heading;
-bool turn_init;
-bool target_reached;
+// bool turn_init;
+// bool target_reached;
 
 //--- set up IR distance sensors
 //IRsensor IRright(IRsensorRightPin);
@@ -621,8 +621,8 @@ void setup(){
 	// #endif
 
   // Initialise direction variables
-  turn_init = false;
-  target_reached = false;
+  // turn_init = false;
+  // target_reached = false;
 	
 	
 }
@@ -1230,6 +1230,9 @@ void GoingOutMode(){
 	// if(HEADON){
 	// maskHeadTrigger=true; //if excavated load happens to block this sensor, disable it 
 	// }
+	int checkHeadingCounter = 0;
+	int checkHeadingEvery = 1000;
+	
 	while(goingOut){
 		WDT_Restart(WDT);
 		#ifdef MANUAL_ON
@@ -1275,7 +1278,12 @@ void GoingOutMode(){
 		// }
 		FollowLane(); //call PD controller -- this is called immediately after it is called?
 		
-
+		// Ross' attempt at recorrecting
+		checkHeadingCounter++;
+		if(checkWrongDirections() && checkHeadingCounter%checkHeadingEvery == 0){
+			enable_turnReversalMode(3);
+		}
+		
 		//--- handle wrong way directions
 		if(checkWrongDirections()){
 			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
@@ -2105,13 +2113,15 @@ void TurnHeadingRoss(float desired_heading){
 		// update heading differences
 		dof.readMag(); //update magnetometer registers
 		current_heading = getHeading((float) dof.mx, (float) dof.my);
-		turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
+		// turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
 
 		Serial.println("---------------------------------------------------------");
 		Serial.print("desired_heading = "); 	Serial.println(desired_heading);
 		Serial.print("current_heading = "); 	Serial.println(current_heading);
 		// turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
 
+		
+		int currentTime = millis();
 		
 		// move a tiny bit in the correct direction
 		if(turn_reversal_direction){
@@ -2132,11 +2142,16 @@ void TurnHeadingRoss(float desired_heading){
 			handleContact(); // call handleContact() method to determine/execute appropriate response to contact
 		}
 		
-		if(millis()-switchTurnDirection > switchTime){
+		if((currentTime - switchTurnDirection) > switchTime){
+			switchTurnDirection = millis(); // update the switchTurnDirection timer
+			Stop();
+			Drive.LeftBackward(255);
+			Drive.RightBackward(255);
+			delay(1000); Stop();
+
 			WDT_Restart(WDT); // Reset the WDT
 			turn_reversal_direction = !turn_reversal_direction;
 		}
-		// delay(50); Stop();
 		WDT_Restart(WDT);
 			// Stop();
 			// delay(50);
@@ -2214,15 +2229,6 @@ void TurnHeadingRoss(float desired_heading){
 	
 	return;
 }
-
-
-
-
-
-
-
-
-
 
 
 
