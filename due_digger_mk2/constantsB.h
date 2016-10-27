@@ -21,7 +21,7 @@
 #define ForceSensorThresh 50 // JSP
 #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
 #define WallSingleThresh1	400 //Wall Detection, Single Contact Threshold for Capacitive Sensor
-#define WallSingleThresh2 480 //Wall Detection, Single Contact Threshold for Capacitive Sensor
+#define WallSingleThresh2  480 //Wall Detection, Single Contact Threshold for Capacitive Sensor
 #define AntSingleThresh1	520
 #define AntSingleThresh2	560
 #define WallDoubleThresh 14//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
@@ -80,6 +80,7 @@
 #define SLOW_TURNING_RATE 11 //used to be 15, 13
 #define TURNING_TIMEOUT     1500 //8 seconds timeout
 #define DEFAULT_TURNING_SPEED 155 //used to be 255
+
 // ********** END {MISC TUNABLE CONSTNATS} ----------
 #define R1 3.3 //k ohms, actual resistance 
 #define R2 3.3 //k omhs, two 3.3k resistors in parallel

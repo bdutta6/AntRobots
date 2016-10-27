@@ -57,13 +57,14 @@ void GetDetectedSigs(){
 		Object[k]=false; //probably should be enough to just do this, and do if(Object) before trying to access data. Everything would still have to be initialized to zero in constructor
 	}
 
-	// Serial.println("There is you problem");
+	Serial.println("In getDetectedSigs()...");
 	blocks = pixy.getBlocks();       //Poll camera, get blocks. CODE CAN GET STUCK HERE
-	// Serial.println(" "-" ");
+	Serial.println("Right after pixy.getBlocks()"); // debug
+
 	if(blocks){ //start pulling information
 		for(int j=0; j<blocks; j++){	//cycle trough the blocks
 			signature=pixy.blocks[j].signature; //read color signature
-			//Serial.println(signature); //debug 
+			Serial.println(signature); //debug 
 			switch(signature){ //assign storage array index
 				//watch out for "off by one bug!"
 				
