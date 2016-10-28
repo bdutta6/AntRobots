@@ -4,7 +4,7 @@ The PixyCam is the hardware for the vision system on the ant robots. There is a 
 
 ### Uploading Firmware
 
-As of 10/27/2016, all of the released version of the firmware are saved in this directory. At the moment, a working robot is using version 2.0.5 with roboJSP.prm. Information and methods regarding how to upload new (or perhaps old) firmware to the Pixy can be found [here](http://cmucam.org/projects/cmucam5/wiki/Uploading_New_Firmware).
+As of 10/28/2016, all of the released version of the firmware are saved in this directory. At the moment, a working robot is using version 2.0.17 with roboJSP.prm. Information and methods regarding how to upload new (or perhaps old) firmware to the Pixy can be found [here](http://cmucam.org/projects/cmucam5/wiki/Uploading_New_Firmware).
 
 ### PixyCam Parameters
 
