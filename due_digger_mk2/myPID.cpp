@@ -80,6 +80,8 @@ bool myPID::Compute()
  ******************************************************************************/ 
 void myPID::SetTunings(double Kp, double Ki, double Kd)
 {
+	// Serial.println("**************");
+
    if (Kp<0 || Ki<0 || Kd<0) return;
     
    double SampleTimeInSec = ((double)SampleTime)/1000;  

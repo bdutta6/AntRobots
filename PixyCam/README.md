@@ -10,9 +10,7 @@ As of 10/28/2016, all of the released version of the firmware are saved in this 
 
 A number of .prm files were discovered on the lab machine, all of which were saved to this directory. I have uploaded roboJSP.prm to a robot, which runs well. I think it is important to note that the parameters, such as "Data out port" is set to a value that according to the online documentation should not work. Perhaps some undocumented changes have been made in the PixyCam software.
 
-
 Information about communicating with the Pixy can be found [here](http://cmucam.org/projects/cmucam5/wiki/Porting_Guide).
-
 
 Information about the Pixy serial protocol can be found [here](http://cmucam.org/projects/cmucam5/wiki/Pixy_Serial_Protocol).
 
