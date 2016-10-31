@@ -555,83 +555,13 @@ void setup(){
 	*/
 
 
-	// //for magnetometer MAG3110 sensor test and calibration
-	// while(TEST_MAG){
-		// WDT_Restart(WDT);
-		// Serial.println(FSensor.Detected());
-	// }
-
-	// //for capacitive sensor test and calibration
-	// while(TEST_CAP){
-		// int testPanel = 1; // takes on values from 0 up to and including 7
-		// WDT_Restart(WDT);
-		// //Serial.println(CONTACT); //print all contact
-		// Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
-		
-		// fioWriteInt(CapSensor.getOneContact(testPanel)); //send the capacitive sensor value to fio.
-		// //Serial.println(CapSensor.readTouch()); //print the touch status of all pins.
-		// delay(1000);
-		// //if (CONTACT){
-		// //enable_GoingInMode();
-		// //handleContact();
-		// //}
-	// }
 
 
 
-	// while(TEST_TURN_HEADING){
-		// WDT_Restart(WDT);
-		// Forward(BASE_SPEED);
-		// delay(5000);
-		// TurnHeading(OUT_DIRECTION);
-		// WDT_Restart(WDT);
-		// Forward(BASE_SPEED);
-		// delay(5000);
-		// TurnHeading(IN_DIRECTION);
-	// }
 
-
-	/* unsigned long lastGyroRead=millis();
-	float gyroZval=dof.calcGyro(dof.gz);
-	unsigned long dt;
-	float angle=0;
-	while(1){
-	WDT_Restart(WDT);
-	dof.readGyro(); //update gyro registers
-	float gyroZ=dof.calcGyro(dof.gz);
-	Serial.print(F("G  ")); Serial.print(gyroZ);
-	dt=millis()-lastGyroRead;
-	lastGyroRead=millis(); //grab last time
-		if( abs(gyroZval-gyroZ)>5){
-		angle=angle+dt*gyroZ/1000;
-		}
-	Serial.print("\t angle \t");
-	Serial.println(angle);
-	} */
-
-	// while(TEST_GRIPPER_SENSOR){
-		// Serial.println(analogRead(FGripperPin)); // what is FGRIPPERPIN?
-		// TestGripperSensor();
-		// WDT_Restart(WDT);
-	// }
-
-
-
-	// #define DEBUG 1
-
-	// #if DEBUG
-	//Serial.println( F("end of a setup loop") ); //F() those strings !!! Note for JSP //bani commented
-	// #endif
-
-
-  // Initialise direction variables
-  // turn_init = false;
-  // target_reached = false;
 	
-	
-	
-		// enable_GoingInMode();
-		enable_GoingInMode(); // trying to debug goingOutModeRoss
+		enable_GoingInMode();
+		// enable_GoingOutMode(); // trying to debug goingOutModeRoss
 
 	
 }
@@ -807,7 +737,7 @@ void loop(){
 		current_target_heading = IN_DIRECTION;
 		// current_target_heading = OUT_DIRECTION; // seeing if direction has an affect
 		// GoingInMode();
-		GoingOutModeRoss();
+		GoingInMode();
 		
 		
 	}
@@ -985,11 +915,11 @@ void GoingInMode(){
 
 
 		//--- handle wrong way directions -- commented out by ross on 10/31
-		// if(checkWrongDirections()){
-			// Serial.println("checkWrongDirections()returns true");
+		if(checkWrongDirections()){
+			Serial.println("checkWrongDirections()returns true");
 
-			// //whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-		// }	
+			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+		}	
 
 		FollowLane();//poll camera and call PD
 		WDT_Restart(WDT);
@@ -1088,22 +1018,31 @@ void GoingOutModeRoss(){
 	int checkHeadingCounter = 0;
 	int checkHeadingEvery = 1000;
 
-	
-	while(goingIn || goingOut){
+	while(goingOut){
 		Serial.println("In goingIn while-loop");
-
+	
+		#ifdef FIO_LINK
+			Serial.println(F("FIO_LINK defined"));
+			fioWrite(MASTER_GOING_OUT); //report over radio 			
+		#endif
+	
 		WDT_Restart(WDT);
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS); //JSP
 		
 		
-		if (CheckPayload()){
-			Serial.println("Something found in payload");
-			current_target_heading = OUT_DIRECTION;
-			preferGyro = true; // 
-			enable_turnReversalMode(3); // this sets the variable nextMode to 3, which corresponds to goingOut. This sets a variable that will remember which mode the robot should enter after turning around...?
-			return; // if there is something in the 	 gripper, then we need to exit goingInMode
-		}
+		// if (CheckPayload()){
+			// #ifdef FIO_LINK
+				// Serial.println(F("FIO_LINK defined"));
+				// fioWrite(MASTER_GOING_OUT); //report over radio 
+			// #endif
+		
+			// Serial.println("Something found in payload");
+			// current_target_heading = OUT_DIRECTION;
+			// preferGyro = true; // 
+			// enable_turnReversalMode(3); // this sets the variable nextMode to 3, which corresponds to goingOut. This sets a variable that will remember which mode the robot should enter after turning around...?
+			// return; // if there is something in the 	 gripper, then we need to exit goingInMode
+		// }
  
 		// Checks for Contact
 		if(CONTACT){
@@ -1114,7 +1053,7 @@ void GoingOutModeRoss(){
 			// Rewrite fio to goinging state so we know we are out of the turning state
 			#ifdef FIO_LINK
 				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_IN); //report over radio 
+				fioWrite(MASTER_EXIT_TUNNEL); //report over radio 
 			#endif
 		}
 		
@@ -1123,6 +1062,10 @@ void GoingOutModeRoss(){
  
 		if(DUMPING_SWITCH){//BANI
 			Serial.println("Dumping switch");
+			#ifdef FIO_LINK
+				Serial.println(F("FIO_LINK defined"));
+				fioWrite(MASTER_DUMPING); //report over radio 
+			#endif
 
 			//if(CHARGER ){
 			Backward(BASE_SPEED); delay(1000); //move back
@@ -1131,39 +1074,20 @@ void GoingOutModeRoss(){
 			FollowLane();//poll camera and call PD
 			WDT_Restart(WDT);
 		} 
+		
 
-		if(CHARGER){
-			Serial.println("Charging if-statement");
-
-			//Serial.println("charger");
-			//Serial.println("Charger!!!"); // JSP //BANI
-			Stop(); delay(100);
-			//--- copied from chargingMode backing out routine
-			unsigned long backingOutStart=millis();
-			Backward(BASE_SPEED);
-    
-			// while(CHARGER){
-			// WDT_Restart(WDT);
-			// }
-			bumpDelay(1000); //force backout for short time
-			Stop(); delay(200); //quick stop
-			//TurnHeading(IN_DIRECTION); //turn to go in a tunnel
-			enable_turnReversalMode(1);
-			Stop(); delay(100);
-			Forward(BASE_SPEED); //start slowly driving forward
-
-			//whenForcedBackwardKick=millis(); //the robot drove backward 
-			FollowLane();//poll camera and call PD
-			WDT_Restart(WDT);
+		if (CHARGER){
+			Stop();
+			enable_DumpingMode();
+			return;
 		}
 
-
 		//--- handle wrong way directions -- commented out by ross on 10/31
-		// if(checkWrongDirections()){
-			// Serial.println("checkWrongDirections()returns true");
+		if(checkWrongDirections()){
+			Serial.println("checkWrongDirections()returns true");
 
-			// //whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-		// }	
+			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+		}	
 
 		FollowLane();//poll camera and call PD
 		WDT_Restart(WDT);
@@ -1180,43 +1104,61 @@ void GoingOutModeRoss(){
  // return;
  // }
  
-		if( checkHeadSensor() ){
+		if(goingIn && checkHeadSensor() ){
 			Serial.println("checkHeadSensor() returns true");
+			#ifdef FIO_LINK
+				Serial.println(F("FIO_LINK defined"));
+				fioWrite(MASTER_DIGGING); //report over radio
+				delay(1000);
+			#endif
 			return; //found soemthing, lets dig 
 		}
+		
+		else if (goingOut){
+			Forward(BASE_SPEED);
+			delay(1000);
+		}
+		
+		
+		
 		/* 
 		#ifdef MANUAL_ON
 			handleManualOverride(); 
 		#endif
 		*/
   
-		#if ALLOW_USELESS_RUNS //prob bugged
-			Serial.println("ALLOW_USELESS_RUNS is true");
+		// #if ALLOW_USELESS_RUNS //prob bugged
+			// Serial.println("ALLOW_USELESS_RUNS is true");
+			// #ifdef FIO_LINK
+				// Serial.println(F("FIO_LINK defined"));
+				// fioWrite(MASTER_USELESS_RUN); //report over radio
+				// delay(1000);
+			// #endif
 
-			if( millis() - whenModeStart > USELESS_RUN_THRESH){
-				//bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
-				bool goBack = true; // force the robot to go back 
-				preferGyro=true; 
+			// if( millis() - whenModeStart > USELESS_RUN_THRESH){
+				// //bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
+				// bool goBack = true; // force the robot to go back 
+				// preferGyro=true; 
 
-				if (goBack){
-					Backward(BASE_SPEED);
-					delay(2000);
-					Stop();
-					current_target_heading=OUT_DIRECTION;
-					//TurnHeading(current_target_heading);
-					enable_turnReversalMode(7);
-					//enable_RestingMode(); //go to the charging station
-					//enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
-					return; 
-				}
-				//bool goBack = false;//BANI
-				else{ //BANI 
-					whenModeStart=millis(); //reset timer 
-					WDT_Restart(WDT);
-					//Serial.println("WDT8");
-				}
-			} 
-		#endif
+				// if (goBack){
+					// Backward(BASE_SPEED);
+					// delay(2000);
+					// Stop();
+					// current_target_heading=OUT_DIRECTION;
+					// //TurnHeading(current_target_heading);
+					// enable_turnReversalMode(7);
+					// //enable_RestingMode(); //go to the charging station
+					// //enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
+					// return; 
+				// }
+				// //bool goBack = false;//BANI
+				// else{ //BANI 
+					// whenModeStart=millis(); //reset timer 
+					// WDT_Restart(WDT);
+					// //Serial.println("WDT8");
+				// }
+			// } 
+		// #endif
 	} //end while(goingIn)
 } // end goingInMode()
 //----------------------------------------------------
@@ -1991,79 +1933,92 @@ leaveDumpingSite();
 
 //----------------------------------------------------
 bool checkHeadSensor(){
- 
- if(goingIn){
- WDT_Restart(WDT);
- /* This method will give clearnace for digging mode if head sensor detects  */
-  if ( (FSensor.Detected()) ){//am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
-  enable_DiggingMode();
-	return 1; //JSP
-	unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
-   while( FSensor.Detected() ){
-   Stop(); 
-	 WDT_Restart(WDT);
-    if( (millis()- sensor_timer)> 1000){//we saw this sensor spike for 2 seconds at least
-    enable_DiggingMode();
-    // HeadSensor.threshold=1000; //weaken the threshold for digging  //1023 is nominal reading
-    return 1; //exit this mode, something is detected
-    break; //breaks while loop
-    }
-   }
-  // GetDetectedSigs(); //poll camera, get latest vision info
-  }
-  Forward(BASE_SPEED); //proceed forward slowly 
-  return 0; //nothing is detected
- }
- 
- if(diggingMode){
- WDT_Restart(WDT);
- // delay(150); //wait a little to make sure that the gripper has finished closing before sampling 
-  if ( FSensor.Detected() ){//am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
-  return 1;
-	unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
-   while( FSensor.Detected() ){
-	 WDT_Restart(WDT);
-   Stop(); 
-    if( (millis()- sensor_timer)> 750){//we saw this sensor spike for 2 seconds at least
-    return 1; //exit this mode, something is detected
-    break; //breaks while loop
-    }
-   }
-  }
-  return 0; //nothing is detected
- }
- 
- if(goingCharging || restingMode){
- //check if this is getting called ever
- WDT_Restart(WDT);
-  if( FSensor.Detected() && !CHARGER){//am I in the excavation area and touching GM?
-  unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
-   while( FSensor.Detected() ){
-   //Stop();   
-    if( (millis()- sensor_timer)> 2000){//we saw this sensor spike for 2 seconds at least
-    return 1;
-	break;
+	if(goingIn){
+		WDT_Restart(WDT);
+		/* This method will give clearnace for digging mode if head sensor detects  */
+		if ( (FSensor.Detected()) ){ //am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
+			enable_DiggingMode();
+			return 1; //JSP
+			
+			// you will never get here!!!!!!!!!!!!!!!!!!!!!
+			
+			
+			unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
+   
+			while( FSensor.Detected() ){
+				Stop(); 
+				WDT_Restart(WDT);
+				if( (millis()- sensor_timer)> 1000){//we saw this sensor spike for 2 seconds at least
+					enable_DiggingMode();
+					// HeadSensor.threshold=1000; //weaken the threshold for digging  //1023 is nominal reading
+					return 1; //exit this mode, something is detected
+					break; //breaks while loop
+				}
+			}
+			// GetDetectedSigs(); //poll camera, get latest vision info
+		}
+  
+		Forward(BASE_SPEED); //proceed forward slowly 
+		return 0; //nothing is detected
 	}
-   }
-  }
- return 0;
- }
  
- if(goingOut){//payload checking
-  if(FSensor.Detected()){
-  return 1; //we are carrying something, no problem
-  }
-  else{
-  unsigned long sensor_timer=millis(); //used to very that we dont have anything by continuing sampling
-   while( millis() - sensor_timer < 1000){
-	 WDT_Restart(WDT);
-    if(FSensor.Detected()){
-	  return 1; //false alarm, there is something
-	  }
-   }
-   return 0;//looks like we lost it
-  } 
- } 
+	if(diggingMode){
+		WDT_Restart(WDT);
+		// delay(150); //wait a little to make sure that the gripper has finished closing before sampling 
+		if ( FSensor.Detected() ){//am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
+			return 1;
+			unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
+			while( FSensor.Detected() ){
+				WDT_Restart(WDT);
+				Stop(); 
+				if( (millis()- sensor_timer)> 750){//we saw this sensor spike for 2 seconds at least
+					return 1; //exit this mode, something is detected
+					break; //breaks while loop
+				}
+			}
+		}
+		return 0; //nothing is detected
+	}
+ 
+	if(goingCharging || restingMode){
+		//check if this is getting called ever
+		WDT_Restart(WDT);
+		if( FSensor.Detected() && !CHARGER){//am I in the excavation area and touching GM?
+			unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
+			while( FSensor.Detected() ){
+				//Stop();   
+				if( (millis()- sensor_timer)> 2000){//we saw this sensor spike for 2 seconds at least
+					return 1;
+					break;
+				}
+			}
+		}
+	return 0;
+	}
+ 
+ 
+	// so i think the issue here is that there is a second delay where only the PID controller feedback correction is directing the robot. There is an attempt at
+	// this in goingIn mode, but there is an early return.
+ 
+	if(goingOut){//payload checking
+	
+		if(FSensor.Detected()){
+			return 1; //we are carrying something, no problem
+		}
+		
+		else{
+			// unsigned long sensor_timer=millis(); //used to very that we dont have anything by continuing sampling
+			// while( millis() - sensor_timer < 1000){
+				// WDT_Restart(WDT);
+				// if(FSensor.Detected()){
+					// return 1; //false alarm, there is something
+				// }
+			// }
+			Forward(BASE_SPEED); //proceed forward slowly 
+
+			return 0;//looks like we lost it
+		} 
+	} 
 }
 
 
@@ -2319,7 +2274,7 @@ void TurnHeadingRoss(float desired_heading){
 	float current_heading = getHeading((float) dof.mx, (float) dof.my); //get a compass direction, value returned is from 0 to 360 degrees
 
 	//autonomously pick the best direction to initiate turning
-	turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
+	turn_reversal_direction = !pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
 	unsigned long time_start = millis(); // initiate timer to keep robot turning if there is a turning progress
 	unsigned long action_timeout = millis(); // watchdog timer, make sure that the robot is not stuck, forcing new actions if the robot have not done anything in a while 
 	Arm.PitchGo(HIGH_ROW_ANGLE); // raise the arm to decrease overall length // JSP
@@ -2367,12 +2322,6 @@ void TurnHeadingRoss(float desired_heading){
 			Drive.RightForward(50);
 		}
 		
-		// if(CONTACT){//if contact switches are pressed 
-			// Stop(); // Stop the motors
-			// WDT_Restart(WDT); // Reset the WDT
-			// handleContact(); // call handleContact() method to determine/execute appropriate response to contact
-		// }
-		
 		if((millis() - switchTurnDirection) > switchTime){
 			switchTurnDirection = millis(); // update the switchTurnDirection timer
 			Stop();
@@ -2383,7 +2332,22 @@ void TurnHeadingRoss(float desired_heading){
 			// WDT_Restart(WDT); // Reset the WDT
 			turn_reversal_direction = !turn_reversal_direction;
 		}
-		WDT_Restart(WDT);
+			
+			
+		// Checks for Contact -- need to handle contact cases better before this is implemented
+		if(CONTACT){
+			Serial.println("Something contacted");
+			WDT_Restart(WDT);
+			handleContact();
+			
+			// Rewrite fio to goinging state so we know we are out of the turning state
+			#ifdef FIO_LINK
+				Serial.println(F("FIO_LINK defined"));
+				fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
+			#endif
+		}
+			
+			
 			// Stop();
 			// delay(50);
 
