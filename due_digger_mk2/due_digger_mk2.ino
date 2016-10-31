@@ -6,9 +6,9 @@ Modified by : Jungsoo Park
 email : ryanryan0906@hotmail.com
 Last Modified Date: 05/26/2016
 
-Modified by : Ross Warkentin - testing_branch personal
+Modified by : Ross Warkentin
 email: ross.warkentin@gmail.com
-Last Modified Date: 10/14/2016
+Last Modified Date: 10/31/2016
 
 Property of CRABLAB, Georgia Institute of Technology, School of Physics
 [2013]-[2014]
@@ -31,7 +31,7 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 #define PROBABILITY_DIG 0 //0 for active, 1 for lorenz
 #define RESTING_TIME 20000// number of seconds before rerolling probabilty in lorenz mode 
 //useless run stuff turn back if it did not reach the face
-#define ALLOW_USELESS_RUNS 1// 1 is allow
+#define ALLOW_USELESS_RUNS 0 // 1 is allow
 #define USELESS_RUN_THRESH 75000 //used to be 7500,90 seconds. double the amount of needed 100 seconds now
 
 
@@ -450,7 +450,7 @@ void setup(){
 		
 	#endif
 	*/
-	enable_GoingInMode();
+	// enable_GoingInMode();
 
 	//preferGyro=false; 
 	//enable_turnReversalMode(1);
@@ -623,10 +623,16 @@ void setup(){
 	//Serial.println( F("end of a setup loop") ); //F() those strings !!! Note for JSP //bani commented
 	// #endif
 
+
   // Initialise direction variables
   // turn_init = false;
   // target_reached = false;
 	
+	
+	
+		// enable_GoingInMode();
+		enable_GoingInMode(); // trying to debug goingOutModeRoss
+
 	
 }
 // ********** End (SETUP SCRIPT} **********
@@ -788,16 +794,22 @@ void loop(){
 	}
 		
 	if(goingIn){
-		Serial.println("Going in...");
-		Serial.print("KP="); Serial.println(KP);
-		Serial.print("Kp="); Serial.println(Kp);
-
-		// KP = Kp; //reset gain
+		// Serial.println("Going in...");
+		// Serial.print("KP="); Serial.println(KP); // Ross
+		// Serial.print("Kp="); Serial.println(Kp); // Ross	
+		 // Kp = 2.5
+		
+		
+		// KP = Kp; //reset gain - JSP
 		
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains
 		
 		current_target_heading = IN_DIRECTION;
-		GoingInMode();
+		// current_target_heading = OUT_DIRECTION; // seeing if direction has an affect
+		// GoingInMode();
+		GoingOutModeRoss();
+		
+		
 	}
 
 	if(diggingMode){
@@ -818,13 +830,20 @@ void loop(){
 	}
 
 	if(goingOut){
-		Serial.println("GoingOutMode");
+		// Serial.println("Going in...");
+		// Serial.print("KP="); Serial.println(KP); // Ross
+		// Serial.print("Kp="); Serial.println(Kp); // Ross	
+		 // Kp = 2.5
+		
+		
+		// KP = Kp; //reset gain - JSP
+		
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains
-
-
-		current_target_heading=OUT_DIRECTION;
+		
+		current_target_heading = IN_DIRECTION;
+		// current_target_heading = OUT_DIRECTION; // seeing if direction has an affect
+		// GoingInMode();
 		GoingOutModeRoss();
-		// GoingOutMode();
 
 	}
 
@@ -964,20 +983,13 @@ void GoingInMode(){
 			WDT_Restart(WDT);
 		}
 
-		
-		
-		// // Ross' attempt handling wrong way directions
-		// checkHeadingCounter++;
-		// if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
-			// enable_turnReversalMode(3);
-		// }
 
-		//--- handle wrong way directions
-		if(checkWrongDirections()){
-			Serial.println("checkWrongDirections()returns true");
+		//--- handle wrong way directions -- commented out by ross on 10/31
+		// if(checkWrongDirections()){
+			// Serial.println("checkWrongDirections()returns true");
 
-			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-		}	
+			// //whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+		// }	
 
 		FollowLane();//poll camera and call PD
 		WDT_Restart(WDT);
@@ -1037,115 +1049,16 @@ void GoingInMode(){
 
 
 
-
-
-
-void goingInModeRoss(){ // this is a copy of goingOutMode
-// TurnHeadingRoss(current_target_heading); // should be OUT_DIRECTION
-	
-	WDT_Restart(WDT);
-	Arm.PitchGo(HIGH_ROW_ANGLE);
-	numOfConsequitiveBackwardKicks=0;
-	
-	#ifdef FIO_LINK
-		fioWrite(MASTER_GOING_OUT); //report going out
-	#endif 
-	//watchdogFlag=1; //action taken
-	//bool IRactionHandled=false;
-	//unsigned long whenIRactionHandled=millis(); //remember last IR action
-	//unsigned long whenForcedBackwardKick=millis(); //remember last forced backward kick
-	unsigned long whenCheckedPayload=millis(); //used to occasionally check if payload is still there 
-	// bool maskHeadTrigger=false;
-	// if(HEADON){
-	// maskHeadTrigger=true; //if excavated load happens to block this sensor, disable it 
-	// }
-	int checkHeadingCounter = 0;
-	int checkHeadingEvery = 1000;
-	
-	while(goingOut){
-		WDT_Restart(WDT);
-		#ifdef MANUAL_ON
-			handleManualOverride(); 
-		#endif
- 
- //--IR contacts 
- 
- //IRactionHandled=handleIRcontacts();
- //checkIfBackwardKickNeeded(&IRactionHandled,&whenIRactionHandled,&whenForcedBackwardKick);
- //timeoutForceBackwardKick(&whenForcedBackwardKick); //force backward kick if the robot has not been backing out in a long time
- //FollowLane();//poll camera and call PD
-		WDT_Restart(WDT);
-  /* axed this behaviour. somehow it stopped working right anyway */
- // if( !checkPayload(&whenCheckedPayload)){//if we dropped payload. probably not working right
- // TurnHeading(IN_DIRECTION);
- // enable_GoingInMode(); 
- // return; 
- // };
- 
-		// FollowLane();//poll camera and call PD
-		
-		//---contact handling	
-		if(CONTACT){
-			WDT_Restart(WDT);
-			handleContact();
-			// enable_turnReversalMode(3); // realign
-
-			// FollowLane(); //poll camera and call PD
-			#ifdef FIO_LINK
-				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_OUT); //report over radio 
-			#endif
-		}
-		
-
-		FollowLane(); //call PD controller -- this is called immediately after it is called?
-		
-		// Ross' attempt at recorrecting
-		checkHeadingCounter++;
-		if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
-			enable_turnReversalMode(3);
-		}
-		
-		//--- handle wrong way directions
-		if(checkWrongDirections()){
-			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-			// FollowLane();//poll camera and call PD
-		}	
-		
-		//if (DUMPING_SWITCH) { //VADIM SHOWED EXAMPLE
-		if (CHARGER){
-			Stop();
-			enable_DumpingMode();
-			return;
-		}
-		
-		// FollowLane();//poll camera and call PD -- dont think we need to follow lane if CHARGER == TRUE
-		WDT_Restart(WDT);
-		
-	} //end while(goingOut)
-
-
-
-
-
-}
-
-
-
-
-
-
 //----------------------------------------------------
-void GoingOutModeRoss(){ // this is a copy of goinginmode
-
-	Serial.println(F("Beginning of GoingOutModeRoss()"));
+void GoingOutModeRoss(){
+	Serial.println(F("Beginning of GoingInMode()"));
 
 	WDT_Restart(WDT);
 	numOfConsequitiveBackwardKicks = 0;
 
 	#ifdef FIO_LINK
 		Serial.println(F("FIO_LINK defined"));
-		fioWrite(MASTER_GOING_OUT); //report over radio 
+		fioWrite(MASTER_GOING_IN); //report over radio 
 	#endif
 
 	#if ALLOW_USELESS_RUNS
@@ -1170,27 +1083,27 @@ void GoingOutModeRoss(){ // this is a copy of goinginmode
 	// add head bump sensor
 	//start counting IR side how long
 	//unsigned long whenSawTrails()=millis();
-	Serial.println(F("goingoutross is..."));
+	Serial.println(F("goingIn is..."));
 	
 	int checkHeadingCounter = 0;
 	int checkHeadingEvery = 1000;
 
 	
-	while(goingOut){
-		Serial.println("In goingOutRoss while-loop");
+	while(goingIn || goingOut){
+		Serial.println("In goingIn while-loop");
 
 		WDT_Restart(WDT);
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS); //JSP
 		
 		
-		// if (CheckPayload()){
-			// Serial.println("Something found in payload");
-			// current_target_heading = OUT_DIRECTION;
-			// preferGyro = true; // 
-			// enable_turnReversalMode(3); // this sets the variable nextMode to 3, which corresponds to goingOut. This sets a variable that will remember which mode the robot should enter after turning around...?
-			// return; // if there is something in the 	 gripper, then we need to exit goingInMode
-		// }
+		if (CheckPayload()){
+			Serial.println("Something found in payload");
+			current_target_heading = OUT_DIRECTION;
+			preferGyro = true; // 
+			enable_turnReversalMode(3); // this sets the variable nextMode to 3, which corresponds to goingOut. This sets a variable that will remember which mode the robot should enter after turning around...?
+			return; // if there is something in the 	 gripper, then we need to exit goingInMode
+		}
  
 		// Checks for Contact
 		if(CONTACT){
@@ -1201,74 +1114,51 @@ void GoingOutModeRoss(){ // this is a copy of goinginmode
 			// Rewrite fio to goinging state so we know we are out of the turning state
 			#ifdef FIO_LINK
 				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_OUT); //report over radio 
+				fioWrite(MASTER_GOING_IN); //report over radio 
 			#endif
 		}
 		
 		FollowLane(); //poll camera and call PD
 		// GetDetectedSigs(); //poll camera, get latest vision info
  
-		// if(DUMPING_SWITCH){//BANI
-			// Serial.println("Dumping switch");
+		if(DUMPING_SWITCH){//BANI
+			Serial.println("Dumping switch");
 
-			// //if(CHARGER ){
-			// Backward(BASE_SPEED); delay(1000); //move back
-			// //TurnHeading(IN_DIRECTION); //turn back in
-			// enable_turnReversalMode(3);
-			// FollowLane();//poll camera and call PD
-			// WDT_Restart(WDT);
-		// } 
+			//if(CHARGER ){
+			Backward(BASE_SPEED); delay(1000); //move back
+			//TurnHeading(IN_DIRECTION); //turn back in
+			enable_turnReversalMode(1);
+			FollowLane();//poll camera and call PD
+			WDT_Restart(WDT);
+		} 
 
-		// if(CHARGER){
-			// Serial.println("Charging if-statement");
+		if(CHARGER){
+			Serial.println("Charging if-statement");
 
-			// //Serial.println("charger");
-			// //Serial.println("Charger!!!"); // JSP //BANI
-			// Stop(); delay(100);
-			// //--- copied from chargingMode backing out routine
-			// unsigned long backingOutStart=millis();
-			// Backward(BASE_SPEED);
+			//Serial.println("charger");
+			//Serial.println("Charger!!!"); // JSP //BANI
+			Stop(); delay(100);
+			//--- copied from chargingMode backing out routine
+			unsigned long backingOutStart=millis();
+			Backward(BASE_SPEED);
     
-			// // while(CHARGER){
-			// // WDT_Restart(WDT);
-			// // }
-			// bumpDelay(1000); //force backout for short time
-			// Stop(); delay(200); //quick stop
-			// //TurnHeading(IN_DIRECTION); //turn to go in a tunnel
-			// enable_turnReversalMode(3);
-			// Stop(); delay(100);
-			// Forward(BASE_SPEED); //start slowly driving forward
-
-			// //whenForcedBackwardKick=millis(); //the robot drove backward 
-			// FollowLane();//poll camera and call PD
+			// while(CHARGER){
 			// WDT_Restart(WDT);
-		// }
+			// }
+			bumpDelay(1000); //force backout for short time
+			Stop(); delay(200); //quick stop
+			//TurnHeading(IN_DIRECTION); //turn to go in a tunnel
+			enable_turnReversalMode(1);
+			Stop(); delay(100);
+			Forward(BASE_SPEED); //start slowly driving forward
 
-		
-		
-		// // Ross' attempt handling wrong way directions
-		// checkHeadingCounter++;
-		// if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
-			// enable_turnReversalMode(3);
-		// }
+			//whenForcedBackwardKick=millis(); //the robot drove backward 
+			FollowLane();//poll camera and call PD
+			WDT_Restart(WDT);
+		}
 
-		
-		// // Ross' attempt at recorrecting
-		// checkHeadingCounter++;
-		// if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
-			// enable_turnReversalMode(3);
-		// }
-		
-				//--- handle wrong way directions
-		if(checkWrongDirections()){
-			Serial.println("checkWrongDirections()returns true");
 
-			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-		}	
-
-		
-		
-		//--- handle wrong way directions
+		//--- handle wrong way directions -- commented out by ross on 10/31
 		// if(checkWrongDirections()){
 			// Serial.println("checkWrongDirections()returns true");
 
@@ -1290,46 +1180,45 @@ void GoingOutModeRoss(){ // this is a copy of goinginmode
  // return;
  // }
  
-		// if( checkHeadSensor() ){
-			// Serial.println("checkHeadSensor() returns true");
-			// // return; //found soemthing, lets dig 
-		// }
+		if( checkHeadSensor() ){
+			Serial.println("checkHeadSensor() returns true");
+			return; //found soemthing, lets dig 
+		}
 		/* 
 		#ifdef MANUAL_ON
 			handleManualOverride(); 
 		#endif
 		*/
   
-		// #if ALLOW_USELESS_RUNS //prob bugged
-			// Serial.println("ALLOW_USELESS_RUNS is true");
+		#if ALLOW_USELESS_RUNS //prob bugged
+			Serial.println("ALLOW_USELESS_RUNS is true");
 
-			// if( millis() - whenModeStart > USELESS_RUN_THRESH){
-				// //bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
-				// bool goBack = true; // force the robot to go back 
-				// preferGyro=true; 
+			if( millis() - whenModeStart > USELESS_RUN_THRESH){
+				//bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
+				bool goBack = true; // force the robot to go back 
+				preferGyro=true; 
 
-				// if (goBack){
-					// Backward(BASE_SPEED);
-					// delay(2000);
-					// Stop();
-					// current_target_heading=OUT_DIRECTION;
-					// //TurnHeading(current_target_heading);
-					// enable_turnReversalMode(7);
-					// //enable_RestingMode(); //go to the charging station
-					// //enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
-					// return; 
-				// }
-				// //bool goBack = false;//BANI
-				// else{ //BANI 
-					// whenModeStart=millis(); //reset timer 
-					// WDT_Restart(WDT);
-					// //Serial.println("WDT8");
-				// }
-			// } 
-		// #endif
+				if (goBack){
+					Backward(BASE_SPEED);
+					delay(2000);
+					Stop();
+					current_target_heading=OUT_DIRECTION;
+					//TurnHeading(current_target_heading);
+					enable_turnReversalMode(7);
+					//enable_RestingMode(); //go to the charging station
+					//enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
+					return; 
+				}
+				//bool goBack = false;//BANI
+				else{ //BANI 
+					whenModeStart=millis(); //reset timer 
+					WDT_Restart(WDT);
+					//Serial.println("WDT8");
+				}
+			} 
+		#endif
 	} //end while(goingIn)
-	
-} // end goingOutRossMode()
+} // end goingInMode()
 //----------------------------------------------------
 
 
@@ -1614,10 +1503,10 @@ void GoingOutMode(){
 		FollowLane(); //call PD controller -- this is called immediately after it is called?
 		
 		// Ross' attempt at recorrecting
-		checkHeadingCounter++;
-		if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
-			enable_turnReversalMode(3);
-		}
+		// checkHeadingCounter++;
+		// if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
+			// enable_turnReversalMode(3);
+		// }
 		
 		//--- handle wrong way directions
 		if(checkWrongDirections()){
@@ -2555,7 +2444,7 @@ void TurnHeadingRoss(float desired_heading){
 			break;
 
 		case 7:
-			enable_exitTunnelMode();//7 denotes the robot will go into exit tunnel mode after turn reversal //never used
+			enable_exitTunnelMode(); //7 denotes the robot will go into exit tunnel mode after turn reversal //never used
 			break;
 
 		case 10:

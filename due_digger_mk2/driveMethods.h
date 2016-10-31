@@ -77,74 +77,75 @@ void Stop(){
 }
 //----------------------------------------------------
 void DriveForward(uint16_t x){
-/* this method implements PID controller to drive forward
-input is a pixy block x coordinate 
-pwmR=+ output
-pwmL=- output
- */
-Input=x;
-//Setpoint=160; // 320/2=160, center pixel
-PD.Compute(); //updates controller
-//command right wheel
-#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
-int pwmR=BASE_SPEED + (int)Output;
-#endif
+	/* this method implements PID controller to drive forward
+	input is a pixy block x coordinate 
+	pwmR=+ output
+	pwmL=- output
+	*/
+	Input=x;
+	//Setpoint=160; // 320/2=160, center pixel
+	PD.Compute(); //updates controller
+	//command right wheel
+	#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
+		int pwmR=BASE_SPEED + (int)Output;
+	#endif
 
-#ifdef ROBOT_D
-int pwmR=BASE_SPEED + (int)Output; //JSP
-//int pwmR=BASE_SPEED - (int)Output; //Vadim's code
-#endif
+	#ifdef ROBOT_D
+		int pwmR=BASE_SPEED + (int)Output; //JSP
+		//int pwmR=BASE_SPEED - (int)Output; //Vadim's code
+	#endif
 
-#ifdef ROBOT_E //JSP
-int pwmR=BASE_SPEED + (int)Output; // JSP
-#endif // JSP
+	#ifdef ROBOT_E //JSP
+		int pwmR=BASE_SPEED + (int)Output; // JSP
+	#endif // JSP
 
- if (pwmR>255){ 
- pwmR=255; //guard against overflow 
- } 
- if (pwmR < 0 ){ //differential turning is needed
- pwmR=0;
+	if (pwmR>255){ 
+		pwmR=255; //guard against overflow 
+	} 
+	if (pwmR < 0 ){ //differential turning is needed
+		pwmR=0;
  // pwmR=-1*pwmR; //flip the sign
   // if(pwmR>255){ 
   // pwmR=255; //guard against overflow
   // } 
  // Drive.RightBackward(pwmR);
- }
+	}
  // else{
- Drive.RightForward(pwmR);
+	Drive.RightForward(pwmR);
  // }
 
-//command left wheel
-#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
-int pwmL=BASE_SPEED - (int)Output; //Note the sign of PV is different comparing to the statement above
-#endif
+	//command left wheel
+	#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
+		int pwmL=BASE_SPEED - (int)Output; //Note the sign of PV is different comparing to the statement above
+	#endif
 
-#ifdef ROBOT_D
-int pwmL=BASE_SPEED - (int)Output; //JSP
-//int pwmL=BASE_SPEED + (int)Output; //Note the sign of PV is different comparing to the statement above
-#endif
+	#ifdef ROBOT_D
+		int pwmL=BASE_SPEED - (int)Output; //JSP
+		//int pwmL=BASE_SPEED + (int)Output; //Note the sign of PV is different comparing to the statement above
+	#endif
 
-#ifdef ROBOT_E
-int pwmL=BASE_SPEED - (int)Output; //JSP
-#endif
+	#ifdef ROBOT_E
+		int pwmL=BASE_SPEED - (int)Output; //JSP
+	#endif
 
- if (pwmL>255){ 
- pwmL=255;
- } //guard against overflow
- if (pwmL < 0 ){ //differential turning is needed
- pwmL=0;
- // pwmL=-1*pwmL; //flip the sign
-  // if(pwmL>255){ 
-  // pwmL=255;
-  // } //guard against overflow
- // Drive.LeftBackward(pwmL);
- }
- // else{
- Drive.LeftForward(pwmL); 
- // }
- // Serial.print(pwmR); 
- // Serial.print('\t');
- // Serial.println(pwmL);
+	if (pwmL>255){ 
+		pwmL=255;
+	} //guard against overflow
+	
+	if (pwmL < 0 ){ //differential turning is needed
+		pwmL=0;
+		// pwmL=-1*pwmL; //flip the sign
+		// if(pwmL>255){ 
+		// pwmL=255;
+		// } //guard against overflow
+	// Drive.LeftBackward(pwmL);
+	}
+	// else{
+	Drive.LeftForward(pwmL); 
+	// }
+	// Serial.print(pwmR); 
+	// Serial.print('\t');
+	// Serial.println(pwmL);
 }
 //----------------------------------------------------
 void DriveBackward(uint16_t x){
