@@ -77,74 +77,75 @@ void Stop(){
 }
 //----------------------------------------------------
 void DriveForward(uint16_t x){
-/* this method implements PID controller to drive forward
-input is a pixy block x coordinate 
-pwmR=+ output
-pwmL=- output
- */
-Input=x;
-//Setpoint=160; // 320/2=160, center pixel
-PD.Compute(); //updates controller
-//command right wheel
-#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
-int pwmR=BASE_SPEED + (int)Output;
-#endif
+	/* this method implements PID controller to drive forward
+	input is a pixy block x coordinate 
+	pwmR=+ output
+	pwmL=- output
+	*/
+	Input=x;
+	//Setpoint=160; // 320/2=160, center pixel
+	PD.Compute(); //updates controller
+	//command right wheel
+	#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
+		int pwmR=BASE_SPEED + (int)Output;
+	#endif
 
-#ifdef ROBOT_D
-int pwmR=BASE_SPEED + (int)Output; //JSP
-//int pwmR=BASE_SPEED - (int)Output; //Vadim's code
-#endif
+	#ifdef ROBOT_D
+		int pwmR=BASE_SPEED + (int)Output; //JSP
+		//int pwmR=BASE_SPEED - (int)Output; //Vadim's code
+	#endif
 
-#ifdef ROBOT_E //JSP
-int pwmR=BASE_SPEED + (int)Output; // JSP
-#endif // JSP
+	#ifdef ROBOT_E //JSP
+		int pwmR=BASE_SPEED + (int)Output; // JSP
+	#endif // JSP
 
- if (pwmR>255){ 
- pwmR=255; //guard against overflow 
- } 
- if (pwmR < 0 ){ //differential turning is needed
- pwmR=0;
+	if (pwmR>255){ 
+		pwmR=255; //guard against overflow 
+	} 
+	if (pwmR < 0 ){ //differential turning is needed
+		pwmR=0;
  // pwmR=-1*pwmR; //flip the sign
   // if(pwmR>255){ 
   // pwmR=255; //guard against overflow
   // } 
  // Drive.RightBackward(pwmR);
- }
+	}
  // else{
- Drive.RightForward(pwmR);
+	Drive.RightForward(pwmR);
  // }
 
-//command left wheel
-#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
-int pwmL=BASE_SPEED - (int)Output; //Note the sign of PV is different comparing to the statement above
-#endif
+	//command left wheel
+	#if defined(ROBOT_A) || defined(ROBOT_B) || defined (ROBOT_C)
+		int pwmL=BASE_SPEED - (int)Output; //Note the sign of PV is different comparing to the statement above
+	#endif
+	
+	#ifdef ROBOT_D
+		int pwmL=BASE_SPEED - (int)Output; //JSP
+		//int pwmL=BASE_SPEED + (int)Output; //Note the sign of PV is different comparing to the statement above
+	#endif
 
-#ifdef ROBOT_D
-int pwmL=BASE_SPEED - (int)Output; //JSP
-//int pwmL=BASE_SPEED + (int)Output; //Note the sign of PV is different comparing to the statement above
-#endif
+	#ifdef ROBOT_E
+		int pwmL=BASE_SPEED - (int)Output; //JSP
+	#endif
 
-#ifdef ROBOT_E
-int pwmL=BASE_SPEED - (int)Output; //JSP
-#endif
-
- if (pwmL>255){ 
- pwmL=255;
- } //guard against overflow
- if (pwmL < 0 ){ //differential turning is needed
- pwmL=0;
- // pwmL=-1*pwmL; //flip the sign
-  // if(pwmL>255){ 
-  // pwmL=255;
-  // } //guard against overflow
- // Drive.LeftBackward(pwmL);
- }
- // else{
- Drive.LeftForward(pwmL); 
- // }
- // Serial.print(pwmR); 
- // Serial.print('\t');
- // Serial.println(pwmL);
+	if (pwmL>255){ 
+		pwmL=255;
+	} //guard against overflow
+	
+	if (pwmL < 0 ){ //differential turning is needed
+		pwmL=0;
+		// pwmL=-1*pwmL; //flip the sign
+		// if(pwmL>255){ 
+		// pwmL=255;
+		// } //guard against overflow
+	// Drive.LeftBackward(pwmL);
+	}
+	// else{
+	Drive.LeftForward(pwmL); 
+	// }
+	// Serial.print(pwmR); 
+	// Serial.print('\t');
+	// Serial.println(pwmL);
 }
 //----------------------------------------------------
 void DriveBackward(uint16_t x){
@@ -177,35 +178,42 @@ int pwmL=BASE_SPEED - (int)Output; //Note the sign of PV is different comparing 
 }
 //----------------------------------------------------
 void FollowLane(){
-WDT_Restart(WDT);
-/* this method will make the robot to follow a pheromone trail, calls PID controller method
-DriveForward(int x). 
-Every so often the robot does a dash/kick forward to help it travel faster and 
-go over obstacles (loose GM) better */
-// Serial.println("your pixy camera is not working");
-GetDetectedSigs(); //poll camera
-// Serial.println(" ;-) "); //VADIM
- if(goingIn){
-  if(COTTON){
-   if(Area7>200){ //150
-   DriveForward(x7);
-	 // Serial.print('c');
-	 // Serial.print("\t");
-	 // Serial.println(x7);
-   return;
-   }
-  }
- }
+	Serial.println("In FollowLane()...");
 
- if(TRAIL1){
-  if(Area1>150){
-  DriveForward(x1);
-	// Serial.print('t');
-	// Serial.print("\t");
-	// Serial.println(x1);
-  }
- return;
- }
+	WDT_Restart(WDT);
+	/* this method will make the robot to follow a pheromone trail, calls PID controller method
+	DriveForward(int x). 
+	Every so often the robot does a dash/kick forward to help it travel faster and 
+	go over obstacles (loose GM) better */
+	// Serial.println("your pixy camera is not working");
+	GetDetectedSigs(); //poll camera
+	// Serial.println(" ;-) "); //VADIM
+	// if(goingIn){
+		// if(COTTON){ // area7 is associated with the area of cotton seen
+			// if(Area7>200){ //150
+				// DriveForward(x7);
+				// // Serial.print('c');
+				// // Serial.print("\t");
+				// // Serial.println(x7);
+				// return;
+			// }
+		// }
+	// }
+
+	if(TRAIL1){
+		if(Area1>150){
+			Serial.println("Driving forward");
+			DriveForward(x1);
+			// Serial.print('t');
+			// Serial.print("\t");
+			// Serial.println(x1);
+		}
+		
+		if(Area1<150){
+			Serial.println("Cannot find pheromone trail");
+		}
+		return;
+	}
  // else{ //got rid of this portion of the code, could be giving us current spikes
   // if( (millis()-last_dash) > 1500){
   // Forward(255); delay(100); //dash

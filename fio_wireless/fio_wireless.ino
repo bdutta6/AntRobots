@@ -256,7 +256,8 @@ void readDataFromDue(){
 			hexData = ((inHigh << 4) | inLow);
 	 
 			bool testing_cap = false; 	 // if you want to test the capacitive sensors, test testing_cap to true, and if-statements will be used to control the flow of the program to help debug
-			if(testing_cap){ // if we are testing the capacitor, we will enter this clause
+			bool testing_imu = false; 
+			if(testing_cap || testing_imu){ // if we are testing the capacitor, we will enter this clause
 				Serial.println(inData);
 				lcd.clear();
 				lcd.setBrightness(30);
@@ -274,7 +275,7 @@ void readDataFromDue(){
 				case DUE_ALIVE:	
 					break;
 		
-				if(!testing_cap){ 		//begin disable this part when calibrating/testing the capacitive sensor
+				if(!testing_cap && !testing_imu){ 		//begin disable this part when calibrating/testing the capacitive sensor
 					case RESET_REQUEST:
 						lcd.clear();
 						lcd.setBrightness(30);
@@ -425,7 +426,7 @@ void writeLCD(int lcddata) { //this function written by bani
 	//mySerial.listen();
 	//while (mySerial.available() > 0) {
 	
-  switch (lcddata) {
+	switch (lcddata) {
     case MASTER_GOING_IN:
 		
 			lcd.clear();
@@ -445,66 +446,69 @@ void writeLCD(int lcddata) { //this function written by bani
 			
     case MASTER_DIGGING:
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Digging");
-      // mySerial.write(254); // move cursor to beginning of first line//BANI
-      // mySerial.write(128);//BANI
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Digging");
+				// mySerial.write(254); // move cursor to beginning of first line//BANI
+				// mySerial.write(128);//BANI
 
-      // mySerial.write("                "); // clear display//BANI
-      // mySerial.write("                ");//BANI
+				// mySerial.write("                "); // clear display//BANI
+				// mySerial.write("                ");//BANI
 
-      // mySerial.write(254); // move cursor to beginning of first line//BANI 
-      // mySerial.write(128);//BANI
- 
-      // mySerial.print("Digging_Mode");
-      break;
-   case MASTER_GOING_OUT:
+				// mySerial.write(254); // move cursor to beginning of first line//BANI 
+				// mySerial.write(128);//BANI
+	 
+				// mySerial.print("Digging_Mode");
+			break;
+		case MASTER_GOING_OUT:
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Going Out");
-		break;
-		 
-	 case MASTER_DUMPING:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Going Out");
+			break;
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Dumping");
-		break;
+		case MASTER_DUMPING:
 		
-	 case MASTER_GOING_CHARGING:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Dumping");
+			break;
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("GoingToCharge");
-		break;
+		case MASTER_GOING_CHARGING:
 		
-	 case MASTER_CHARGING:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("GoingToCharge");
+			break;
 		
-		lcd.clear();
-		lcd.setBrightness(30);
-    lcd.print("Charging");
-		break;
+		case MASTER_CHARGING:
 		
-	 case MASTER_TURN_REVERSAL:
-	 lcd.clear();
-	 lcd.setBrightness(30);
-	 lcd.print("Turn Reversal");
-	 break;
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Charging");
+			break;
+		
+		case MASTER_TURN_REVERSAL:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Turn Reversal");
+			break;
 	 
 	 case MASTER_EXIT_TUNNEL:
-	 lcd.clear();
-	 lcd.setBrightness(30);
-	 lcd.print("Exit Tunnel");
-	 break;
+		 lcd.clear();
+		 lcd.setBrightness(30);
+		 lcd.print("Exit Tunnel");
+		 break;
 	 
 	 default:
+		// lcd.clear();
+		// lcd.setBrightness(30);
+		// lcd.print("DEFAULT"); delay(1000);
     lcd.clear();
 		lcd.setBrightness(30);
-    lcd.print(lcddata,HEX);
-  break;
-  }
+    lcd.print(lcddata, HEX);
+		break;
+	}
 
 	
 //}
