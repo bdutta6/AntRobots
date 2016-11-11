@@ -724,10 +724,7 @@ void loop(){
 	}
 		
 	if(goingIn){
-		// Serial.println("Going in...");
-		// Serial.print("KP="); Serial.println(KP); // Ross
-		// Serial.print("Kp="); Serial.println(Kp); // Ross	
-		 // Kp = 2.5
+
 		
 		
 		// KP = Kp; //reset gain - JSP
@@ -735,8 +732,7 @@ void loop(){
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains
 		
 		current_target_heading = IN_DIRECTION;
-		// current_target_heading = OUT_DIRECTION; // seeing if direction has an affect
-		// GoingInMode();
+
 		GoingInMode();
 		
 		
@@ -760,19 +756,10 @@ void loop(){
 	}
 
 	if(goingOut){
-		// Serial.println("Going in...");
-		// Serial.print("KP="); Serial.println(KP); // Ross
-		// Serial.print("Kp="); Serial.println(Kp); // Ross	
-		 // Kp = 2.5
-		
-		
-		// KP = Kp; //reset gain - JSP
 		
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains
 		
 		current_target_heading = IN_DIRECTION;
-		// current_target_heading = OUT_DIRECTION; // seeing if direction has an affect
-		// GoingInMode();
 		GoingOutModeRoss();
 
 	}
@@ -853,6 +840,7 @@ void GoingInMode(){
 		Arm.GripperGo(CLOSED_POS); //JSP
 		
 		
+		
 		if (CheckPayload()){
 			Serial.println("Something found in payload");
 			current_target_heading = OUT_DIRECTION;
@@ -873,6 +861,13 @@ void GoingInMode(){
 				fioWrite(MASTER_GOING_IN); //report over radio 
 			#endif
 		}
+		
+			//--- handle wrong way directions
+		if(checkWrongDirections()){
+			Serial.println("checkWrongDirections()returns true");
+
+			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+		}	
 		
 		FollowLane(); //poll camera and call PD
 		// GetDetectedSigs(); //poll camera, get latest vision info
@@ -914,12 +909,12 @@ void GoingInMode(){
 		}
 
 
-		//--- handle wrong way directions -- commented out by ross on 10/31
-		if(checkWrongDirections()){
-			Serial.println("checkWrongDirections()returns true");
+		// //--- handle wrong way directions
+		// if(checkWrongDirections()){
+			// Serial.println("checkWrongDirections()returns true");
 
-			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-		}	
+			// //whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+		// }	
 
 		FollowLane();//poll camera and call PD
 		WDT_Restart(WDT);
@@ -1049,13 +1044,15 @@ void GoingOutModeRoss(){
 			Serial.println("Something contacted");
 			WDT_Restart(WDT);
 			handleContact();
-			
-			// Rewrite fio to goinging state so we know we are out of the turning state
-			#ifdef FIO_LINK
-				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_EXIT_TUNNEL); //report over radio 
-			#endif
 		}
+		
+		
+		//--- handle wrong way directions -- commented out by ross on 10/31
+		if(checkWrongDirections()){
+			Serial.println("checkWrongDirections()returns true");
+
+			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+		}	
 		
 		FollowLane(); //poll camera and call PD
 		// GetDetectedSigs(); //poll camera, get latest vision info
@@ -1082,12 +1079,6 @@ void GoingOutModeRoss(){
 			return;
 		}
 
-		//--- handle wrong way directions -- commented out by ross on 10/31
-		if(checkWrongDirections()){
-			Serial.println("checkWrongDirections()returns true");
-
-			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-		}	
 
 		FollowLane();//poll camera and call PD
 		WDT_Restart(WDT);
@@ -1471,63 +1462,72 @@ void GoingOutMode(){
 
 //----------------------------------------------------
 void DumpingMode(){
-//renamed Deposit Mode. dumping run
-WDT_Restart(WDT);
-// #ifdef FIO_LINK
-
- fioWrite(MASTER_DUMPING); //report dumping mode
-// #endif
-//this mode is allocated for further development of smart media stacking and such
-//added feedback dumping feature 11/10/2014 (dump untill head sensor is cleared)
- if (!justSurveying){
- DumpPayload(); //drop cotton balls
- Arm.GripperGo(CLOSED_POS);
-  unsigned long modeTimeout=millis();
-  while( analogRead(ForceSensor) >= ForceSensorThresh ){ // if there are still materials stuck inside grippers //JSP
-  Backward(BASE_SPEED); delay(500); //back up
-  Stop(); delay(100); //stop;
-  Forward(BASE_SPEED); //go forward until dumping switches are compressed 
-  unsigned long now=millis();
-   while( (millis()-now) < 5000){//and limit forward dash for 5 seconds
-    // if(DUMPING_SIGNAL){ //replace a line below with this "improvmenet"
-    // if(DUMPING_SWITCH){
-    if(CHARGER){ //
-
-		WDT_Restart(WDT);
-	  break;
-	  }
-   }
+	//renamed Deposit Mode. dumping run
 	WDT_Restart(WDT);
-  Stop(); delay(100); //stop, we just hit the switches 
-  DumpPayload(); //drop cotton balls again 
-  //Backward(255); delay(500); //back out, and check again if there are still cotton balls. 
-  //bumpDelay(500);
-   if( (millis()-modeTimeout) > 15000){
-   WDT_Restart(WDT);
-	 DumpPayload(); //drop cotton balls
-   leaveDumpingSite();
-   return; //force exit 
-   // break;   
-   }   
-  }
- } //do this untill the robot does not have anything in a jaw
- else {
- justSurveying=false; //finished surveying 
- //surveying++ or something
- } //surveying completed
- WDT_Restart(WDT);
-#ifdef FIO_LINK
-fioWrite(MASTER_DUMPING); //report dumping mode
-#endif
+	// #ifdef FIO_LINK
 
- #if PROBABILITY_DIG 
- // enable_RestingMode();
-  StartLorenzRun();
- return; 
+	fioWrite(MASTER_DUMPING); //report dumping mode
+	// #endif
+	//this mode is allocated for further development of smart media stacking and such	
+	//added feedback dumping feature 11/10/2014 (dump untill head sensor is cleared)
+	if (!justSurveying){
+		DumpPayload(); //drop cotton balls
+		Arm.GripperGo(CLOSED_POS);
+		unsigned long modeTimeout=millis();
+		while( analogRead(ForceSensor) >= ForceSensorThresh ){ // if there are still materials stuck inside grippers //JSP
+			Backward(BASE_SPEED); delay(500); //back up
+			Stop(); delay(100); //stop;
+			Forward(BASE_SPEED); //go forward until dumping switches are compressed 
+			unsigned long now=millis();
+			while( (millis()-now) < 5000){//and limit forward dash for 5 seconds
+				// if(DUMPING_SIGNAL){ //replace a line below with this "improvmenet"
+				// if(DUMPING_SWITCH){
+				if(CHARGER){ //
+					WDT_Restart(WDT);
+					break;
+				}
+			
+			}
+			
+			WDT_Restart(WDT);
+			Stop(); delay(100); //stop, we just hit the switches 
+			DumpPayload(); //drop cotton balls again 
+			
+			//Backward(255); delay(500); //back out, and check again if there are still cotton balls. 
+			//bumpDelay(500);
+			if( (millis()-modeTimeout) > 15000){
+				WDT_Restart(WDT);
+				DumpPayload(); //drop cotton balls
+				leaveDumpingSite();
+				return; //force exit 
+				// break;   
+			}	   
+		}
+	} //do this untill the robot does not have anything in a jaw
+	
+	else {
+		justSurveying=false; //finished surveying 
+		//surveying++ or something
+	} //surveying completed
+	WDT_Restart(WDT);
 
- #else
- enable_GoingInMode();
- leaveDumpingSite(); //contains pre compiler directives inside 
+	#ifdef FIO_LINK
+		fioWrite(MASTER_DUMPING); //report dumping mode
+	#endif
+
+	#if PROBABILITY_DIG 
+		// enable_RestingMode();
+		StartLorenzRun();
+		return; 
+
+	#else
+		// enable_GoingInMode();
+		Backward(BASE_SPEED); 
+		delay(1000); Stop(); //back out
+		enable_turnReversalMode(1); // added by ross, since this is called immediately in leaveDumpingSite anyway
+
+		// leaveDumpingSite(); //contains pre compiler directives inside 
+		
  #endif 
 
  return;
@@ -1535,27 +1535,27 @@ fioWrite(MASTER_DUMPING); //report dumping mode
 
 void leaveDumpingSite(){
 
- WDT_Restart(WDT);
- Backward(BASE_SPEED); 
- delay(1000); //back out
- bumpDelay(500);
- WDT_Restart(WDT);
- preferGyro=true;
- //current_target_heading=IN_DIRECTION;
- //TurnHeading(current_target_heading);
- enable_turnReversalMode(1);
- //enable_GoingInMode();//BANI //turn around to face excavation area
+	WDT_Restart(WDT);
+	Backward(BASE_SPEED); 
+	delay(1000); //back out
+	bumpDelay(500);
+	WDT_Restart(WDT);
+	// preferGyro=true;
+	//current_target_heading=IN_DIRECTION;
+	//TurnHeading(current_target_heading);
+	// enable_turnReversalMode(1);
+	//enable_GoingInMode();//BANI //turn around to face excavation area
   if(CheckPower()){
-  enable_GoingCharging();
-  return;
+		enable_GoingCharging();
+		return;
   }
 
- unsigned long forcedFollowingStart =  millis();
- WDT_Restart(WDT);
- // while( (millis() - forcedFollowingStart < 700) ){
- // FollowLane(); 
- // }
- return;
+	// unsigned long forcedFollowingStart =  millis();
+	// WDT_Restart(WDT);
+	// while( (millis() - forcedFollowingStart < 700) ){
+	// FollowLane(); 
+	// }
+	return;
 }
 
 
@@ -2220,7 +2220,7 @@ void DumpPayload(){
 }
 //----------------------------------------------------
 bool CheckPower(){
-/* this method enables robot to decide whether or not it should go charge itself  */
+	/* this method enables robot to decide whether or not it should go charge itself  */
 	float BatVoltage= Voltage.GrabAvg(100); //double check;
 	float C=Current.ReadAvg(100); //debug;
 	WDT_Restart(WDT);
@@ -2327,7 +2327,7 @@ void TurnHeadingRoss(float desired_heading){
 			Stop();
 			Drive.LeftBackward(255);
 			Drive.RightBackward(255);
-			delay(1000); Stop();
+			bumpDelay(1000); Stop(); // I doont like the way this is being handled
 
 			// WDT_Restart(WDT); // Reset the WDT
 			turn_reversal_direction = !turn_reversal_direction;
@@ -2335,17 +2335,18 @@ void TurnHeadingRoss(float desired_heading){
 			
 			
 		// Checks for Contact -- need to handle contact cases better before this is implemented
-		if(CONTACT){
-			Serial.println("Something contacted");
-			WDT_Restart(WDT);
-			handleContact();
+		// if(CONTACT){
+			// Serial.println("Something contacted");
+			// Stop();
+			// W.DT_Restart(WDT);
+			// handleContact();
 			
-			// Rewrite fio to goinging state so we know we are out of the turning state
-			#ifdef FIO_LINK
-				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
-			#endif
-		}
+			// // Rewrite fio to goinging state so we know we are out of the turning state
+			// #ifdef FIO_LINK
+				// Serial.println(F("FIO_LINK defined"));
+				// fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
+			// #endif
+		// }
 			
 			
 			// Stop();
@@ -2776,6 +2777,59 @@ void TurnHeading(float desired_heading){
 }
 
 
+// //----------------------------------------------------
+// bool isWantedHeadingRoss(float desired_heading){
+	// /* this method accepts a desired heading angle and returns a boolean variable
+	// whether or not the robot is facing in desired angle, give or take 
+	// a pre-defined tolerance (+- DIRECTION_UNCERTAINTY). This method grabs a latest magnetometer data
+	// for comparison purposes
+	// IT IS ASSUMED THAT DIRECTION UNCERTAINTY IS SMALL, meaning cant have low bound <0 and high bound >360 at the same time
+	// tested with fake data and it works. 11/5/2014
+	// */
+	// //get heading
+	// WDT_Restart(WDT);
+	// dof.readMag(); //update magnetometer registers
+	// float heading=getHeading((float) dof.mx, (float) dof.my);
+
+	// // get the values and map them to 360 degrees with modulo operator
+	// float lowBound = (desired_heading - DIRECTION_UNCERTAINTY)%360;
+	// float highBound = (desired_heading + DIRECTION_UNCERTAINTY)%360; 
+	
+	// // Assign lowBound and highBound proper values
+	// lowBound = min(lowBound, highBound);
+	// highBound = max(lowBound, highBound);
+	
+
+	// if (lowBound <= desired_heading && desired_heading <= highBound ){//case without wrap-around singularities
+		// return true;
+	// }
+	
+	// else{
+		// return false;
+	// } 
+	
+	// WDT_Restart(WDT);
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //----------------------------------------------------
 bool isWantedHeading(float desired_heading){
 	/* this method accepts a desired heading angle and returns a boolean variable
@@ -2793,7 +2847,7 @@ bool isWantedHeading(float desired_heading){
 	float lowBound = desired_heading - DIRECTION_UNCERTAINTY;
 	float highBound = desired_heading + DIRECTION_UNCERTAINTY; 
 
-	if (lowBound >= 0 && highBound <= 360 ){//case without wrap-around singularities
+	if (lowBound >= 0 && highBound <= 360 ){ //case without wrap-around singularities
 		if( heading >= lowBound && heading <= highBound){
 			return true;
 		}
@@ -3024,10 +3078,6 @@ void handleContact(){
 			case FL:
 				//Serial.println("FL");
 				fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
-				delay(1000);
-				fioWrite(LEFT_SIDE_WALL);
-				delay(1000);
-				fioWrite(FRONT_SIDE_WALL);
 
 				Backward(BASE_SPEED);
 				delay(500);
@@ -3420,48 +3470,48 @@ log the start of the contact, */
 
  //can embed anti jamming kick in a if(!Headon), but it must not be masked
 
- unsigned long start_of_contact=millis(); //record length of contact
-/* // logContacts(start_of_contact); //stick this before every return */
+	unsigned long start_of_contact=millis(); //record length of contact
+	/* // logContacts(start_of_contact); //stick this before every return */
  
- if(disableContacts){//if disable flag is set. 
- if( millis()- whenDisabledContacts >= CONTACT_RESET_TIME){
- disableContacts=false; //reset the flag
- }
- else if (millis()- whenDisabledContacts < CONTACT_RESET_TIME)  {
- return turning_case;//exit and do nothing
- }
-WDT_Restart(WDT);
-}
+	if(disableContacts){//if disable flag is set. 
+		if( millis()- whenDisabledContacts >= CONTACT_RESET_TIME){
+			disableContacts=false; //reset the flag
+		}
+		else if (millis()- whenDisabledContacts < CONTACT_RESET_TIME)  {
+			return turning_case;//exit and do nothing
+		}
+		WDT_Restart(WDT);
+	}
 
 
- switch(turning_case){
- case 0:
- case 1:
-  switch(switchState){
-  case LSF: //if bumped anywhere on a left side
-  case LSB:
-  case(LSF | LSB):
-  turning_case=5;
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+	switch(turning_case){
+		case 0:
+		case 1:
+			switch(switchState){
+				case LSF: //if bumped anywhere on a left side
+				case LSB:
+				case(LSF | LSB):
+					turning_case=5;
+					logContacts(start_of_contact);
+					// return turning_case;
+					break;
   
-  case RSF: //if bumped anywhere on a right side
-  case RSB:
-  case(RSF | RSB):
-  turning_case=7; 
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+				case RSF: //if bumped anywhere on a right side
+				case RSB:
+					case(RSF | RSB):
+					turning_case=7; 
+					logContacts(start_of_contact);
+					// return turning_case;
+					break;
   
-  default:
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
-  }
- break;
+				default:
+					logContacts(start_of_contact);
+					// return turning_case;
+					break;
+			}
+			break;
 
- case 5:
+		case 5:
   switch(switchState){
   case LSF: //if bumped anywhere on a left side
   case LSB:

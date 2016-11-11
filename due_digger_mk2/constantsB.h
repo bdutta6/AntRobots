@@ -32,7 +32,7 @@
 
 //PARAMETERS FOR DIRECTION FUNCTIONS
 #define OUT_DIRECTION 280//240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  20 //89//30 //  used to be 60  //modified
+#define IN_DIRECTION  5 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10

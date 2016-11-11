@@ -66,7 +66,7 @@
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80
-#define BASE_SPEED 50 //worked okay with 100
+#define BASE_SPEED 180 //ross 11/04 50 -> 180 //worked okay with 100
 #define PV_adjmax 205  //155f
 #define PD_expected_limit 600 
 
@@ -79,7 +79,7 @@
 //--- Turning stuff
 #define SLOW_TURNING_RATE 11 //used to be 15, 13
 #define TURNING_TIMEOUT     1500 //8 seconds timeout
-#define DEFAULT_TURNING_SPEED 155 //used to be 255
+#define DEFAULT_TURNING_SPEED 200 //ross 11/04 155 -> 200 //used to be 255
 // ********** END {MISC TUNABLE CONSTNATS} ----------
 #define R1 3.3 //k ohms, actual resistance 
 #define R2 3.3 //k omhs, two 3.3k resistors in parallel
