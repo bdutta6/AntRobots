@@ -756,10 +756,8 @@ void loop(){
 	}
 
 	if(goingOut){
-		
-		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains
-		
-		current_target_heading = IN_DIRECTION;
+				
+		current_target_heading = OUT_DIRECTION;
 		GoingOutModeRoss();
 
 	}
@@ -1067,6 +1065,7 @@ void GoingOutModeRoss(){
 			//if(CHARGER ){
 			Backward(BASE_SPEED); delay(1000); //move back
 			//TurnHeading(IN_DIRECTION); //turn back in
+			current_target_heading=IN_DIRECTION;
 			enable_turnReversalMode(1);
 			FollowLane();//poll camera and call PD
 			WDT_Restart(WDT);
@@ -1080,7 +1079,7 @@ void GoingOutModeRoss(){
 		}
 
 
-		FollowLane();//poll camera and call PD
+		FollowLane(); //poll camera and call PD
 		WDT_Restart(WDT);
 		// Serial.println("WDT7");
 
@@ -1095,20 +1094,19 @@ void GoingOutModeRoss(){
  // return;
  // }
  
-		if(goingIn && checkHeadSensor() ){
-			Serial.println("checkHeadSensor() returns true");
-			#ifdef FIO_LINK
-				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_DIGGING); //report over radio
-				delay(1000);
-			#endif
-			return; //found soemthing, lets dig 
-		}
+		// // if(goingIn && checkHeadSensor() ){
+			// // Serial.println("checkHeadSensor() returns true");
+			// // #ifdef FIO_LINK
+				// // Serial.println(F("FIO_LINK defined"));
+				// // fioWrite(MASTER_DIGGING); //report over radio
+				// // delay(1000);
+			// // #endif
+			// // return; //found soemthing, lets dig 
+		// // }
 		
-		else if (goingOut){
-			Forward(BASE_SPEED);
-			delay(1000);
-		}
+		Forward(BASE_SPEED);
+		// delay(1000);
+
 		
 		
 		
@@ -1523,7 +1521,10 @@ void DumpingMode(){
 	#else
 		// enable_GoingInMode();
 		Backward(BASE_SPEED); 
-		delay(1000); Stop(); //back out
+		delay(1000);
+		Stop(); //back out
+		current_target_heading=IN_DIRECTION;
+
 		enable_turnReversalMode(1); // added by ross, since this is called immediately in leaveDumpingSite anyway
 
 		// leaveDumpingSite(); //contains pre compiler directives inside 
@@ -2014,7 +2015,7 @@ bool checkHeadSensor(){
 					// return 1; //false alarm, there is something
 				// }
 			// }
-			Forward(BASE_SPEED); //proceed forward slowly 
+			// Forward(BASE_SPEED); //proceed forward slowly 
 
 			return 0;//looks like we lost it
 		} 

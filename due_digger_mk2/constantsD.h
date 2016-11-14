@@ -65,7 +65,7 @@
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80 //80
-#define BASE_SPEED 160 //worked okay with 100, 200
+#define BASE_SPEED 200 // Ross 160->200 //worked okay with 100, 200
 #define PV_adjmax 205  //155
 #define PD_expected_limit 600
 
