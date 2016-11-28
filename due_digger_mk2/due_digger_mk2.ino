@@ -8,7 +8,7 @@ Last Modified Date: 05/26/2016
 
 Modified by : Ross Warkentin
 email: ross.warkentin@gmail.com
-Last Modified Date: 10/31/2016
+Last Modified Date: 11/18/2016
 
 Property of CRABLAB, Georgia Institute of Technology, School of Physics
 [2013]-[2014]
@@ -302,16 +302,16 @@ void setup(){
 
 	WDT_Restart(WDT);
 
-	// Serial.println("Testing Pixy");
-	// while(1){
-	// TestCamera(); //
-	// // GetDetectedSigs();
-	// WDT_Restart(WDT);
-	// }
-
 	delay(1000);
 	WDT_Restart(WDT);
-	dof.begin(); //starts I2C communication with a IMU. status variable should have a hex value of 0x49D4. This should def be called, has calibration functions inside
+	
+	
+	uint16_t status = dof.begin(); //starts I2C communication with a IMU. status variable should have a hex value of 0x49D4. This should def be called, has calibration functions inside
+	Serial.print("LSM9DS0 WHO_AM_I's returned: 0x");
+  Serial.println(status, HEX);
+  Serial.println("Should be 0x49D4");
+  Serial.println();
+	
 	delay(1000);
 	WDT_Restart(WDT);
 	/* power electronics */
@@ -325,7 +325,6 @@ void setup(){
 
 
 	last_dash = millis();        //initiate timer to keep track of last robot dash forward
-	//checkIMU(); //same as mashing reset button   //commented out because its redundnant
 
 	// dof.setGyroODR(dof.G_ODR_760_BW_100);  //sets up gyro output data rate to the highest (fastest) available setting
 	// dof.setMagODR(dof.M_ODR_100);          //sets up magnetometers output data rate to the highest (fastest) available setting 
@@ -349,220 +348,17 @@ void setup(){
 
 	// attachInterrupt(ChargingDetectorPin, ForceCharging, CHANGE); //doesnt quite work
 
-	/* initiate IR sensors */
-	//IRright.detectionThresh=RIGHT_IR_THRESH; //set calibration for IR sensors  //360
-	//IRleft.detectionThresh=LEFT_IR_THRESH; //380  //415
-
-	// while(1){
-	// //// TestIRsensorReadings();
-	 // TestIRSensors();
-	 // }
-		// while(TEST_POWER_SENSORS){
-			// TestPowerSensors();
-		// }
-
-	// getDetectedContacts(); //poll camera for a potential fix 
-	// checkCamera(); //commented out, redundant.
 
 
-	// while(1){
-	// GetDetectedSigs();
-	// if(CHARGING_TRAIL){
-	// Serial.println(Areac);
-	// }
-	// }
-	// TestPDController();
-	// while(1){
-	// FollowLaneBackward();
-	// }
 
-	/*
-	enable_GoingInMode();
-	while (1){
-		WDT_Restart(WDT);
-		switchState = CapSensor.getDetectedContacts();
-		RFC=switchState & FR_ANT;
-	LFC=switchState & FL_ANT;
-	RSBC=switchState & RSB_ANT;
-	RSFC=switchState & RSF_ANT;
-	LSBC=switchState & LSB_ANT;
-	LSFC=switchState & LSF_ANT;
-	LBC=switchState & BL_ANT;
-	RBC=switchState & BR_ANT;
-	FS=RFC|LFC;
-	RS=RSBC|RSFC;
-	LS=LSBC|LSFC;
-	BS=LBC|RBC;
-		Serial.print(FR_ANT);
-		Serial.print(FL_ANT);
-		Serial.print("Switch State ");
-		Serial.print(switchState);
-		Serial.print(" RFC ");
-		Serial.print(RFC);
-		Serial.print(" LFC ");
-		Serial.print(LFC);
-		Serial.print(" FS ");
-		Serial.println(FS);
-		//if (CONTACT){
-		//handleContact();
-		//}
-		delay(1000);
-	}
-	*/
-	 
-	 // while(1){
-	// // TestPDController();
-	// GetDetectedSigs();
-	// FollowLane();
-	// }
 
-	// enable_GoingCharging();
-
-	 // if( CheckPower() ){
-	 // enable_GoingCharging();
-	 // }
-	 // else{
-	 // enable_GoingInMode();
-	 // }
- 
- 
-	/*
-	#if PROBABILITY_DIG //I think that this will work :-)
-	 unsigned long timeToSwitchOnResting=millis();
-	 bool startWithResting=false;
-	 while ( millis() - timeToSwitchOnResting < 2000){
-		if(DUMPING_SWITCH){
-		 startWithResting=true;
-		} 
-	 }
-	 
-		if(startWithResting){
-		StartLorenzRun();
-		}
-		else{
-		enable_GoingInMode();
-		}
-	 
-	 // BAR
-	 #else
-	 // FOO
-		enable_GoingInMode();
-		
-	#endif
-	*/
-	// enable_GoingInMode();
-
-	//preferGyro=false; 
-	//enable_turnReversalMode(1);
-		
-	// while(1){
-	// TestGripperSensor();
-	// }
-	// Backward(BASE_SPEED); //dumb fix for a rare situation when the robot is pressed against cotton and for whatever reason the robot keeps going in a reset loop
-	// delay(2000); //CHECKING DIRECTION
-
-	// while(TEST_IMU){
-		// TestIMU();
-	// }
-
-	//Serial.println("Started Program");
-	// enable_RestingMode();
-	// while(1){
-	// TestIRSensors();
-	// }
-	// while(1){
-	// TestIRSensors();
-
-	// }
-
-	/*  while(1){
-	 if(CHARGER){
-		Serial.println("bang");
-	 }
-		WDT_Restart(WDT);
-
-		} */
-	 //HeadSensor.threshold=1020;// 700 //1010 //JSP
-	//HERE HERE HERE HERE HERE HERE HERE HRE THIS EFFING GRIPPER SENSOR. FIX THE WIRE <---------
-	 // while(1){
-	 // Serial.print(HEADSENSOR);
-	// Serial.print('\t');
-	 // TestGripperSensor(); //wdt_restart inside
-	 // WDT_Restart(WDT);
-		// }
-	 
-	// %%
-	//while(1){
-	//WDT_Restart(WDT);
-	//float heading;
-	//unsigned long now=millis();
-	//while (millis() - now < 5000){
-	//uint16_t IMUstatus = dof.checkStatus(); //write to whoAmI register and see if there is response
-	//Serial.print(IMUstatus,HEX);
-	//Serial.print("\t");
-	//dof.readMag(); //update magnetometer registers
-	//heading=getHeading((float) dof.mx, (float) dof.my);
-	//Serial.print(F("H  "));
-	//Serial.println(heading);
-	//}
-	// WDT_Restart(WDT);
-
-	// now = millis();
-	// Serial.println("IMU OFF");
-	// // turnIMUoff();
-	// // while (millis() - now < 5000){
-	// // uint16_t IMUstatus = dof.checkStatus(); //write to whoAmI register and see if there is response
-	// // Serial.print(IMUstatus,HEX);
-	// // Serial.print("\t");
-	// // dof.readMag(); //update magnetometer registers
-	// // heading=getHeading((float) dof.mx, (float) dof.my);
-	// // Serial.print(F("H  "));
-	// // Serial.println(heading);
-	// // }
-	// Serial.println("IMU ON");
-	// // dof.begin(); //starts I2C communication with a IMU. status variable should have a hex value of 0x49D4. This should def be called, has calibration functions inside
-	// // turnIMUon();
-	// delay(1000);
-	// fioWrite(RESET_REQUEST);
-	// }
+	 		 
 
 	// %%
 	dirCheckFlag=false;
 	dirCheckTimer=millis();
 
-	/*
-	 float angle=0;
-	 float refRate=0;
-	 unsigned long  gyroTime=millis();
-	 setGyroRef(&gyroTime,&refRate);
-	 unsigned long delayTimer=millis();
-	 while(1){
-	 WDT_Restart(WDT);
-	 bool output=countGyro(&angle,&gyroTime,&refRate);
-	 Serial.print("Angle \t");
-	 Serial.print(angle);
-	 Serial.print("Output \t");
-	 Serial.println(output);
-		// // if( millis() - delayTimer > 5000){
-		// // delay(2500);
-		// // delayTimer=millis();
-		// // }
-		if(output){
-		setGyroRef(&gyroTime,&refRate);
-		angle=0;
-		}
-	 }
-	*/
-
-
-
-
-
-
-	
 		enable_GoingInMode();
-		// enable_GoingOutMode(); // trying to debug goingOutModeRoss
-
 	
 }
 // ********** End (SETUP SCRIPT} **********
@@ -688,7 +484,7 @@ void loop(){
 		case TEST_CAP:
 				//for capacitive sensor test and calibration
 			while(1){
-				int testPanel = 6; // takes on values from 0 up to and including 7
+				int testPanel = 2; // takes on values from 0 up to and including 7
 				WDT_Restart(WDT);
 				//Serial.println(CONTACT); //print all contact
 				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
@@ -706,7 +502,7 @@ void loop(){
 			break;
 		case TEST_GRIPPER_SENSOR:
 			// Serial.println(analogRead(FGripperPin)); // FGripperPin not defined
-			// TestGripperSensor();
+			TestGripperSensor();
 			// WDT_Restart(WDT);
 			break;			
 		case TEST_POWER_SENSORS:
@@ -2328,7 +2124,7 @@ void TurnHeadingRoss(float desired_heading){
 			Stop();
 			Drive.LeftBackward(255);
 			Drive.RightBackward(255);
-			bumpDelay(1000); Stop(); // I doont like the way this is being handled
+			delay(1000); Stop(); // I dont like the way this is being handled // Ross 11/16 swtiched from bumpDelay back to delay
 
 			// WDT_Restart(WDT); // Reset the WDT
 			turn_reversal_direction = !turn_reversal_direction;
@@ -3751,7 +3547,7 @@ void TestCamera(){
 		
 		Serial.println("Right after pixy.getBlocks()"); // debug
 
-
+	Serial.print("Blocks is: ");
 		Serial.println(blocks); // debug
 		if (blocks){
 			i++;
@@ -3884,12 +3680,14 @@ void TestPowerRelay(){
 // }
 
 void TestGripperSensor(){
-	WDT_Restart(WDT);
-	//int val=HeadSensor.Read(); //JSP
-	// int val=analogRead(GripperSensorPin);
-	//Serial.println(val); //JSP
+	// while(1){
+		// WDT_Restart(WDT);
+		// //int val=HeadSensor.Read(); //JSP
+		// // int val=analogRead(GripperSensorPin);
+		// Serial.println(analogRead(GripperSensorPin)); //JSP
+		// delay(1000);
+	// }
 }
-
 void TestTurnHeading(){
 	Serial.print("Ross");
 	preferGyro = false;
