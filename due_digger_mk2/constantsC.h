@@ -31,8 +31,8 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 //PARAMETERS FOR DIRECTION FUNCTIONS
-#define OUT_DIRECTION 270//240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  90//89//30 //  used to be 60  //Ross10/11 90->290
+#define OUT_DIRECTION 288 // Ross 11/15 -> 270 -> 287 //240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  315 // Ross 11/16 90 -> 25 //89//30 //  used to be 60  //Ross10/11 90->290
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10

@@ -256,17 +256,16 @@ void readDataFromDue(){
 			hexData = ((inHigh << 4) | inLow);
 	 
 			bool testing_cap = false; 	 // if you want to test the capacitive sensors, test testing_cap to true, and if-statements will be used to control the flow of the program to help debug
-			bool testing_imu = false; 
-			if(testing_cap || testing_imu){ // if we are testing the capacitor, we will enter this clause
+			if(testing_cap){ // if we are testing the capacitor, we will enter this clause
 				Serial.println(inData);
 				lcd.clear();
 				lcd.setBrightness(30);
 				lcd.print(inData);
 				writeSDcard('D',hexData,millis());
 		 
-				lcd.clear();
-				lcd.setBrightness(30);
-				lcd.print(inData);
+				// lcd.clear();
+				// lcd.setBrightness(30);
+				// lcd.print(inData);
 			}
 	 //end enable this part when calibrating/testing the capacitive sensor
 	 
@@ -275,7 +274,7 @@ void readDataFromDue(){
 				case DUE_ALIVE:	
 					break;
 		
-				if(!testing_cap && !testing_imu){ 		//begin disable this part when calibrating/testing the capacitive sensor
+				if(!testing_cap){ 		//begin disable this part when calibrating/testing the capacitive sensor
 					case RESET_REQUEST:
 						lcd.clear();
 						lcd.setBrightness(30);

@@ -24,15 +24,15 @@
 #define WallSingleThresh2  480 //Wall Detection, Single Contact Threshold for Capacitive Sensor
 #define AntSingleThresh1	520
 #define AntSingleThresh2	560
-#define WallDoubleThresh 14//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
-#define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor
-#define AntDoubleThresh2 18
+#define WallDoubleThresh 140 // Ross 11/15 14 -> 140 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define AntDoubleThresh1 150	// Ross 11/15 15 -> 150 //for Ant Detection, two or more contact threshold for Capacitive Sensor
+#define AntDoubleThresh2 180 // Ross 11/15 18 -> 180
 
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 //PARAMETERS FOR DIRECTION FUNCTIONS
-#define OUT_DIRECTION 280//240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  20 //89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 280 //240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  40  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10

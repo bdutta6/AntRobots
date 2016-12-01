@@ -5,14 +5,15 @@
 // MotorBoard :: MotorBoard(int enable1, int phase1, int enable2, int phase2){
 MotorBoard :: MotorBoard(){
 // _phase1=phase1; _phase2=phase2; _enable1=enable1; _enable2=enable2; // storing passed values to private variables for robustness
-pinMode(phase1, OUTPUT);
-pinMode(phase2, OUTPUT);
-pinMode(enable1, OUTPUT);
-pinMode(enable2, OUTPUT);
+	pinMode(phase1, OUTPUT);
+	pinMode(phase2, OUTPUT);
+	pinMode(enable1, OUTPUT);
+	pinMode(enable2, OUTPUT);
 
 }
 
 void MotorBoard :: RightForward(int pwm){
+	Serial.println("In RightForward");
   digitalWrite(enable1,LOW);
   analogWrite(phase1,pwm);
 }

@@ -30,8 +30,8 @@
 
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
-#define OUT_DIRECTION 251//62//300 // previously set to 270-
-#define IN_DIRECTION  108//291//62 //  used to be 60
+#define OUT_DIRECTION 353 //62//300 // previously set to 270-
+#define IN_DIRECTION  37 //291//62 //  used to be 60
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
@@ -65,7 +65,7 @@
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80 //80
-#define BASE_SPEED 160 //worked okay with 100, 200
+#define BASE_SPEED 200 // Ross 160->200 //worked okay with 100, 200
 #define PV_adjmax 205  //155
 #define PD_expected_limit 600
 
