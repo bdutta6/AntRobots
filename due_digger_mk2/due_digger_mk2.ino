@@ -2,13 +2,14 @@
 
 Author : Vadim Linevich
 email  : vadim.linevich@gmail.com
+
 Modified by : Jungsoo Park
 email : ryanryan0906@hotmail.com
 Last Modified Date: 05/26/2016
 
 Modified by : Ross Warkentin
 email: ross.warkentin@gmail.com
-Last Modified Date: 11/18/2016
+Last Modified Date: 12/01/2016
 
 Property of CRABLAB, Georgia Institute of Technology, School of Physics
 [2013]-[2014]
@@ -126,7 +127,6 @@ uint16_t blocks;    //store number of blocks detected when frames are sampled
 bool Object[5]; //array to hold boolean variables to tell whether or not the object of interest has been detected
 uint16_t x1, xc, x7, xt, xCharging; //declare storage variables  x1=pheromone trail, xc= charging pheromone, x7 and xt are cotton stuff
 uint16_t Area1, Areac, Area7, Areat, AreaCharging; //declare storage variables;
-
 
 double Setpoint, Input, Output; //define vars
 double KP=Kp;
