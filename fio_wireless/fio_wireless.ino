@@ -269,42 +269,34 @@ void readDataFromDue(){
 			}
 	 //end enable this part when calibrating/testing the capacitive sensor
 	 
-	 
+		if(!test_cap){
 			switch(hexData){
 				case DUE_ALIVE:	
 					break;
 		
-				if(!test_cap){ 		//begin disable this part when calibrating/testing the capacitive sensor
-					case RESET_REQUEST:
-						lcd.clear();
-						lcd.setBrightness(30);
-						lcd.print("RESET_REQUEST!!");
-						resetDue();
-						isCheckTriggered=false; //reset flag	
-						break;
+				case RESET_REQUEST:
+					lcd.clear();
+					lcd.setBrightness(30);
+					lcd.print("RESET_REQUEST!!");
+					resetDue();
+					isCheckTriggered=false; //reset flag	
+					break;
 		
-					case CHECK_START:
-						lcd.clear();
-						lcd.setBrightness(30);
-						lcd.print("CHECK_START!!");
-						isCheckTriggered=true; //set flag 
-						whenCheckStart=millis(); //grab time 
-						break;
+				case CHECK_START:
+					lcd.clear();
+					lcd.setBrightness(30);
+					lcd.print("CHECK_START!!");
+					isCheckTriggered=true; //set flag 
+					whenCheckStart=millis(); //grab time 
+					break;
 		
-					case CHECK_END:
-						lcd.clear();
-						lcd.setBrightness(30);
-						lcd.print("CHECK_END!!");
-						isCheckTriggered=false; //reset flag	
-						break;
+				case CHECK_END:
+					lcd.clear();
+					lcd.setBrightness(30);
+					lcd.print("CHECK_END!!");
+					isCheckTriggered=false; //reset flag	
+					break;
 		
-				// case DISP_GOING_IN:
-				// writeLCD('GO'); //reset flag	
-				// break;
-				
-				// case DISP_DIGGING:
-				// writeLCD('DI'); //reset flag	
-				// break;
 		
 					case FRONT_SIDE_ANT:
 						writeSDcard('N',hexData,millis());
@@ -370,15 +362,14 @@ void readDataFromDue(){
 						lcd.print("BACK, WALL");
 						break;//BANI
 					
-					default:
-						//Comm.Send('M',hexData,millis()); //send out via xbee
-						writeSDcard('M',hexData,millis());
-						// delay(500);
-						writeLCD(hexData);//bani
-						break;
-				}
-	// //end disable this part when calibrating/testing capacitive sensor
-			}
+					default:						
+							writeSDcard('M',hexData,millis());
+							// delay(500);
+							writeLCD(hexData);//bani
+							break;
+						
+				 }
+			}//end disable this part when calibrating/testing capacitive sensor
 			whenLastComm = millis();
 			inData = "";//reset dummy character storage 
 			hexData = 0x00; //reset hex data and ready it for bit shifting

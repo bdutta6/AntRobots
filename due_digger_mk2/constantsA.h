@@ -11,26 +11,38 @@
 
 
 // #define TURNING_THRESH 1000 //minimum area needed to terminate feedback turning  //modified
+
+////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
 #define HIGH_ROW_ANGLE  120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
 #define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
+
+////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
 #define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
-#define ForceSensorThresh 50 // JSP
-#define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
-#define WallSingleThresh1	380 //Wall Detection, Single Contact Threshold for Capacitive Sensor
-#define WallSingleThresh2 460 //Wall Detection, Single Contact Threshold for Capacitive Sensor
-#define AntSingleThresh1	480
-#define AntSingleThresh2	520
-#define WallDoubleThresh 14//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
-#define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor
-#define AntDoubleThresh2 18
 
+#define ForceSensorThresh 50 // JSP
+
+////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
+#define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
+
+#define WallSingleThresh1	380 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
+#define WallSingleThresh2 460 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
+
+#define AntSingleThresh1	455
+#define AntSingleThresh2	475
+
+#define WallDoubleThresh 14//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+
+#define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
+#define AntDoubleThresh2 20 // Upper
+
+////////////////////////////////////////////// PixyCam Parameters //////////////////////////////////////////////
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
-//PARAMETERS FOR DIRECTION FUNCTIONS
+////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
 #define OUT_DIRECTION 291//240//291//300 // previously set to 270-  //modified // Ross10/11 changed 270->291 
 #define IN_DIRECTION  90//89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
@@ -38,11 +50,6 @@
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
 #define PORT_DIRECTION        5 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   170//150//167   //right with respect to IN_DIRECTION  //modified Ross10/11 changed 170->200
-
-// #define DIR_IN_R 260
-// #define DIR_IN_L 122
-// #define DIR_OUT_R 33
-// #define DIR_OUT_L 355
 
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging

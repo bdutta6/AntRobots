@@ -484,7 +484,7 @@ void loop(){
 		case TEST_CAP:
 				//for capacitive sensor test and calibration
 			while(1){
-				int testPanel = 2; // takes on values from 0 up to and including 7
+				int testPanel = 0; // takes on values from 0 up to and including 7
 				WDT_Restart(WDT);
 				//Serial.println(CONTACT); //print all contact
 				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.

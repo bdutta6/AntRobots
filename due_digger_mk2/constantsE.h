@@ -10,11 +10,13 @@
 #define CHARGED_VOLTAGE 3.8 // 3.65 appears to be the max voltage  //3.79 was too high
 
 
-// #define TURNING_THRESH 1000 //minimum area needed to terminate feedback turning  //modified
+////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
 #define HIGH_ROW_ANGLE  120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
 #define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
-#define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
+#define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving
+
+////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
 #define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
@@ -28,9 +30,11 @@
 #define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor
 #define AntDoubleThresh2 18
 
+////////////////////////////////////////////// PixyCam Parameters //////////////////////////////////////////////
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
-//PARAMETERS FOR DIRECTION FUNCTIONS
+
+////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
 #define OUT_DIRECTION 290 //270//240//291//300 // previously set to 270-  //modified
 #define IN_DIRECTION  45  //90//89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
@@ -38,11 +42,6 @@
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
 #define PORT_DIRECTION        350 //5//11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   190 //170//150//167   //right with respect to IN_DIRECTION  //modified
-
-// #define DIR_IN_R 260
-// #define DIR_IN_L 122
-// #define DIR_OUT_R 33
-// #define DIR_OUT_L 355
 
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging
@@ -61,7 +60,8 @@
 //IR tresholds: 700, blind zone 8s, min 320, max 699
 #define COTTON_IR_SUPRESS 30000 //pixels squared. measured the area by printing what it is close 
 #define COTTON_START_DIGGING 46334 //pixels squared measured the area by printing what it is super close
-// --- PID control stuff  //modified
+
+////////////////////////////////////////////// PID Parameters //////////////////////////////////////////////
 #define Kp 1.5 // Ross 11/14 0.75 -> 1.5 //2 //1.5 worked fine// 3.5 on robot A //modified
 #define Ki 0 //0
 #define Kd 0  //.2

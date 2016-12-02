@@ -26,7 +26,7 @@
 // TEST_PID_CONTROLLER
 // TEST_NOTHING,
 #define TEST_CASE TEST_CAP
-#define ROBOT_A
+#define ROBOT_D
 // Robot A is on COM 3,  radio on COM 8
 // Robot B is on COM 11, radio on COM 7
 // Robot C is on COM 10, radio on COM 6

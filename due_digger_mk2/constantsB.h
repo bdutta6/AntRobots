@@ -10,11 +10,13 @@
 #define CHARGED_VOLTAGE 3.8 // 3.65 appears to be the max voltage  //3.79 was too high
 
 
-// #define TURNING_THRESH 1000 //minimum area needed to terminate feedback turning  //modified
+////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
 #define HIGH_ROW_ANGLE  120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
 #define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
+
+////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
 #define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
@@ -30,7 +32,7 @@
 
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
-//PARAMETERS FOR DIRECTION FUNCTIONS
+////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
 #define OUT_DIRECTION 280 //240//291//300 // previously set to 270-  //modified
 #define IN_DIRECTION  40  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
