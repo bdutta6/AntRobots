@@ -26,7 +26,7 @@
 #define ForceSensorThresh 50 // JSP
 
 ////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
-#define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
+// #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
 
 #define WallSingleThresh1	380 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
 #define WallSingleThresh2 460 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
@@ -34,7 +34,8 @@
 #define AntSingleThresh1	455
 #define AntSingleThresh2	475
 
-#define WallDoubleThresh 14//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh2 14 
 
 #define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
 #define AntDoubleThresh2 20 // Upper
@@ -73,7 +74,7 @@
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80
-#define BASE_SPEED 160 // Ross 11/13 160 -> 120 //worked okay with 100
+#define BASE_SPEED 200 // Ross 11/13 160 -> 120 //worked okay with 100
 #define PV_adjmax 205  //155f
 #define PD_expected_limit 600 
 

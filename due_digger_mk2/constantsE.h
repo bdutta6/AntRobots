@@ -9,7 +9,6 @@
 #define LOWEST_ALLOWABLE_VOLTAGE 3.4//5v Power is lost when battery level reaches 3v, step up chip no longer functions  //3.3 too low
 #define CHARGED_VOLTAGE 3.8 // 3.65 appears to be the max voltage  //3.79 was too high
 
-
 ////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
 #define HIGH_ROW_ANGLE  120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
@@ -20,19 +19,26 @@
 #define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
+
 #define ForceSensorThresh 50 // JSP
-#define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
+
+////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
+// #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
+
 #define WallSingleThresh1	190 //Wall Detection, Single Contact Threshold for Capacitive Sensor
 #define WallSingleThresh2 210 //Wall Detection, Single Contact Threshold for Capacitive Sensor
+
 #define AntSingleThresh1	220
 #define AntSingleThresh2	250
-#define WallDoubleThresh 13//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+
+#define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh2 14 
+
 #define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor
 #define AntDoubleThresh2 18
 
 ////////////////////////////////////////////// PixyCam Parameters //////////////////////////////////////////////
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
-
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
 #define OUT_DIRECTION 290 //270//240//291//300 // previously set to 270-  //modified

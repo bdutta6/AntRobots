@@ -25,8 +25,8 @@
 // TEST_TURN_HEADING,
 // TEST_PID_CONTROLLER
 // TEST_NOTHING,
-#define TEST_CASE TEST_CAP
-#define ROBOT_D
+#define TEST_CASE TEST_NOTHING
+#define ROBOT_A
 // Robot A is on COM 3,  radio on COM 8
 // Robot B is on COM 11, radio on COM 7
 // Robot C is on COM 10, radio on COM 6

@@ -2104,7 +2104,15 @@ void TurnHeadingRoss(float desired_heading){
 		// turn_reversal_direction = pickDirection(current_heading, desired_heading); pickDirection does not work for the current iteration of IMUs.
 
 		
-		// currentTime = millis();
+		
+		// Checks for Contact -- need to handle contact cases better before this is implemented
+		if(CONTACT){
+			Serial.println("Something contacted");
+			WDT_Restart(WDT);
+			switchTurnDirection = millis();
+			handleContact();
+		}
+		
 		
 		// move a tiny bit in the correct direction
 		if(turn_reversal_direction){
@@ -2130,20 +2138,7 @@ void TurnHeadingRoss(float desired_heading){
 			turn_reversal_direction = !turn_reversal_direction;
 		}
 			
-			
-		// Checks for Contact -- need to handle contact cases better before this is implemented
-		// if(CONTACT){
-			// Serial.println("Something contacted");
-			// Stop();
-			// W.DT_Restart(WDT);
-			// handleContact();
-			
-			// // Rewrite fio to goinging state so we know we are out of the turning state
-			// #ifdef FIO_LINK
-				// Serial.println(F("FIO_LINK defined"));
-				// fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
-			// #endif
-		// }
+		
 			
 			
 			// Stop();

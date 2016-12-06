@@ -20,16 +20,24 @@
 #define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
+
 #define ForceSensorThresh 50 // JSP
-#define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
+
+
+////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
+// #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
 #define WallSingleThresh1	380 //Wall Detection, Single Contact Threshold for Capacitive Sensor
 #define WallSingleThresh2 460 //Wall Detection, Single Contact Threshold for Capacitive Sensor
+
 #define AntSingleThresh1	480
 #define AntSingleThresh2	520
+
 #define WallDoubleThresh 14//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+
 #define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor
 #define AntDoubleThresh2 18
 
+////////////////////////////////////////////// PixyCam Parameters //////////////////////////////////////////////
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
