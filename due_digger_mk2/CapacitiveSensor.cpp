@@ -253,6 +253,7 @@ int CapacitiveSensor:: getDetectedContacts(){
 	if((pin1 > AntDoubleThresh1 && pin1 < AntDoubleThresh2) || (pin1 > AntSingleThresh1 && pin1 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_B_MASK_ANT;  //bitwise OR  operation
 	}
+	else if ((pin1 > WallDoubleThresh1 && pin1 < WallDoubleThresh2) ||(pin1 > WallSingleThresh1 && pin1 < WallSingleThresh2)){// && pin1 < WallThresh2){
 		switchState=switchState | SWITCH_B_MASK_WALL;  //bitwise OR  operation
 	}
 
