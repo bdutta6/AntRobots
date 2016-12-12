@@ -32,13 +32,13 @@
 #define WallSingleThresh2 460 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
 
 #define AntSingleThresh1	455
-#define AntSingleThresh2	475
+#define AntSingleThresh2	690
 
 #define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
-#define WallDoubleThresh2 14 
+#define WallDoubleThresh2 50 
 
-#define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
-#define AntDoubleThresh2 20 // Upper
+#define AntDoubleThresh1 1	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
+#define AntDoubleThresh2 50 // Upper
 
 ////////////////////////////////////////////// PixyCam Parameters //////////////////////////////////////////////
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
@@ -70,7 +70,7 @@
 #define COTTON_IR_SUPRESS 30000 //pixels squared. measured the area by printing what it is close 
 #define COTTON_START_DIGGING 46334 //pixels squared measured the area by printing what it is super close
 // --- PID control stuff  //modified
-#define Kp 2 // Ross 11/13 1.5 -> 2 //2 //1.5 worked fine// 3.5 on robot A //modified //
+#define Kp 2.5 // Ross 11/13 1.5 -> 2 //2 //1.5 worked fine// 3.5 on robot A //modified //
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80

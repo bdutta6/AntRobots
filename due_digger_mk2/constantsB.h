@@ -26,16 +26,17 @@
 ////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
 // #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
 
-#define WallSingleThresh1	400 //Wall Detection, Single Contact Threshold for Capacitive Sensor
-#define WallSingleThresh2  480 //Wall Detection, Single Contact Threshold for Capacitive Sensor
+#define WallSingleThresh1	300 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
+#define WallSingleThresh2 470 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
 
-#define AntSingleThresh1	520
-#define AntSingleThresh2	560
+#define AntSingleThresh1	515
+#define AntSingleThresh2	600
 
-#define WallDoubleThresh 140 // Ross 11/15 14 -> 140 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh2 50 
 
-#define AntDoubleThresh1 150	// Ross 11/15 15 -> 150 //for Ant Detection, two or more contact threshold for Capacitive Sensor
-#define AntDoubleThresh2 180 // Ross 11/15 18 -> 180
+#define AntDoubleThresh1 1	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
+#define AntDoubleThresh2 50 // Upper
 
 ////////////////////////////////////////////// PixyCam Parameters	 //////////////////////////////////////////////
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON

@@ -9,7 +9,7 @@ Last Modified Date: 05/26/2016
 
 Modified by : Ross Warkentin
 email: ross.warkentin@gmail.com
-Last Modified Date: 12/01/2016
+Last Modified Date: 12/07/2016
 
 Property of CRABLAB, Georgia Institute of Technology, School of Physics
 [2013]-[2014]
@@ -484,7 +484,7 @@ void loop(){
 		case TEST_CAP:
 				//for capacitive sensor test and calibration
 			while(1){
-				int testPanel = 0; // takes on values from 0 up to and including 7
+				int testPanel = 6; // takes on values from 0 up to and including 7
 				WDT_Restart(WDT);
 				//Serial.println(CONTACT); //print all contact
 				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
@@ -1130,7 +1130,7 @@ void exitTunnel(){
 
 	while(inTunnel){
 		WDT_Restart(WDT);
-		GetDetectedSigs(); //get the colors
+		// GetDetectedSigs(); //get the colors
 		Backward(BASE_SPEED); //go backward
 		delay(100);
 	  // if(TUNNEL_START){//have I spotted the end of the tunnel marker?
@@ -1168,91 +1168,91 @@ void exitTunnel(){
 }
 
 //----------------------------------------------------
-void GoingOutMode(){
+// void GoingOutMode(){
 
-	// TurnHeadingRoss(current_target_heading); // should be OUT_DIRECTION
+	// // TurnHeadingRoss(current_target_heading); // should be OUT_DIRECTION
 	
-	WDT_Restart(WDT);
-	Arm.PitchGo(HIGH_ROW_ANGLE);
-	numOfConsequitiveBackwardKicks=0;
+	// WDT_Restart(WDT);
+	// Arm.PitchGo(HIGH_ROW_ANGLE);
+	// numOfConsequitiveBackwardKicks=0;
 	
-	#ifdef FIO_LINK
-		fioWrite(MASTER_GOING_OUT); //report going out
-	#endif 
-	//watchdogFlag=1; //action taken
-	//bool IRactionHandled=false;
-	//unsigned long whenIRactionHandled=millis(); //remember last IR action
-	//unsigned long whenForcedBackwardKick=millis(); //remember last forced backward kick
-	unsigned long whenCheckedPayload=millis(); //used to occasionally check if payload is still there 
-	// bool maskHeadTrigger=false;
-	// if(HEADON){
-	// maskHeadTrigger=true; //if excavated load happens to block this sensor, disable it 
-	// }
-	int checkHeadingCounter = 0;
-	int checkHeadingEvery = 1000;
+	// #ifdef FIO_LINK
+		// fioWrite(MASTER_GOING_OUT); //report going out
+	// #endif 
+	// //watchdogFlag=1; //action taken
+	// //bool IRactionHandled=false;
+	// //unsigned long whenIRactionHandled=millis(); //remember last IR action
+	// //unsigned long whenForcedBackwardKick=millis(); //remember last forced backward kick
+	// unsigned long whenCheckedPayload=millis(); //used to occasionally check if payload is still there 
+	// // bool maskHeadTrigger=false;
+	// // if(HEADON){
+	// // maskHeadTrigger=true; //if excavated load happens to block this sensor, disable it 
+	// // }
+	// int checkHeadingCounter = 0;
+	// int checkHeadingEvery = 3000;
 	
-	while(goingOut){
-		WDT_Restart(WDT);
-		#ifdef MANUAL_ON
-			handleManualOverride(); 
-		#endif
+	// while(goingOut){
+		// WDT_Restart(WDT);
+		// #ifdef MANUAL_ON
+			// handleManualOverride(); 
+		// #endif
  
- //--IR contacts 
+ // //--IR contacts 
  
- //IRactionHandled=handleIRcontacts();
- //checkIfBackwardKickNeeded(&IRactionHandled,&whenIRactionHandled,&whenForcedBackwardKick);
- //timeoutForceBackwardKick(&whenForcedBackwardKick); //force backward kick if the robot has not been backing out in a long time
- //FollowLane();//poll camera and call PD
-		WDT_Restart(WDT);
-  /* axed this behaviour. somehow it stopped working right anyway */
- // if( !checkPayload(&whenCheckedPayload)){//if we dropped payload. probably not working right
- // TurnHeading(IN_DIRECTION);
- // enable_GoingInMode(); 
- // return; 
- // };
+ // //IRactionHandled=handleIRcontacts();
+ // //checkIfBackwardKickNeeded(&IRactionHandled,&whenIRactionHandled,&whenForcedBackwardKick);
+ // //timeoutForceBackwardKick(&whenForcedBackwardKick); //force backward kick if the robot has not been backing out in a long time
+ // //FollowLane();//poll camera and call PD
+		// WDT_Restart(WDT);
+  // /* axed this behaviour. somehow it stopped working right anyway */
+ // // if( !checkPayload(&whenCheckedPayload)){//if we dropped payload. probably not working right
+ // // TurnHeading(IN_DIRECTION);
+ // // enable_GoingInMode(); 
+ // // return; 
+ // // };
  
-		// FollowLane();//poll camera and call PD
+		// // FollowLane();//poll camera and call PD
 		
-		//---contact handling	
-		if(CONTACT){
-			WDT_Restart(WDT);
-			handleContact();
-			// enable_turnReversalMode(3); // realign
+		// //---contact handling	
+		// if(CONTACT){
+			// WDT_Restart(WDT);
+			// handleContact();
+			// // enable_turnReversalMode(3); // realign
 
-			// FollowLane(); //poll camera and call PD
-			#ifdef FIO_LINK
-				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_OUT); //report over radio 
-			#endif
-		}
-		
-
-		FollowLane(); //call PD controller -- this is called immediately after it is called?
-		
-		// Ross' attempt at recorrecting
-		// checkHeadingCounter++;
-		// if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
-			// enable_turnReversalMode(3);
+			// // FollowLane(); //poll camera and call PD
+			// #ifdef FIO_LINK
+				// Serial.println(F("FIO_LINK defined"));
+				// fioWrite(MASTER_GOING_OUT); //report over radio 
+			// #endif
 		// }
 		
-		//--- handle wrong way directions
-		if(checkWrongDirections()){
-			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-			// FollowLane();//poll camera and call PD
-		}	
+
+		// FollowLane(); //call PD controller -- this is called immediately after it is called?
 		
-		//if (DUMPING_SWITCH) { //VADIM SHOWED EXAMPLE
-		if (CHARGER){
-			Stop();
-			enable_DumpingMode();
-			return;
-		}
+		// // Ross' attempt at recorrecting
+		// // checkHeadingCounter++;
+		// // if(checkWrongDirections() && millis()%checkHeadingEvery == 0){
+			// // enable_turnReversalMode(3);
+		// // }
 		
-		// FollowLane();//poll camera and call PD -- dont think we need to follow lane if CHARGER == TRUE
-		WDT_Restart(WDT);
+		// //--- handle wrong way directions
+		// if(checkWrongDirections()){
+			// //whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+			// // FollowLane();//poll camera and call PD
+		// }	
 		
-	} //end while(goingOut)
-}
+		// //if (DUMPING_SWITCH) { //VADIM SHOWED EXAMPLE
+		// if (CHARGER){
+			// Stop();
+			// enable_DumpingMode();
+			// return;
+		// }
+		
+		// // FollowLane();//poll camera and call PD -- dont think we need to follow lane if CHARGER == TRUE
+		// WDT_Restart(WDT);
+		
+	// } //end while(goingOut)
+// }
 
 //----------------------------------------------------
 void DumpingMode(){
@@ -2076,41 +2076,34 @@ void TurnHeadingRoss(float desired_heading){
 	unsigned long action_timeout = millis(); // watchdog timer, make sure that the robot is not stuck, forcing new actions if the robot have not done anything in a while 
 	Arm.PitchGo(HIGH_ROW_ANGLE); // raise the arm to decrease overall length // JSP
 	WDT_Restart(WDT);
-
-	// //initiate gyro integration vars here
-	// float angle = 0;
-	// float refRate = 0;
-	// unsigned long  gyroTime = millis();
-	// setGyroRef(&gyroTime,&refRate);
 	
-	diff_heading = desired_heading - current_heading;
-	Serial.print("Initial diff_heading = ");
-	Serial.println(diff_heading);
+	// diff_heading = desired_heading - current_heading;
+	// Serial.print("Initial diff_heading = ");
+	// Serial.println(diff_heading);
 	
-	int switchTurnDirection = millis();
-	int switchTime = 5000;
+	unsigned long switchTurnDirection = millis();
+	unsigned long switchTime = 7000;
 	
-	int currentTime = millis();
+	unsigned long currentTime = millis();
 	do {
-	
+		fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
+
 		// update heading differences
 		dof.readMag(); //update magnetometer registers
 		current_heading = getHeading((float) dof.mx, (float) dof.my);
 		// turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
 
-		Serial.println("---------------------------------------------------------");
-		Serial.print("desired_heading = "); 	Serial.println(desired_heading);
-		Serial.print("current_heading = "); 	Serial.println(current_heading);
+		// Serial.println("---------------------------------------------------------");
+		// Serial.print("desired_heading = "); 	Serial.println(desired_heading);
+		// Serial.print("current_heading = "); 	Serial.println(current_heading);
 		// turn_reversal_direction = pickDirection(current_heading, desired_heading); pickDirection does not work for the current iteration of IMUs.
-
 		
-		
-		// Checks for Contact -- need to handle contact cases better before this is implemented
+		// Checks for Contact
 		if(CONTACT){
-			Serial.println("Something contacted");
+			Serial.println("---------------------------------------------------------Something contacted");
 			WDT_Restart(WDT);
-			switchTurnDirection = millis();
 			handleContact();
+			// switchTurnDirection = millis();
 		}
 		
 		
@@ -2128,17 +2121,22 @@ void TurnHeadingRoss(float desired_heading){
 		}
 		
 		if((millis() - switchTurnDirection) > switchTime){
-			switchTurnDirection = millis(); // update the switchTurnDirection timer
-			Stop();
-			Drive.LeftBackward(255);
-			Drive.RightBackward(255);
-			delay(1000); Stop(); // I dont like the way this is being handled // Ross 11/16 swtiched from bumpDelay back to delay
+			// Stop();
 
+			// fioWrite(MASTER_CHARGING); // Write something to the LCD
+			// Stop();
+			// delay(3000); 
+			Serial.println("Switching Directions");
+			
+			// Drive.LeftBackward(255);
+			// Drive.RightBackward(255);
+			// delay(1000);
+			// Stop(); // I dont like the way this is being handled
+			
 			// WDT_Restart(WDT); // Reset the WDT
+			switchTurnDirection = millis(); // update the switchTurnDirection timer
 			turn_reversal_direction = !turn_reversal_direction;
 		}
-			
-		
 			
 			
 			// Stop();
@@ -2569,58 +2567,6 @@ void TurnHeading(float desired_heading){
 }
 
 
-// //----------------------------------------------------
-// bool isWantedHeadingRoss(float desired_heading){
-	// /* this method accepts a desired heading angle and returns a boolean variable
-	// whether or not the robot is facing in desired angle, give or take 
-	// a pre-defined tolerance (+- DIRECTION_UNCERTAINTY). This method grabs a latest magnetometer data
-	// for comparison purposes
-	// IT IS ASSUMED THAT DIRECTION UNCERTAINTY IS SMALL, meaning cant have low bound <0 and high bound >360 at the same time
-	// tested with fake data and it works. 11/5/2014
-	// */
-	// //get heading
-	// WDT_Restart(WDT);
-	// dof.readMag(); //update magnetometer registers
-	// float heading=getHeading((float) dof.mx, (float) dof.my);
-
-	// // get the values and map them to 360 degrees with modulo operator
-	// float lowBound = (desired_heading - DIRECTION_UNCERTAINTY)%360;
-	// float highBound = (desired_heading + DIRECTION_UNCERTAINTY)%360; 
-	
-	// // Assign lowBound and highBound proper values
-	// lowBound = min(lowBound, highBound);
-	// highBound = max(lowBound, highBound);
-	
-
-	// if (lowBound <= desired_heading && desired_heading <= highBound ){//case without wrap-around singularities
-		// return true;
-	// }
-	
-	// else{
-		// return false;
-	// } 
-	
-	// WDT_Restart(WDT);
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //----------------------------------------------------
 bool isWantedHeading(float desired_heading){
@@ -2744,7 +2690,7 @@ note from the original library:
   else if (hy < 0)
   {
     // heading = - (atan(hx / hy) * (180 / PI));
-	heading=  90  - (atan(hx / hy) * (180 / PI));
+	heading =  90  - (atan(hx / hy) * (180 / PI));
   }
   else // hy = 0
   {
@@ -2752,6 +2698,8 @@ note from the original library:
     else heading = 180;
   }
   return heading;
+	
+
 }
 
 //----------------------------------------------------
@@ -2765,7 +2713,7 @@ note from the original library:
 
 
 void handleContact(){
-	WDT_Restart(WDT);
+	// WDT_Restart(WDT);
 	//this is the simplified, "back out" method
 
 	unsigned long start_of_contact=millis(); //record length of contact
@@ -3562,6 +3510,8 @@ void TestCamera(){
 
 
 void TestIMU(){
+	// Drive.RightForward(255);
+			// Drive.LeftForward(50);
 	while(1){
 		WDT_Restart(WDT);
 

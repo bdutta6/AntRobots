@@ -328,7 +328,7 @@ int CapacitiveSensor:: getSwitchState(){
 	checkMeasurementNum = 2; //number of check comparison of switchstate.
 	int i = 0; // integer used for iterating
 	int last_switchState = getDetectedContacts();
-	Serial.println(last_switchState);
+	// Serial.println(last_switchState);
 	int new_switchState = 0;
 	while (i < checkMeasurementNum){ //repeat measurements to assure that switchstate is correct and not caused by coincident measurements
 		new_switchState = getDetectedContacts();

@@ -13,7 +13,7 @@ MotorBoard :: MotorBoard(){
 }
 
 void MotorBoard :: RightForward(int pwm){
-	Serial.println("In RightForward");
+	// Serial.println("In RightForward");
   digitalWrite(enable1,LOW);
   analogWrite(phase1,pwm);
 }
