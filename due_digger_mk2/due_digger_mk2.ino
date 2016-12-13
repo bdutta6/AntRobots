@@ -484,7 +484,12 @@ void loop(){
 		case TEST_CAP:
 				//for capacitive sensor test and calibration
 			while(1){
-				int testPanel = 6; // takes on values from 0 up to and including 7
+				
+				// if(CONTACT){
+					// handleContact();
+				// }
+			
+				int testPanel = 7; // takes on values from 0 up to and including 7
 				WDT_Restart(WDT);
 				//Serial.println(CONTACT); //print all contact
 				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
@@ -1129,39 +1134,38 @@ void exitTunnel(){
 	bool inTunnel=true; //am I in the tunnel?, assume that we are to start 
 
 	while(inTunnel){
+	
+		#ifdef FIO_LINK
+			Serial.println(F("FIO_LINK defined"));
+			fioWrite(MASTER_EXIT_TUNNEL); //report over radio 
+		#endif
+		
 		WDT_Restart(WDT);
 		// GetDetectedSigs(); //get the colors
 		Backward(BASE_SPEED); //go backward
-		delay(100);
-	  // if(TUNNEL_START){//have I spotted the end of the tunnel marker?
-	   // if(Areat > 3000){//check here if the area is larger then thresh or seen this for X amount of time //3000 too high
-	   // break; //exit out of the method 
-	   // }  
-	  // }
-		WDT_Restart(WDT); //JSP
+		// delay(100);
+
+		// WDT_Restart(WDT); //JSP
 		if( (millis() - exitStart) > 10000 ){ //temporarily timeout //used to be 10
 			WDT_Restart(WDT); //JSP
 	  	inTunnel = false;
-			//break;
 		}
-	  
+		
+		// Checks for Contact
 		if(CONTACT){
+			Serial.println("Something contacted");
 			WDT_Restart(WDT);
 			handleContact();
-	   	WDT_Restart(WDT);
 	   	exitStart+=3500;//3000 //add time to compensate
-			#ifdef FIO_LINK
-				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_EXIT_TUNNEL); //report over radio 
-			#endif
 		}
+		
 	} 
 	
 	// Backward(255); delay(1000); myDelay(2000); Stop();
 	WDT_Restart(WDT); //JSP
 	//HeadSensor.threshold=700; //return threshold to its original value. may add a second check //JSP
 	current_target_heading=OUT_DIRECTION;
-	preferGyro=true; 
+	// preferGyro=true; 
 	//TurnHeading(current_target_heading);
 	enable_turnReversalMode(3); //3 denotes that the robot will go into going_out mode after turn reversal mode
 	return;
@@ -2910,8 +2914,30 @@ void handleContact(){
 				// #endif
 				// }
 				break;
+				
+			case (FL | LSF | LSB):
+			case (FL | LSF | BL):
+			case (FL | LSB | BL):
+			case (LSF | LSB | BL):
+			case (FL | LSF | LSB | BL):
+					//Serial.println("FL");
+				fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
+				Backward(BASE_SPEED);
+				delay(500);
+				Drive.LeftForward(255);
+				Drive.RightForward(75);
+				delay(500);
+				//Drive.LeftForward(75);
+				//Drive.RightForward(255);
+				//delay(500);
+				
+				break;
 
 			default:
+				Backward(BASE_SPEED);
+				delay(500);
+				Stop();
 				//do nothing 
 				break; 
 		}
@@ -2923,12 +2949,38 @@ void handleContact(){
 	int currentDriveState=lastDriveState; //grab current state
 		switch(switchState & SWITCH_WALL_MASK){
 			case BR: //back 
+				// IMPLEMENT SOMETHING LIKE THIS
+				// //Serial.println("FL");
+				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
+				// Backward(BASE_SPEED);
+				// delay(500);
+				// Drive.LeftForward(255);
+				// Drive.RightForward(75);
+				// delay(500);
+				// //Drive.LeftForward(75);
+				// //Drive.RightForward(255);
+				// //delay(500);
+				
+				break;
 			case BL:
+								// IMPLEMENT SOMETHING LIKE THIS
+				// //Serial.println("FL");
+				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
+				// Backward(BASE_SPEED);
+				// delay(500);
+				// Drive.LeftForward(255);
+				// Drive.RightForward(75);
+				// delay(500);
+				// //Drive.LeftForward(75);
+				// //Drive.RightForward(255);
+				// //delay(500);
 			case (BR | BL):
 			case (BR | RSB): //including back side 
 			case (BL | LSB):
 			case (BR | BL | RSB | LSB):
-				Stop(); delay(1000);//DIGGING_INTERRUPT_DELAY //this will affect lastDriveState, thats why we use another variable
+				Stop(); delay(100);//DIGGING_INTERRUPT_DELAY //this will affect lastDriveState, thats why we use another variable
   
 	//switch(currentDriveState){
   //case drivingForward:
@@ -2990,43 +3042,54 @@ void handleContact(){
 	else if(exitTunnelMode){
 		switch(switchState & SWITCH_WALL_MASK){
 			case FL:
-				Stop(); delay(100);
-				Backward(BASE_SPEED); delay(100);
-				Left(DEFAULT_TURNING_SPEED); delay(100);
+				Stop();
+				delay(100);
+				Backward(BASE_SPEED);
+				delay(100);
+				Left(DEFAULT_TURNING_SPEED);
+				delay(100);
 				Stop();
 				break;
 			case FR:
-				Stop(); delay(100);
-				Backward(BASE_SPEED); delay(100);
-				Right(DEFAULT_TURNING_SPEED); delay(100);
+				Stop();
+				delay(100);
+				Backward(BASE_SPEED);
+				delay(100);
+				Right(DEFAULT_TURNING_SPEED);
+				delay(100);
 				Stop();
 				break;
 			case BR: //something hit back
-				Stop(); delay(100);
-				Forward(BASE_SPEED); delay(100); 
-				Right(DEFAULT_TURNING_SPEED); delay(100);
 				Stop();
-			 //TurnHeading(IN_DIRECTION); //reorient
-			 Stop(); delay(3000);
-			 Backward(BASE_SPEED);
-			 delay(500); //force new action 
-			 break;
+				delay(100);
+				Forward(BASE_SPEED);
+				delay(100); 
+				Left(DEFAULT_TURNING_SPEED);
+				delay(100);
+				Stop();
+				delay(100);
+				Backward(BASE_SPEED);
+				delay(500); //force new action 
+				break;
 			case BL:
-				Stop(); delay(100);
-				Forward(BASE_SPEED); delay(100); 
-				Left(DEFAULT_TURNING_SPEED); delay(100);
 				Stop();
-				//TurnHeading(IN_DIRECTION); //reorient
-				Stop(); delay(3000);
+				delay(100);
+				Forward(BASE_SPEED);
+				delay(100); 
+				Right(DEFAULT_TURNING_SPEED);
+				delay(100);
+				Stop();
+				delay(100);
 				Backward(BASE_SPEED);
 				delay(500); //force new action
 				break;
-			case BR | BL:   
-				Stop(); delay(100);
-				Forward(BASE_SPEED); delay(100); 
+			case BR | BL:   // not sure why this case is here, after the previous two cases
 				Stop();
-				//TurnHeading(IN_DIRECTION); //reorient
-				Stop(); delay(3000);
+				delay(100);
+				Forward(BASE_SPEED);
+				delay(100); 
+				Stop();
+				delay(100);
 				Backward(BASE_SPEED);
 				delay(500); //force new action 
 				break;
@@ -3183,7 +3246,7 @@ void handleContact(){
 }
 
 
-int handleTurningContact(int turning_case){
+int handleTurningContact(int turning_case){ // not used anywhere
 /* this method will change current turning_case turning direction,
 log the start of the contact, */
 
@@ -3322,39 +3385,39 @@ log the start of the contact, */
 
  case 4:
   switch(switchState){
-  case LSF: //if bumped anywhere on a left side
-  case LSB:
-  case(LSF | LSB):
-  turning_case=5; 
-  logContacts(start_of_contact);
-  // return turning_case; 
-  break;
-  
-  case RSF: //if bumped anywhere on a right side
-  case RSB:
-  case(RSF | RSB):
-  turning_case=6; 
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
-  
-  case BR:
-  case BL:
-  case (BR | BL):
-  turning_case=5;
-  Forward(255); delay(300); //anti-jamming kick
-  WDT_Restart(WDT);
-	Stop(); delay(50);
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
-  
-  default:
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
-  }
- break;
+		case LSF: //if bumped anywhere on a left side
+		case LSB:
+		case(LSF | LSB):
+		turning_case=5; 
+		logContacts(start_of_contact);
+		// return turning_case; 
+		break;
+		
+		case RSF: //if bumped anywhere on a right side
+		case RSB:
+		case(RSF | RSB):
+		turning_case=6; 
+		logContacts(start_of_contact);
+		// return turning_case;
+		break;
+		
+		case BR:
+		case BL:
+		case (BR | BL):
+		turning_case=5;
+		Forward(255); delay(300); //anti-jamming kick
+		WDT_Restart(WDT);
+		Stop(); delay(50);
+		logContacts(start_of_contact);
+		// return turning_case;
+		break;
+		
+		default:
+		logContacts(start_of_contact);
+		// return turning_case;
+		break;
+	}
+	break;
 
  case 6:
   switch(switchState){

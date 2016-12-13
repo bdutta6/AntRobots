@@ -26,11 +26,11 @@
 ////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
 // #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
 
-#define WallSingleThresh1	300 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
-#define WallSingleThresh2 470 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
+#define WallSingleThresh1	500 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
+#define WallSingleThresh2 650 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
 
-#define AntSingleThresh1	515
-#define AntSingleThresh2	600
+#define AntSingleThresh1	50
+#define AntSingleThresh2	500
 
 #define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
 #define WallDoubleThresh2 50 
@@ -42,13 +42,13 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 280 //240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  40  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 287 //240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  25  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
 #define PORT_DIRECTION        340//11//11//355//350    //left with respect to IN_DIRECTION  //modified
-#define STARBOARD_DIRECTION   210//150//167   //right with respect to IN_DIRECTION  //modified
+#define STARBOARD_DIRECTION   238//150//167   //right with respect to IN_DIRECTION  //modified
 
 // #define DIR_IN_R 260
 // #define DIR_IN_L 122
