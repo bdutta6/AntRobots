@@ -28,11 +28,11 @@
 ////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
 // #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
 
-#define WallSingleThresh1	515 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
+#define WallSingleThresh1	500 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
 #define WallSingleThresh2 650 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
 
-#define AntSingleThresh1	450
-#define AntSingleThresh2	515
+#define AntSingleThresh1	50
+#define AntSingleThresh2	500
 
 #define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
 #define WallDoubleThresh2 50 

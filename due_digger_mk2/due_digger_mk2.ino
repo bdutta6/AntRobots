@@ -474,6 +474,7 @@ void loop(){
 			while(1){
 				WDT_Restart(WDT);
 				Serial.println(FSensor.Detected());
+				delay(1000);
 			}
 			break;
 		case TEST_CAMERA:
@@ -504,6 +505,7 @@ void loop(){
 			TestDriveMotors();		
 			break;
 		case TEST_SERVO_MOTORS:
+			TestServoMotors();
 			break;
 		case TEST_GRIPPER_SENSOR:
 			// Serial.println(analogRead(FGripperPin)); // FGripperPin not defined
@@ -675,7 +677,8 @@ void GoingInMode(){
 			Serial.println("Dumping switch");
 
 			//if(CHARGER ){
-			Backward(BASE_SPEED); delay(1000); //move back
+			Backward(BASE_SPEED);
+			delay(1000); //move back
 			//TurnHeading(IN_DIRECTION); //turn back in
 			enable_turnReversalMode(1);
 			FollowLane();//poll camera and call PD
@@ -1742,8 +1745,7 @@ bool checkHeadSensor(){
 			return 1; //JSP
 			
 			// you will never get here!!!!!!!!!!!!!!!!!!!!!
-			
-			
+		
 			unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
    
 			while( FSensor.Detected() ){
@@ -2132,10 +2134,10 @@ void TurnHeadingRoss(float desired_heading){
 			// delay(3000); 
 			Serial.println("Switching Directions");
 			
-			// Drive.LeftBackward(255);
-			// Drive.RightBackward(255);
-			// delay(1000);
-			// Stop(); // I dont like the way this is being handled
+			Drive.LeftBackward(255);
+			Drive.RightBackward(255);
+			delay(1000);
+			Stop(); // I dont like the way this is being handled
 			
 			// WDT_Restart(WDT); // Reset the WDT
 			switchTurnDirection = millis(); // update the switchTurnDirection timer
@@ -2859,9 +2861,10 @@ void handleContact(){
 	
 			case RSF: //Right side is hit
 			case RSB:
-			case (RSF | RSB) :
+			case (RSF | RSB):
 				Drive.RightForward(255);
 				Drive.LeftForward(75);
+				delay(500); // added a delay so this actually does something
 				// if(goingIn){
 				// #ifdef FIO_LINK
 				// fioWrite(RIGHT_SIDE); //report going out
@@ -2872,8 +2875,11 @@ void handleContact(){
 			case LSF: //Left side is hit
 			case LSB:
 			case (LSF | LSB) :
+				Backward(BASE_SPEED);
+				delay(500);
 				Drive.RightForward(75);
 				Drive.LeftForward(255);
+				delay(500); // added a delay so this actually does something
 				// if(goingIn){
 				// #ifdef FIO_LINK
 				// fioWrite(LEFT_SIDE); //report going out
@@ -2898,7 +2904,8 @@ void handleContact(){
 			case (LSF | LSB | RSF):  
 			case (LSF | LSB | RSB):  
 				// case 
-				Stop(); delay(1000);
+				Stop();
+				delay(1000);
 				WDT_Restart(WDT);
 				break;
  
@@ -2933,12 +2940,32 @@ void handleContact(){
 				//delay(500);
 				
 				break;
+				
+			case (FR | RSF | RSB):
+			case (FR | RSF | BR):
+			case (FR | RSB | BR):
+			case (RSF | RSB | BR):
+			case (FR | RSF | RSB | BR):
+					//Serial.println("FL");
+				fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
+				Backward(BASE_SPEED);
+				delay(500);
+				Drive.RightForward(255);
+				Drive.LeftForward(75);
+				delay(500);
+				//Drive.LeftForward(75);
+				//Drive.RightForward(255);
+				//delay(500);
+				
+				break;
+				
+				
 
 			default:
 				Backward(BASE_SPEED);
 				delay(500);
 				Stop();
-				//do nothing 
 				break; 
 		}
 		logContacts(start_of_contact); 
@@ -2962,7 +2989,7 @@ void handleContact(){
 				// //Drive.RightForward(255);
 				// //delay(500);
 				
-				break;
+				// break;
 			case BL:
 								// IMPLEMENT SOMETHING LIKE THIS
 				// //Serial.println("FL");
@@ -2980,8 +3007,9 @@ void handleContact(){
 			case (BR | RSB): //including back side 
 			case (BL | LSB):
 			case (BR | BL | RSB | LSB):
-				Stop(); delay(100);//DIGGING_INTERRUPT_DELAY //this will affect lastDriveState, thats why we use another variable
-  
+				Stop();
+				delay(100);//DIGGING_INTERRUPT_DELAY //this will affect lastDriveState, thats why we use another variable
+				break;
 	//switch(currentDriveState){
   //case drivingForward:
   //Forward(BASE_SPEED); //can add speed memory as well
@@ -3105,7 +3133,7 @@ void handleContact(){
 					case FR:
 					case (FL | FR):
 						Backward(BASE_SPEED);
-						delay(100);
+						delay(500);
 						//Drive.RightBackward(75);
 						Drive.LeftBackward(255);
 						delay(500);
@@ -3113,19 +3141,47 @@ void handleContact(){
 	
 					case RSF: //Right side is hit
 					case RSB:
-					case (RSF | RSB) : // Ross 10/26 added in behaviour here. Previously this contact was ignored
+					case (RSF | RSB): // Ross 10/26 added in behaviour here. Previously this contact was ignored
+					case (FR | RSF | RSB):
+					case (FR | RSF | BR):
+					case (FR | RSB | BR):
+					case (RSF | RSB | BR):
+					case (FR | RSF | RSB | BR):
+						//Serial.println("FL");
+						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
 						Backward(BASE_SPEED);
-						delay(100);
-						//Drive.RightBackward(75);
-						Drive.LeftBackward(255);
 						delay(500);
-						//ignore contact
+						Drive.RightForward(255);
+						Drive.LeftForward(75);
+						delay(500);
+						//Drive.LeftForward(75);
+						//Drive.RightForward(255);
+						//delay(500);
+				
 						break;
+						
   
 					case LSF: //Left side is hit
 					case LSB:
 					case (LSF | LSB) :
-						//ignore contact
+					case (FL | LSF | LSB):
+					case (FL | LSF | BL):
+					case (FL | LSB | BL):
+					case (LSF | LSB | BL):
+					case (FL | LSF | LSB | BL):
+						//Serial.println("FL");
+						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
+						Backward(BASE_SPEED);
+						delay(500);
+						Drive.LeftForward(255);
+						Drive.RightForward(75);
+						delay(500);
+						//Drive.LeftForward(75);
+						//Drive.RightForward(255);
+						//delay(500);
+
 						break;
   
 					case (FL | FR | BL | BR)://robot is squished from both sides
@@ -3145,7 +3201,7 @@ void handleContact(){
 					case (LSF | LSB | RSF):  
 					case (LSF | LSB | RSB):  
 						// case 
-						Stop(); delay(1000);
+						Stop(); delay(100);
 						WDT_Restart(WDT);
 						break;
  
@@ -3180,7 +3236,7 @@ void handleContact(){
 					case FR:
 					case (FL | FR):
 						Backward(BASE_SPEED);
-						delay(100);
+						delay(500);
 						Drive.RightBackward(255);
 						//Drive.LeftBackward(75);
 						delay(500);
@@ -3188,14 +3244,47 @@ void handleContact(){
 	
 					case RSF: //Right side is hit
 					case RSB:
-					case (RSF | RSB) :
-						//ignore contact
+					case (RSF | RSB): // Ross 10/26 added in behaviour here. Previously this contact was ignored
+					case (FR | RSF | RSB):
+					case (FR | RSF | BR):
+					case (FR | RSB | BR):
+					case (RSF | RSB | BR):
+					case (FR | RSF | RSB | BR):
+						//Serial.println("FL");
+						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
+						Backward(BASE_SPEED);
+						delay(500);
+						Drive.RightForward(255);
+						Drive.LeftForward(75);
+						delay(500);
+						//Drive.LeftForward(75);
+						//Drive.RightForward(255);
+						//delay(500);
+				
 						break;
+						
   
 					case LSF: //Left side is hit
 					case LSB:
 					case (LSF | LSB) :
-						//ignore contact
+					case (FL | LSF | LSB):
+					case (FL | LSF | BL):
+					case (FL | LSB | BL):
+					case (LSF | LSB | BL):
+					case (FL | LSF | LSB | BL):
+						//Serial.println("FL");
+						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+
+						Backward(BASE_SPEED);
+						delay(500);
+						Drive.LeftForward(255);
+						Drive.RightForward(75);
+						delay(500);
+						//Drive.LeftForward(75);
+						//Drive.RightForward(255);
+						//delay(500);
+
 						break;
 		
 					case (FL | FR | BL | BR)://robot is squished from both sides
@@ -3235,7 +3324,9 @@ void handleContact(){
 					break;
 
 				default:
-					//do nothing 
+					Backward(BASE_SPEED);
+					delay(500);
+					Stop();
 					break; 
 			}
 		}
@@ -3513,17 +3604,24 @@ void TestPDController(){
 
 
 void TestServoMotors(){
-	WDT_Restart(WDT);
-	Serial.println(F("Opening gripper"));
-	Arm.GripperGo(OPEN_POS); delay(1000);
-	Serial.println(F("Closing gripper"));
-	Arm.GripperGo(MID_POS); delay(1000);
-	Arm.GripperGo(CLOSED_POS);delay(1000);
-	Serial.println(F("Raising arm"));
-	WDT_Restart(WDT);
-	Arm.PitchGo(HIGH_ROW_ANGLE); delay(1500);
-	Serial.println(F("Lowering arm"));
-	Arm.PitchGo(LOW_ROW_ANGLE); delay(1500); //Arm.PitchGo(100); //JSP Delete
+	while(1){
+		WDT_Restart(WDT);
+		Serial.println(F("Opening gripper"));
+		Arm.GripperGo(OPEN_POS);
+		delay(1000);
+		Serial.println(F("Closing gripper"));
+		Arm.GripperGo(MID_POS);
+		delay(1000);
+		Arm.GripperGo(CLOSED_POS);
+		delay(1000);
+		Serial.println(F("Raising arm"));
+		WDT_Restart(WDT);
+		Arm.PitchGo(HIGH_ROW_ANGLE);
+		delay(1500);
+		Serial.println(F("Lowering arm"));
+		Arm.PitchGo(LOW_ROW_ANGLE);
+		delay(1500); //Arm.PitchGo(100); //JSP Delete
+	}
 }
 
 

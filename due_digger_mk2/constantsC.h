@@ -16,7 +16,7 @@
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
 
 ////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
-#define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
+#define CLOSED_POS 179//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
 
@@ -24,11 +24,11 @@
 
 ////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
 // #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
-#define WallSingleThresh1	380 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
-#define WallSingleThresh2 460 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
+#define WallSingleThresh1	525 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
+#define WallSingleThresh2 650 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
 
-#define AntSingleThresh1	455
-#define AntSingleThresh2	690
+#define AntSingleThresh1	525
+#define AntSingleThresh2	500
 
 #define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
 #define WallDoubleThresh2 50 

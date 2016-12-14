@@ -17,7 +17,7 @@
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
 
 ////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
-#define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
+#define CLOSED_POS 179//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
 
@@ -42,13 +42,13 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 287 //240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  25  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 300 //240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  32  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
-#define PORT_DIRECTION        340//11//11//355//350    //left with respect to IN_DIRECTION  //modified
-#define STARBOARD_DIRECTION   238//150//167   //right with respect to IN_DIRECTION  //modified
+#define PORT_DIRECTION        345//11//11//355//350    //left with respect to IN_DIRECTION  //modified
+#define STARBOARD_DIRECTION   231//150//167   //right with respect to IN_DIRECTION  //modified
 
 // #define DIR_IN_R 260
 // #define DIR_IN_L 122
@@ -72,12 +72,13 @@
 //IR tresholds: 700, blind zone 8s, min 320, max 699
 #define COTTON_IR_SUPRESS 30000 //pixels squared. measured the area by printing what it is close 
 #define COTTON_START_DIGGING 46334 //pixels squared measured the area by printing what it is super close
+
 // --- PID control stuff  //modified
-#define Kp 2.5//1.5 //2 //1.5 worked fine// 3.5 on robot A //modified
+#define Kp 4.5//1.5 //2 //1.5 worked fine// 3.5 on robot A //modified
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80
-#define BASE_SPEED 160 //worked okay with 100
+#define BASE_SPEED 200 //worked okay with 100
 #define PV_adjmax 205  //155f
 #define PD_expected_limit 600 
 
