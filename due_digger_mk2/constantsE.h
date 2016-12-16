@@ -67,7 +67,7 @@
 #define COTTON_START_DIGGING 46334 //pixels squared measured the area by printing what it is super close
 
 ////////////////////////////////////////////// PID Parameters //////////////////////////////////////////////
-#define Kp 1.5 // Ross 11/14 0.75 -> 1.5 //2 //1.5 worked fine// 3.5 on robot A //modified
+#define Kp 2.5 // Ross 11/14 0.75 -> 1.5 //2 //1.5 worked fine// 3.5 on robot A //modified
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80

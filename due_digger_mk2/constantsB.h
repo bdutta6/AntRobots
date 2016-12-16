@@ -74,11 +74,11 @@
 #define COTTON_START_DIGGING 46334 //pixels squared measured the area by printing what it is super close
 
 // --- PID control stuff  //modified
-#define Kp 4.5//1.5 //2 //1.5 worked fine// 3.5 on robot A //modified
+#define Kp 3.5 //1.5 //2 //1.5 worked fine// 3.5 on robot A //modified
 #define Ki 0 //0
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80
-#define BASE_SPEED 200 //worked okay with 100
+#define BASE_SPEED 180 //worked okay with 100
 #define PV_adjmax 205  //155f
 #define PD_expected_limit 600 
 

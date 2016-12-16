@@ -23,7 +23,7 @@
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
 
-#define ForceSensorThresh 50 // JSP
+#define ForceSensorThresh 100 // JSP
 
 ////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
 // #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
@@ -44,13 +44,13 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 291//240//291//300 // previously set to 270-  //modified // Ross10/11 changed 270->291 
-#define IN_DIRECTION  90//89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 280 //240//291//300 // previously set to 270-  //modified // Ross10/11 changed 270->291 
+#define IN_DIRECTION  68//89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
-#define PORT_DIRECTION        5 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
-#define STARBOARD_DIRECTION   170//150//167   //right with respect to IN_DIRECTION  //modified Ross10/11 changed 170->200
+#define PORT_DIRECTION        350 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
+#define STARBOARD_DIRECTION   178 //150//167   //right with respect to IN_DIRECTION  //modified Ross10/11 changed 170->200
 
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging
