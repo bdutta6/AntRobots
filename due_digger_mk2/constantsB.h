@@ -42,19 +42,24 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 296 //240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  10  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 270 //240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  90  // Ross 11/13 5 -> 40 // Ross 11/01 20->5 //89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
-#define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
-#define PORT_DIRECTION        335 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
-#define STARBOARD_DIRECTION   250 //150//167   //right with respect to IN_DIRECTION  //modified
+#define DIRECTION_UNCERTAINTY 80 //used to be 5. increased to 10
+#define PORT_DIRECTION        0 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
+#define STARBOARD_DIRECTION   190 //150//167   //right with respect to IN_DIRECTION  //modified
 
-// #define DIR_IN_R 260
-// #define DIR_IN_L 122
-// #define DIR_OUT_R 33
-// #define DIR_OUT_L 355
+////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
+#define HX_MAX 0.1600
+#define HX_MIN -0.1500
 
+#define HY_MIN -0.9700
+#define HY_MAX -0.6900
+
+#define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW
+
+////////////////////////////////////////////// Timing Parameters //////////////////////////////////////////////
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging
 #define GOINGCHARGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while going charging

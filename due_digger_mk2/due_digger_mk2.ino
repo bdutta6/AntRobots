@@ -191,6 +191,7 @@ enum Test {
 	TEST_GRIPPER_SENSOR,
 	TEST_POWER_SENSORS, 
 	TEST_TURN_HEADING,
+	TEST_PICK_DIRECTION,
 	TEST_PID_CONTROLLER,
 	TEST_NOTHING,
 };
@@ -519,6 +520,9 @@ void loop(){
 		case TEST_TURN_HEADING:
 			TestTurnHeading();
 			break;
+		case TEST_PICK_DIRECTION:
+			TestPickDirection();
+			break;
 		case TEST_NOTHING:
 			// Serial.println("Test intentionally ignored");
 			break;	
@@ -604,7 +608,7 @@ void goingOutModeRoss(){
 
 	#ifdef FIO_LINK
 		Serial.println(F("FIO_LINK defined"));
-		fioWrite(MASTER_GOING_IN); //report over radio 
+		fioWrite(MASTER_GOING_OUT); //report over radio 
 	#endif
 
 	#if ALLOW_USELESS_RUNS
@@ -1900,8 +1904,8 @@ bool checkWrongDirections(){
 	WDT_Restart(WDT);
 	Serial.println("checkWrongDirections");
 	if(current_target_heading == IN_DIRECTION){
-		if( isWantedHeading(OUT_DIRECTION) || isWantedHeading(PORT_DIRECTION) || isWantedHeading(STARBOARD_DIRECTION)  ){ //wrong way
-		// if( isWantedHeading(OUT_DIRECTION) ){ //wrong way
+		// if( isWantedHeading(OUT_DIRECTION) || isWantedHeading(PORT_DIRECTION) || isWantedHeading(STARBOARD_DIRECTION)  ){ //wrong way
+		if(!isWantedHeading(IN_DIRECTION) ){ //wrong way
 			if(!dirCheckFlag){ //flag is not set
 				dirCheckFlag=true;
 				dirCheckTimer=millis(); //start timer 
@@ -1935,8 +1939,8 @@ bool checkWrongDirections(){
  
  //---
 	if(current_target_heading == OUT_DIRECTION){
-		if( isWantedHeading(IN_DIRECTION) || isWantedHeading(PORT_DIRECTION) || isWantedHeading(STARBOARD_DIRECTION)  ){ //wrong way
-		// if( isWantedHeading(IN_DIRECTION) ){ //wrong way
+		// if( isWantedHeading(IN_DIRECTION) || isWantedHeading(PORT_DIRECTION) || isWantedHeading(STARBOARD_DIRECTION)  ){ //wrong way
+		if(!isWantedHeading(OUT_DIRECTION)){ //wrong way
 			
 			
 			if(!dirCheckFlag){ //flag is not set
@@ -2122,11 +2126,11 @@ void TurnHeadingRoss(float desired_heading){
 	// bool turning = true; //local flag to keep turning, really not needed anymore 
 	unsigned long interrupt_mask_timer=millis(); //used to make sure switches interrupts are not serviced too fast
 	
-	dof.readMag(); //update magnetometer registers
-	float current_heading = getHeading((float) dof.mx, (float) dof.my); //get a compass direction, value returned is from 0 to 360 degrees
+	// dof.readMag(); //update magnetometer registers
+	float current_heading = getHeading(); //get a compass direction, value returned is from 0 to 360 degrees
 
 	//autonomously pick the best direction to initiate turning
-	turn_reversal_direction = !pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
+	turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
 	unsigned long time_start = millis(); // initiate timer to keep robot turning if there is a turning progress
 	unsigned long action_timeout = millis(); // watchdog timer, make sure that the robot is not stuck, forcing new actions if the robot have not done anything in a while 
 	Arm.PitchGo(HIGH_ROW_ANGLE); // raise the arm to decrease overall length // JSP
@@ -2144,8 +2148,8 @@ void TurnHeadingRoss(float desired_heading){
 		fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
 
 		// update heading differences
-		dof.readMag(); //update magnetometer registers
-		current_heading = getHeading((float) dof.mx, (float) dof.my);
+		// dof.readMag(); //update magnetometer registers
+		current_heading = getHeading();
 		
 
 		// Serial.println("---------------------------------------------------------");
@@ -2161,18 +2165,41 @@ void TurnHeadingRoss(float desired_heading){
 			// switchTurnDirection = millis();
 		}
 		
+		if(CHARGER){
+			Serial.println("Charging if-statement");
+
+			//Serial.println("charger");
+			//Serial.println("Charger!!!"); // JSP //BANI
+			Stop(); 
+			delay(100);
+			//--- copied from chargingMode backing out routine
+			// unsigned long backingOutStart=millis();
+			Backward(BASE_SPEED);
+    
+			delay(1000); //force backout for short time
+			Stop();
+			// delay(200); //quick stop
+			// enable_turnReversalMode(1);
+			// Stop();
+			// delay(100);
+			// Forward(BASE_SPEED); //start slowly driving forward
+
+			// FollowLane();//poll camera and call PD
+			WDT_Restart(WDT);
+		}
+		
 		
 		// move a tiny bit in the correct direction
 		if(turn_reversal_direction){
-			Serial.println("Turning left");
-			Drive.RightForward(255);
-			Drive.LeftForward(50);
-		}
-		
-		else{
 			Serial.println("Turning right");
 			Drive.LeftForward(255);
 			Drive.RightForward(50);
+		}
+		
+		else{
+			Serial.println("Turning left");
+			Drive.RightForward(255);
+			Drive.LeftForward(50);
 		}
 		
 		if((millis() - switchTurnDirection) > switchTime){
@@ -2285,8 +2312,8 @@ bool isWantedHeading(float desired_heading){
 	*/
 	//get heading
 	WDT_Restart(WDT);
-	dof.readMag(); //update magnetometer registers
-	float heading=getHeading((float) dof.mx, (float) dof.my);
+	// dof.readMag(); //update magnetometer registers
+	float heading=getHeading();
 	// float heading=getHeading((float) dof.calcMag(dof.mx), (float) dof.calcMag(dof.my));
 	
 	float lowBound = desired_heading - DIRECTION_UNCERTAINTY;
@@ -2327,54 +2354,89 @@ bool isWantedHeading(float desired_heading){
 	WDT_Restart(WDT);
 }
 
-bool pickDirection(float current_heading, float desired_heading){
+
+
+int pickDirection(float current_heading, float desired_heading){
 	/* this method will autonomously pick the best direction to turn based 
 	on angular distance */
-	//flipped original 0's to 1's
+	
+	// choose direction for turn reversal
+	// 0 for left turn, 1 for right turn
+	// flipped original 0's to 1's
+	
 	WDT_Restart(WDT);
-	bool turning_case;
-	if( (current_heading) < 180 ){
-		if ( (desired_heading)<180 ) {
+	int turning_case = -1; // initialize to nonsense value
+	// all of these are computed assuming that the heading values increase as the robot rotates clockwise.
+	// Flip the value at the end if this is not true.
+	
+	if( current_heading < 180 ){
+		if ( desired_heading < 180 ) {
 			if( desired_heading < current_heading){
-				turning_case=0;
-				return turning_case;
+				turning_case = 0; // turn left
+				// return turning_case;
 			}
 			else{
-				turning_case=1; return turning_case;
+				turning_case = 1; // turn right
+				// return turning_case;
 			}
 		}
-		if ( (desired_heading)>180 ) {
+		
+		// if desired_heading is greater than 180
+		if ( desired_heading > 180 ) {
 			if (desired_heading > (180 + current_heading) ){
-				turning_case=0; return turning_case;
+				turning_case = 0; // turn left
+				// return turning_case;
 			}
 			else{
-				turning_case=1; return turning_case;
+				turning_case = 1; // turn right
+				// return turning_case;
 			}
 		}  
 	}
-	if( (current_heading) > 180 ){
-		if ( (desired_heading)<180 ) { //check this <
+	
+	if( current_heading > 180 ){
+		if ( desired_heading < 180 ) { //check this <
 			if( (current_heading-desired_heading) >180 ){
-				turning_case=1; return turning_case;
+				turning_case = 1; // turn right
+
+				// return turning_case;
 			}
 			else{
-				turning_case=0;
-				return turning_case;
+				turning_case = 0; // turn left
+				// turning_case = 2; // turn left
+
+				// return turning_case;
 			}
 		}
-		if ( (desired_heading)>180 ) {
-			if (desired_heading > ( current_heading) ){
-				turning_case=1; return turning_case;
+		
+		if ( desired_heading > 180) {
+			if (desired_heading > current_heading){
+				turning_case = 1;
+				// turning_case = 3; // right
+
+				// return turning_case;
 			}
-			else{ turning_case=0;
-				return turning_case;
+			else{
+				turning_case = 0;
+				// return turning_case;
 			}
 		}   
 	}
+	
+	// flip the directions if a CCW rotation of the robot increases the heading value
+	if (PHD && turning_case == 0){
+		turning_case = 1;
+	}
+	
+	else if (PHD && turning_case == 1){
+		turning_case = 0;
+	}
+	
+	return turning_case;
 }
 
 //----------------------------------------------------
-float getHeading(float hx, float hy){
+float getHeading(){
 /* this method grabs magnetometer data from gyroscope and returns a bearing angle
 the bearing angle goes from 0 to 360 degrees and wraps around back to 0
 call this method like so
@@ -2390,10 +2452,17 @@ note from the original library:
   float heading;
   dof.readMag(); //update gyro registers
 
-	hx = dof.calcMag(dof.mx);
-	hy = dof.calcMag(dof.my);
+	// // Get the raw readings from the IMU sensor
+	float hx = dof.calcMag(dof.mx);
+	float hy = dof.calcMag(dof.my);
+
+	// Serial.print(hx); Serial.print(", "); Serial.println(hy);  
+
 	
-	Serial.print(hx); Serial.print(", "); Serial.println(hy);  
+	// Map them to a unit circle using a measured bias unique to each IMU
+	hx = (hx-HX_MIN)*(2/(HX_MAX-HX_MIN))-1;
+	hy = (hy-HY_MIN)*(2/(HY_MAX-HY_MIN))-1;
+	
 	
 	if (hy > 0)
   {
@@ -2426,8 +2495,16 @@ note from the original library:
   // }
 	
 	
+	// Serial.println(heading); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
+
   return heading;
 	
+
+}
+
+float mapMY(){
+
+
 
 }
 
@@ -3395,29 +3472,58 @@ void TestCamera(){
 }
 
 
+
+
+
+void TestPickDirection(){
+	// Drive.RightForward(255);
+			// Drive.LeftForward(50);
+	float desired_heading = 270;
+	float current_heading;
+	while(1){
+		WDT_Restart(WDT);
+		current_heading = getHeading();
+		Serial.print("desired_heading = "); 	Serial.println(desired_heading);
+		Serial.print("current_heading = "); 	Serial.println(current_heading);
+		Serial.print("pickDirection = "); Serial.println(pickDirection(getHeading(), desired_heading));
+		
+		delay(1000);
+	}
+}
+
+
+
+
+
+
+
+
+
 void TestIMU(){
 	// Drive.RightForward(255);
 			// Drive.LeftForward(50);
+	
+	float heading;
 	while(1){
 		WDT_Restart(WDT);
 
 		 //update magnetometer registers
-		dof.readMag();
-		float heading=getHeading((float) dof.mx, (float) dof.my);
+		// dof.readMag();
+		heading=getHeading();
 
 	 // print the magnetometer data to serial
 		// Serial.print(F("mx  "));
 		// Serial.print(dof.mx);
 		// Serial.print(F(" my "));
 		// Serial.print(dof.my);
-		Serial.print(F(" H "));
-		Serial.println(heading);
+		// Serial.print(F(" H "));
+		// Serial.println(heading);
 		
 		
 		// Serial.println(heading); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
 		// fioWrite(heading); //send the capacitive sensor value to fio.
 		//Serial.println(CapSensor.readTouch()); //print the touch status of all pins.
-		delay(1000);
+		// delay(1000);
 
 		
 
@@ -3431,6 +3537,7 @@ void TestIMU(){
 		// Serial.println(gyroZ);
 	}
 }
+
 void TestGyro(){
 	WDT_Restart(WDT);
 	Serial.print(F("G  "));
