@@ -135,7 +135,6 @@ double KD=KD;
 myPID PD(&Input, &Output, &Setpoint, KP,KI,KD); //PID control
 char lastDriveState=0; //used to keep track of Forward/Backward/Right/Left/Stop commands
 
-
 // --- switches
 int switchState; //used to set up contact switches
 bool disableContacts = false; //flag used to mask interrupts if the robot is stuck in a routine for too long
@@ -196,11 +195,6 @@ enum Test {
 	TEST_NOTHING,
 };
 
-float initial_heading;
-float target_heading;
-float diff_heading;
-// bool turn_init;
-// bool target_reached;
 
 //--- set up IR distance sensors
 //IRsensor IRright(IRsensorRightPin);
@@ -326,6 +320,10 @@ void setup(){
 
 	last_dash = millis();        //initiate timer to keep track of last robot dash forward
 
+	dof.setMagScale(dof.M_SCALE_2GS);
+	dof.setMagODR(dof.M_ODR_125);          //sets up magnetometers output data rate to the highest (fastest) available setting 
+
+	
 	// dof.setGyroODR(dof.G_ODR_760_BW_100);  //sets up gyro output data rate to the highest (fastest) available setting
 	// dof.setMagODR(dof.M_ODR_100);          //sets up magnetometers output data rate to the highest (fastest) available setting 
 	/* 
@@ -349,16 +347,13 @@ void setup(){
 	// attachInterrupt(ChargingDetectorPin, ForceCharging, CHANGE); //doesnt quite work
 
 
-
-
-
-	 		 
-
 	// %%
 	dirCheckFlag=false;
 	dirCheckTimer=millis();
 
 	enable_GoingInMode();
+	
+	// Ross: This is just an output that I added to see when the robot has reset
 	#ifdef FIO_LINK
 			fioWrite(MASTER_RESTING);
 			delay(1000);
@@ -539,9 +534,7 @@ void loop(){
 		// KP = Kp; //reset gain - JSP
 		
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains
-		
 		current_target_heading = IN_DIRECTION;
-
 		GoingInMode();
 		
 		
@@ -565,9 +558,9 @@ void loop(){
 	}
 
 	if(goingOut){
-				
+		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains
 		current_target_heading = OUT_DIRECTION;
-		GoingOutModeRoss();
+		goingOutModeRoss();
 
 	}
 
@@ -590,7 +583,6 @@ void loop(){
  
 	if (turnReversalMode){
 		TurnHeadingRoss(current_target_heading);
-		// TurnHeading(current_target_heading);
 
 	}
 
@@ -598,6 +590,152 @@ void loop(){
 // ********** END   {MAIN SCRIPT} ----------
 
 // ********** BEGIN (MODE DEFINITION} **********
+
+
+
+
+
+//----------------------------------------------------
+void goingOutModeRoss(){
+	Serial.println(F("Beginning of GoingInMode()"));
+
+	WDT_Restart(WDT);
+	numOfConsequitiveBackwardKicks = 0;
+
+	#ifdef FIO_LINK
+		Serial.println(F("FIO_LINK defined"));
+		fioWrite(MASTER_GOING_IN); //report over radio 
+	#endif
+
+	#if ALLOW_USELESS_RUNS
+		unsigned long whenModeStart=millis(); //the robot has X seconds to get to the tunnel or it has to get out
+	#endif
+
+	unsigned long whenMovedHead=millis();  //initiate timer to myDelay head shaking; //pitch head up and down to make sure that the head sensor triggers if the robot is pushing in a tunnel
+
+
+	Arm.GripperGo(CLOSED_POS); //close the jaws //JSP
+
+	// TurnHeading(current_target_heading); //may need to add this for a case when the board resets
+	// add head bump sensor
+	Serial.println(F("goingIn is..."));
+	
+	
+	while(goingOut){
+		// Serial.println("In goingIn while-loop");
+		// Serial.print("The goingIn cycle-time is: ");
+		// Serial.println(millis() - previousTime);
+		// previousTime = millis();
+
+		WDT_Restart(WDT);
+		Arm.PitchGo(HIGH_ROW_ANGLE);
+		Arm.GripperGo(CLOSED_POS); //JSP
+		
+		// goingOut = false; goingIn = true;
+		if (CheckPayload()){
+			Serial.println("Something found in payload");
+			// current_target_heading = OUT_DIRECTION;
+			// preferGyro = true; // 
+			// enable_turnReversalMode(3); // this sets the variable nextMode to 3, which corresponds to goingOut. This sets a variable that will remember which mode the robot should enter after turning around...?
+			// return; // if there is something in the 	 gripper, then we need to exit goingInMode
+		}
+ 
+		// Checks for Contact
+		
+		// goingOut = true; goingIn = false;
+		if(CONTACT){
+			Serial.println("Something contacted");
+			WDT_Restart(WDT);
+			handleContact();
+			
+			// Rewrite fio to goinging state so we know we are out of the turning state
+			#ifdef FIO_LINK
+				Serial.println(F("FIO_LINK defined"));
+				fioWrite(MASTER_GOING_OUT); //report over radio 
+			#endif
+		}
+		
+			//--- handle wrong way directions
+		if(checkWrongDirections()){
+			Serial.println("checkWrongDirections()returns true");
+
+			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+		}	
+		
+		FollowLane(); //poll camera and call PD
+		// GetDetectedSigs(); //poll camera, get latest vision info
+ 
+		// if(DUMPING_SWITCH){//BANI
+			// Serial.println("Dumping switch");
+
+			// //if(CHARGER ){
+			// Backward(BASE_SPEED);
+			// delay(1000); //move back
+			// //TurnHeading(IN_DIRECTION); //turn back in
+			// enable_turnReversalMode(1);
+			// FollowLane();//poll camera and call PD
+			// WDT_Restart(WDT);
+		// } 
+
+		if(CHARGER){
+			Stop();
+			enable_DumpingMode();
+			return;
+		}
+	
+
+		FollowLane();//poll camera and call PD
+		WDT_Restart(WDT);
+
+ // if(CheckPower()){
+ // enable_GoingCharging();
+ // return;
+ // }
+ 
+		if( checkHeadSensor() ){
+			Serial.println("checkHeadSensor() returns true");
+			// return; //found soemthing, lets dig 
+		}
+		/* 
+		#ifdef MANUAL_ON
+			handleManualOverride(); 
+		#endif
+		*/
+  
+		// #if ALLOW_USELESS_RUNS //prob bugged
+			// Serial.println("ALLOW_USELESS_RUNS is true");
+
+			// if( millis() - whenModeStart > USELESS_RUN_THRESH){
+				// //bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
+				// bool goBack = true; // force the robot to go back 
+				// preferGyro=true; 
+
+				// if (goBack){
+					// Backward(BASE_SPEED);
+					// delay(2000);
+					// Stop();
+					// current_target_heading=OUT_DIRECTION;
+					// //TurnHeading(current_target_heading);
+					// enable_turnReversalMode(7);
+					// //enable_RestingMode(); //go to the charging station
+					// //enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
+					// return; 
+				// }
+				// //bool goBack = false;//BANI
+				// else{ //BANI 
+					// whenModeStart=millis(); //reset timer 
+					// WDT_Restart(WDT);
+					// //Serial.println("WDT8");
+				// }
+			// } 
+		// #endif
+		
+	} //end while(goingIn)
+	return;
+} // end goingInMode()
+//----------------------------------------------------
+
+
 //----------------------------------------------------
 void GoingInMode(){
 	Serial.println(F("Beginning of GoingInMode()"));
@@ -614,29 +752,18 @@ void GoingInMode(){
 		unsigned long whenModeStart=millis(); //the robot has X seconds to get to the tunnel or it has to get out
 	#endif
 
-	//Forward(BASE_SPEED); //anti stuck VADIM. uncomment this 
-
-	//watchdogFlag=1; //action taken
-	// unsigned long lastBackup=millis(); //timer to make the robot back out slightly backward every so often 
-
-	bool movingPitchUp = false; //remember if we are moving pitch up or down
 	unsigned long whenMovedHead=millis();  //initiate timer to myDelay head shaking; //pitch head up and down to make sure that the head sensor triggers if the robot is pushing in a tunnel
 
-	unsigned long whenIRsensorOverride=millis();
 
-	// Arm.GripperGo(CLOSED_POS); //close the jaws
 	Arm.GripperGo(CLOSED_POS); //close the jaws //JSP
-	unsigned long whenForcedBackwardKick=millis();
 
 	// TurnHeading(current_target_heading); //may need to add this for a case when the board resets
 	// add head bump sensor
-	//start counting IR side how long
-	//unsigned long whenSawTrails()=millis();
 	Serial.println(F("goingIn is..."));
 	
-	// int checkHeadingCounter = 0;
-	// int checkHeadingEvery = 1000;
-	// unsigned long previousTime = millis();
+	// dof.readMag(); //update magnetometer registers
+	// float heading=getHeading((float) dof.mx, (float) dof.my);
+	
 	
 	while(goingIn){
 		// Serial.println("In goingIn while-loop");
@@ -648,12 +775,16 @@ void GoingInMode(){
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS); //JSP
 		
+		// Serial.println(heading);
+		// dof.readMag(); //update magnetometer registers
+		// heading=getHeading((float) dof.mx, (float) dof.my);
+		// delay(1000);
 		
 		
 		if (CheckPayload()){
 			Serial.println("Something found in payload");
 			current_target_heading = OUT_DIRECTION;
-			preferGyro = true; // 
+			// preferGyro = true; // 
 			enable_turnReversalMode(3); // this sets the variable nextMode to 3, which corresponds to goingOut. This sets a variable that will remember which mode the robot should enter after turning around...?
 			return; // if there is something in the 	 gripper, then we need to exit goingInMode
 		}
@@ -704,19 +835,14 @@ void GoingInMode(){
 			unsigned long backingOutStart=millis();
 			Backward(BASE_SPEED);
     
-			// while(CHARGER){
-			// WDT_Restart(WDT);
-			// }
 			delay(1000); //force backout for short time
 			Stop();
 			delay(200); //quick stop
-			//TurnHeading(IN_DIRECTION); //turn to go in a tunnel
 			enable_turnReversalMode(1);
 			Stop();
 			delay(100);
 			Forward(BASE_SPEED); //start slowly driving forward
 
-			//whenForcedBackwardKick=millis(); //the robot drove backward 
 			FollowLane();//poll camera and call PD
 			WDT_Restart(WDT);
 		}
@@ -724,13 +850,8 @@ void GoingInMode(){
 
 		FollowLane();//poll camera and call PD
 		WDT_Restart(WDT);
-		// Serial.println("WDT7");
 
-/*   else if(COTTON){ //survey on cotton IFF lane is not seen 
-		if(Areac>500){
-   DriveForward(x7);
-   }
-  } */
+
 
  // if(CheckPower()){
  // enable_GoingCharging();
@@ -775,172 +896,84 @@ void GoingInMode(){
 			} 
 		#endif
 	} //end while(goingIn)
+	return;
 } // end goingInMode()
 //----------------------------------------------------
 
 
 
 //----------------------------------------------------
-void GoingOutModeRoss(){
-	Serial.println(F("Beginning of GoingInMode()"));
+// void goingOutModeRoss(){
+	// Serial.println(F("Beginning of GoingInMode()"));
 
-	WDT_Restart(WDT);
-	numOfConsequitiveBackwardKicks = 0;
+	// WDT_Restart(WDT);
+	// numOfConsequitiveBackwardKicks = 0;
 
-	#ifdef FIO_LINK
-		Serial.println(F("FIO_LINK defined"));
-		fioWrite(MASTER_GOING_OUT); //report over radio 
-	#endif
+	// #ifdef FIO_LINK
+		// Serial.println(F("FIO_LINK defined"));
+		// fioWrite(MASTER_GOING_OUT); //report over radio 
+	// #endif
 
-	#if ALLOW_USELESS_RUNS
-		unsigned long whenModeStart=millis(); //the robot has X seconds to get to the tunnel or it has to get out
-	#endif
+	// #if ALLOW_USELESS_RUNS
+		// unsigned long whenModeStart=millis(); //the robot has X seconds to get to the tunnel or it has to get out
+	// #endif
 
-	//Forward(BASE_SPEED); //anti stuck VADIM. uncomment this 
 
-	//watchdogFlag=1; //action taken
-	// unsigned long lastBackup=millis(); //timer to make the robot back out slightly backward every so often 
+	// // Arm.GripperGo(CLOSED_POS); //close the jaws
+	// Arm.GripperGo(CLOSED_POS); //close the jaws //JSP
+	// unsigned long whenForcedBackwardKick=millis();
 
-	bool movingPitchUp = false; //remember if we are moving pitch up or down
-	unsigned long whenMovedHead=millis();  //initiate timer to myDelay head shaking; //pitch head up and down to make sure that the head sensor triggers if the robot is pushing in a tunnel
+	// // TurnHeading(current_target_heading); //may need to add this for a case when the board resets
+	// // add head bump sensor
+	// //start counting IR side how long
+	// //unsigned long whenSawTrails()=millis();
+	// Serial.println(F("goingOutRoss is..."));
 
-	unsigned long whenIRsensorOverride=millis();
-	unsigned long previousTime=millis();
-
-	// Arm.GripperGo(CLOSED_POS); //close the jaws
-	Arm.GripperGo(CLOSED_POS); //close the jaws //JSP
-	unsigned long whenForcedBackwardKick=millis();
-
-	// TurnHeading(current_target_heading); //may need to add this for a case when the board resets
-	// add head bump sensor
-	//start counting IR side how long
-	//unsigned long whenSawTrails()=millis();
-	Serial.println(F("goingOutRoss is..."));
+	// while(goingOut){
 	
-	int checkHeadingCounter = 0;
-	int checkHeadingEvery = 1000;
-
-	while(goingOut){
-		// Serial.println("In goingOut while-loop");
-		// Serial.print("The goingOut cycle-time is: ");
-		// Serial.println(millis() - previousTime);
-		// previousTime = millis();
 	
-		#ifdef FIO_LINK
-			Serial.println(F("FIO_LINK defined"));
-			fioWrite(MASTER_GOING_OUT); //report over radio 			
-		#endif
+		// goingOut = false; goingIn = true;
+
 	
-		WDT_Restart(WDT);
-		Arm.PitchGo(HIGH_ROW_ANGLE);
-		Arm.GripperGo(CLOSED_POS); //JSP
-		
-		// WDT_Restart(WDT);
- 
-		// Checks for Contact
-		if(CONTACT){
-			Serial.println("Something contacted");
-			WDT_Restart(WDT);
-			handleContact();
-			
-		// Rewrite fio to goinging state so we know we are out of the turning state
-		#ifdef FIO_LINK
-			Serial.println(F("FIO_LINK defined"));
-			fioWrite(MASTER_GOING_OUT); //report over radio 
-		#endif
-
-		}
-		
-		
-		//--- handle wrong way directions -- commented out by ross on 10/31
-		if(checkWrongDirections()){
-			Serial.println("checkWrongDirections()returns true");
-
-			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-		}	
-		
-		FollowLane(); //poll camera and call PD
-		// GetDetectedSigs(); //poll camera, get latest vision info
- 
-		if(CHARGER){
-			Stop();
-			enable_DumpingMode();
-			return;
-		}
-
-		FollowLane(); //poll camera and call PD
-		WDT_Restart(WDT);
-		// Serial.println("WDT7");
-
-/*   else if(COTTON){ //survey on cotton IFF lane is not seen 
-		if(Areac>500){
-   DriveForward(x7);
-   }
-  } */
-
- // if(CheckPower()){
- // enable_GoingCharging();
- // return;
- // }
- 
-		// // if(goingIn && checkHeadSensor() ){
-			// // Serial.println("checkHeadSensor() returns true");
-			// // #ifdef FIO_LINK
-				// // Serial.println(F("FIO_LINK defined"));
-				// // fioWrite(MASTER_DIGGING); //report over radio
-				// // delay(1000);
-			// // #endif
-			// // return; //found soemthing, lets dig 
-		// // }
-		
-		// FollowLane();
-		
-		Forward(BASE_SPEED);
-		// delay(100);
-
-		
-		
-		
-		/* 
-		#ifdef MANUAL_ON
-			handleManualOverride(); 
-		#endif
-		*/
-  
-		// #if ALLOW_USELESS_RUNS //prob bugged
-			// Serial.println("ALLOW_USELESS_RUNS is true");
-			// #ifdef FIO_LINK
-				// Serial.println(F("FIO_LINK defined"));
-				// fioWrite(MASTER_USELESS_RUN); //report over radio
-				// delay(1000);
-			// #endif
-
-			// if( millis() - whenModeStart > USELESS_RUN_THRESH){
-				// //bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
-				// bool goBack = true; // force the robot to go back 
-				// preferGyro=true; 
-
-				// if (goBack){
-					// Backward(BASE_SPEED);
-					// delay(2000);
-					// Stop();
-					// current_target_heading=OUT_DIRECTION;
-					// //TurnHeading(current_target_heading);
-					// enable_turnReversalMode(7);
-					// //enable_RestingMode(); //go to the charging station
-					// //enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
-					// return; 
-				// }
-				// //bool goBack = false;//BANI
-				// else{ //BANI 
-					// whenModeStart=millis(); //reset timer 
-					// WDT_Restart(WDT);
-					// //Serial.println("WDT8");
-				// }
-			// } 
+		// #ifdef FIO_LINK
+			// Serial.println(F("FIO_LINK defined"));
+			// fioWrite(MASTER_GOING_OUT); //report over radio 			
 		// #endif
-	} //end while(goingIn)
-} // end goingInMode()
+	
+		// WDT_Restart(WDT);
+		// Arm.PitchGo(HIGH_ROW_ANGLE);
+		// Arm.GripperGo(CLOSED_POS); //JSP
+ 
+		// // Checks for Contact
+		// if(CONTACT){
+			// Serial.println("Something contacted");
+			// WDT_Restart(WDT);
+			// handleContact();
+		// }
+				
+		// // --- handle wrong way directions -- commented out by ross on 10/31
+		// if(checkWrongDirections()){
+			// Serial.println("checkWrongDirections()returns true");
+		// }	
+		
+		// FollowLane(); //poll camera and call PD
+ 
+		// if(CHARGER){
+			// Stop();
+			// enable_DumpingMode();
+			// return;
+		// }
+
+		// FollowLane(); //poll camera and call PD
+		// WDT_Restart(WDT);
+		
+		// Forward(BASE_SPEED);
+		// goingOut = true; goingIn = false;
+
+		
+	// } //end while(goingIn)
+	// return;
+// } // end goingInMode()
 //----------------------------------------------------
 
 
@@ -1804,26 +1837,38 @@ bool checkHeadSensor(){
 	// so i think the issue here is that there is a second delay where only the PID controller feedback correction is directing the robot. There is an attempt at
 	// this in goingIn mode, but there is an early return.
  
-	if(goingOut){ //payload checking
-	
-		// if(FSensor.Detected()){
-			// Forward(BASE_SPEED);
-			// return 1; //we are carrying something, no problem
-		// }
+	if(goingOut){
+		WDT_Restart(WDT);
+		/* This method will give clearnace for digging mode if head sensor detects  */
+		if ( (FSensor.Detected()) ){ //am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
+			// enable_DiggingMode();
+			return 1; //JSP
+			
+			// you will never get here!!!!!!!!!!!!!!!!!!!!!
 		
-		// else{
-			// // unsigned long sensor_timer=millis(); //used to very that we dont have anything by continuing sampling
-			// // while( millis() - sensor_timer < 1000){
-				// // WDT_Restart(WDT);
-				// // if(FSensor.Detected()){
-					// // return 1; //false alarm, there is something
-				// // }
-			// // }
-			// // Forward(BASE_SPEED); //proceed forward slowly 
-			Forward(BASE_SPEED);
-			return 0;//looks like we lost it
-		// } 
-	} 
+			// unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
+   
+			// while( FSensor.Detected() ){
+				// Stop(); 
+				// WDT_Restart(WDT);
+				// if( (millis()- sensor_timer)> 1000){//we saw this sensor spike for 2 seconds at least
+					// enable_DiggingMode();
+					// // HeadSensor.threshold=1000; //weaken the threshold for digging  //1023 is nominal reading
+					// return 1; //exit this mode, something is detected
+					// break; //breaks while loop
+				// }
+			// }
+			// GetDetectedSigs(); //poll camera, get latest vision info
+		}
+  
+		Forward(BASE_SPEED); //proceed forward slowly 
+		return 0; //nothing is detected
+	}
+	
+	Forward(BASE_SPEED);
+	return 0;//looks like we lost it
+
+	
 }
 
 
@@ -2087,26 +2132,26 @@ void TurnHeadingRoss(float desired_heading){
 	Arm.PitchGo(HIGH_ROW_ANGLE); // raise the arm to decrease overall length // JSP
 	WDT_Restart(WDT);
 	
-	// diff_heading = desired_heading - current_heading;
-	// Serial.print("Initial diff_heading = ");
-	// Serial.println(diff_heading);
+	float diff_heading = desired_heading - current_heading;
+	Serial.print("Initial diff_heading = ");
+	Serial.println(diff_heading);
 	
 	unsigned long switchTurnDirection = millis();
 	unsigned long switchTime = 7000;
 	
-	unsigned long currentTime = millis();
+	// unsigned long currentTime = millis();
 	do {
 		fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
 
 		// update heading differences
 		dof.readMag(); //update magnetometer registers
 		current_heading = getHeading((float) dof.mx, (float) dof.my);
-		// turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
+		
 
 		// Serial.println("---------------------------------------------------------");
 		// Serial.print("desired_heading = "); 	Serial.println(desired_heading);
 		// Serial.print("current_heading = "); 	Serial.println(current_heading);
-		// turn_reversal_direction = pickDirection(current_heading, desired_heading); pickDirection does not work for the current iteration of IMUs.
+		// turn_reversal_direction = pickDirection(current_heading, desired_heading); // pickDirection does not work for the current iteration of IMUs.
 		
 		// Checks for Contact
 		if(CONTACT){
@@ -2229,355 +2274,6 @@ void TurnHeadingRoss(float desired_heading){
 
 
 
-
-//----------------------------------------------------
-	
-/** this method will make the robot turn to a given angle bearing using
-		magnetometer and gyroscope as a feedback
-		user also passes in 0 if we want the robot to turn left, or 1 if turn right. Default is set to left   **/
-// void TurnHeading(float desired_heading){
-
-	// // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// // int numOfInstances = 0; // We will is numOfInstances to keep track of the number of consecutive times we compute that we aligned with desired_heading. This is a quick and dirty method to filter out random false positives. 
-	// WDT_Restart(WDT);
-	
-	// fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
-	// //checkIMU(); //check we are talking to IMU //Likely to be the cause for reset at exit tunnel // removed by JSP
-	
-	// unsigned long watchdog2Timer=millis(); // 2 minute time out timer, exit out of here if the robot fails to turn in 2 minutes 
-		
-	// int instructionChanges = 0; //initiate variable to keep track of how many 
-	
-	// // Ross: is the following line still necessary? interrupt_mask_timer is only updated, but the value is not used
-	// // bool turning = true; //local flag to keep turning, really not needed anymore 
-	// unsigned long interrupt_mask_timer=millis(); //used to make sure switches interrupts are not serviced too fast
-	
-	// dof.readMag(); //update magnetometer registers
-	// float current_heading = getHeading((float) dof.mx, (float) dof.my); //get a compass direction, value returned is from 0 to 360 degrees
-
-	// //autonomously pick the best direction to initiate turning
-	// turn_reversal_direction = pickDirection(current_heading, desired_heading); //choose direction for turn reversal, 0 for left turn, 1 for right turn
-	// unsigned long time_start = millis(); // initiate timer to keep robot turning if there is a turning progress
-	// unsigned long action_timeout = millis(); // watchdog timer, make sure that the robot is not stuck, forcing new actions if the robot have not done anything in a while 
-	// Arm.PitchGo(HIGH_ROW_ANGLE); // raise the arm to decrease overall length // JSP
-	// WDT_Restart(WDT);
-
-	// //initiate gyro integration vars here
-	// float angle = 0;
-	// float refRate = 0;
-	// unsigned long  gyroTime = millis();
-	// setGyroRef(&gyroTime,&refRate);
-	
-		// // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process End ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	// bool turning = true; //local flag to keep turning, really not needed anymore
-	// int numOfInstances = 0; // We will is numOfInstances to keep track of the number of consecutive times we compute that we aligned with desired_heading. This is a quick and dirty method to filter out random false positives. 
-	// int requiredNumOfInstances = 1;
-	
-	// while(turning){ // traps the execution here while turning is still true
-	
-		// //---make sure that the gyro is still working
-		// WDT_Restart(WDT); // repeat this so that the board is not reset in the middle of a turn
-		
-		// //checkIMU(); //likely to be the cause for reset at exit tunnel // removed by JSP
-
-		// //---check if we are facing correct direction
-		// // isWantedHeading returns true if we are indeed facing the correct direction (right?)
-		// if(isWantedHeading(desired_heading) && !preferGyro ){ //check if the robot is facing desired heading direction
-			// numOfInstances++;
-			// Serial.println("Not PreferGyro");
-			// if(numOfInstances >= requiredNumOfInstances){//5 before //make sure there is at least this many samples
-				// WDT_Restart(WDT);
-				// turning = false;
-				// // Stop(); delay(100); //debugging stop 
-				// Forward(BASE_SPEED); //anti stuck 
-				// Arm.PitchGo(HIGH_ROW_ANGLE); //straighten out 
-				// preferGyro = false; //invoke default state // not sure why this line is here, because you can't get to this line if preferGyro is true...
-				// break; //escape while(turning) loop
-			// }
-		// }
-		
-		// else{
-			// numOfInstances = 0; // is this right? if preferGyro is true, then numOfInstances will always be set to 0
-		// }
- 
-		// if(preferGyro){ //duct tape solution to do 180 degree turns
-			// Serial.println("PreferGyro");
-			// bool output = countGyro(&angle,&gyroTime,&refRate);
-			// Serial.println(output);
-				// if(output){
-					// WDT_Restart(WDT);
-					// turning = false;
-					// Stop(); delay(100); //debugging stop 
-					// Forward(BASE_SPEED); //anti stuck 
-					// Arm.PitchGo(HIGH_ROW_ANGLE);
-					// preferGyro = true; //invoke default state --- is this right? we cannot get here without preferGyro being true
-					// break; //escape while(turning) loop
-				// }
- 
-		// }
-		
-		// //////temporarily suppressed this
-		// // //---check if this method has been running for too long 
-		// // if( (millis() - watchdog2Timer) > 300000){ //five minute timeout 
-			// // fioWrite(RESET_REQUEST);
-			// // delay(2000);
-			// // arduinoReset(); //desperate measure
-			// // return; //and hope for the best 
-		// // } 
-
-		// //---exception handling for charging mode: function return 
-		// // if(goingCharging){ //check if charging beacon is seen, or desired charger is touched
-			// // if( CHARGER){//bumped into charging station by accident. potential bug if the robot ends up in a funny orientation 
-				// // WDT_Restart(WDT);
-				// // Stop(); delay(100); //hit the breaks. potentially a bug since this will not set appropriate flags in goingCharging mode. avoiding using global vars
-				// // //Relay.PowerOff(); //kill the power, software will eventually kick in Charing Mode
-				// // Arm.PitchGo(MID_ROW_ANGLE); //return arm to a horizontal position 
-				// // preferGyro=false; //invoke default state
-				// // return; //exit function   
-			// // }
-		// // }
-		
-		// if(restingMode){
-		// //if(DUMPING_SWITCH){
-			// if(CHARGER){                  //BANI
-				// WDT_Restart(WDT);
-				// Stop(); delay(100);
-				// Arm.PitchGo(HIGH_ROW_ANGLE);//maintain high arm position
-				// preferGyro=false;
-				// //invoke default state
-				// //bool goBack = false; //BANI I THINK THIS WILL START ELSE STATEMENT IN 
-				// return;
-			// }
-		// }
- 
-	// // if(goingOut){
-		// // if(DUMPING_SWITCH){
-			// // WDT_Restart(WDT);
-			// // Stop(); delay(100); //hit the breaks
-			// // Arm.PitchGo(MID_ROW_ANGLE); //straighten out 
-			// // preferGyro=true; //invoke default state
-			// // return;
-		// // }
-	// // }
-
-		// //--- execute a turning command
-		// switch (turn_reversal_direction){
-			// WDT_Restart(WDT); 
-			// /* right and left turns used to have 155 pwm input. changed to 255 for better traction */
-			// case false:
-				// //Left(DEFAULT_TURNING_SPEED);//try turning left
-				// Drive.LeftForward(255);
-				// Drive.RightForward(50);
-				// delay(500); Stop();
-				// break;
-
-			// case true:
-				// //Right(DEFAULT_TURNING_SPEED);//try turning right
-				// Drive.RightForward(255);
-				// Drive.LeftForward(50);
-				// delay(500); Stop();
-				// break;
- 
-		 // /*
-			// case 4:
-				// Drive.RightBackward(255);
-				// Drive.LeftBackward(75);
-				// break;
-		 
-			// case 5:
-				// Drive.RightForward(75);
-				// Drive.LeftForward(255);
-				// break;
-		 
-			// case 6:
-				// Drive.RightBackward(75);
-				// Drive.LeftBackward(255);
-				// break;
-		 
-			// case 7:
-				// Drive.RightForward(255);
-				// Drive.LeftForward(75);
-				// break;*/
-		// }
- 
-		// //--- handle physical bumping
-		// if(CONTACT){//if contact switches are pressed 
-			// WDT_Restart(WDT);
-	
-			// //if ( (millis()-interrupt_mask_timer) > 5000 ){ //if not a recent contact
-			// handleContact();
-			// instructionChanges++; //increase counter 
-			// interrupt_mask_timer=millis(); //reset timer
-			// time_start=millis(); //reset timeout timer, let the robot keep on turning
-			// action_timeout=millis(); //reset watchdog timer 
-			// // continue; //go toward next loop iteration so that new turning direction can be executed 
-		// //} 
-		// } 
-		
-		// if(DUMPING_SWITCH){
-			// WDT_Restart(WDT);
-			// Stop(); delay(100); //pressing against something
-			// Backward(BASE_SPEED); delay(1500);
-			// bumpDelay(1000);
-			// turn_reversal_direction=0; //reset turning instruction  
-			// Left(DEFAULT_TURNING_SPEED); //and execute this turning instruction right away
-			// instructionChanges++; //increase counter. maybe I should be resetting here
-		// }
- 
-		// //---check if the robot is making progress with gyroscope 
-		// dof.readGyro(); //update gyro registers
-		// if( abs( dof.calcGyro(dof.gz) ) >= SLOW_TURNING_RATE ){ //if robot is making progress turning
-			// time_start=millis(); //reset timeout timer, let the robot keep on turning
-		// }
-		
-		// if( ( millis()-time_start) > TURNING_TIMEOUT ){ //gyro does not detect turning, switch turning command instruction
-			// instructionChanges++; //increase counter
-	
-// /*
-			// switch(turning_case){
-				// case 0:
-					// turning_case=7;
-					// Backward(BASE_SPEED); delay(1000);
-					// WDT_Restart(WDT);
-					// break;
-					// case 1:
-					// turning_case=5;
-					// Backward(BASE_SPEED); delay(1000);
-					// WDT_Restart(WDT);
-					// break;
-  
-			// case 5:
-				// turning_case=4;
-				// WDT_Restart(WDT);
-				// break;
-				// case 4:
-				// turning_case=5;
-				// Backward(BASE_SPEED); delay(1000);
-				// WDT_Restart(WDT);
-				// break;
-
-			// case 7:
-				// turning_case=6;
-				// WDT_Restart(WDT);
-				// break;
-				// case 6:
-				// turning_case=7;
-				// Backward(BASE_SPEED); delay(1000);
-				// WDT_Restart(WDT);
-				// break;  
-		// }*/
-			// time_start=millis();//reset timeout timer
-			// action_timeout=millis(); //reset watchdog timer 
- // //continue; //go toward next loop iteration so that new turning direction can be executed
-		// }
-
-		// // --- enforce a change in direction at least every X seconds 
-		// if( (millis()-action_timeout)>10000 ){//gyro may be going of from vibrations, robot is not going anywhere
-			// WDT_Restart(WDT);
-			// instructionChanges++; //increase counter 
-			// turn_reversal_direction = !turn_reversal_direction; //reverse turning direction from left to right, and vice versa
-  // /*
-			// switch(turning_case){ //change turning instruction 
-				// case 0:
-				// turning_case=7;
-				// Backward(BASE_SPEED); delay(1000);
-				// WDT_Restart(WDT);
-				// break;
-				// case 1:
-				// turning_case=5;
-				// Backward(BASE_SPEED); delay(1000);
-				// WDT_Restart(WDT);
-				// break;
-  
-				// case 5:
-					// turning_case=4;
-					// WDT_Restart(WDT);
-					// break;
-					// case 4:
-					// turning_case=5;
-					// Backward(BASE_SPEED); delay(1000);
-					// WDT_Restart(WDT);
-					// break;
-
-				// case 7:
-					// turning_case=6;
-					// WDT_Restart(WDT);
-					// break;
-					// case 6:
-					// turning_case=7;
-					// Backward(BASE_SPEED); delay(1000);
-					// WDT_Restart(WDT);
-					// break;  
-				// }*/
-	
-			// time_start=millis();//reset timeout timer
-			// action_timeout=millis(); //reset watchdog timer 
-			// WDT_Restart(WDT);
-		// }
-
-		// //--- desperate measures 
-		// if(instructionChanges > 10){//10 //40 previously //the robot is probably stuck somewhere hopelessly //15
-			// Stop();
-			// while(1){
-				// //should trigger watchdog reset  since WDT_Restart(WDT) is not called
-			// }
-		// }
-	
-	// WDT_Restart(WDT);
-	
-	// }//end while(turning)
-
-	// Arm.PitchGo(HIGH_ROW_ANGLE); //maintain high angle position of the gripper 
-
-	// //Determines the next mode in which the robot will go in, and set it accordingly
-	// switch(nextMode){
-		// case 1:
-			// enable_GoingInMode(); //1 denotes the robot will go into going_in mode after turn reversal
-			// break;
-
-		// case 2:
-			// enable_DiggingMode();//2 denotes the robot will go into digging mode after turn reversal //never used
-			// break;
-
-		// case 3:
-			// enable_GoingOutMode();//3 denotes the robot will go into going_out mode after turn reversal
-			// break;
-
-		// case 4:
-			// enable_DumpingMode();//4 denotes the robot will go into dumping mode after turn reversal //never used
-			// break;
-
-		// case 5:
-			// enable_GoingCharging();//5 denotes the robot will go into going_charging mode after turn reversal
-			// break;
-
-		// case 6:
-			// enable_RestingMode();//6 denotes the robot will go into resting mode after turn reversal //never used
-			// break;
-
-		// case 7:
-			// enable_exitTunnelMode();//7 denotes the robot will go into exit tunnel mode after turn reversal //never used
-			// break;
-
-		// case 10:
-			// //does not change the mode
-			// Serial.println(F("Case 10 used - mode not updated"));
-			// break;
-
-		// default:
-			// //does not change the mode
-			// Serial.println(F("Default used - mode not updated"));
-			// break;
-	// }
-
-	// GetDetectedSigs(); //poll camera, get latest vision info
-	// FollowLane();//poll camera and call PDcheckWrongDirections
-	// //return;
-// }
-
-
-
 //----------------------------------------------------
 bool isWantedHeading(float desired_heading){
 	/* this method accepts a desired heading angle and returns a boolean variable
@@ -2591,7 +2287,8 @@ bool isWantedHeading(float desired_heading){
 	WDT_Restart(WDT);
 	dof.readMag(); //update magnetometer registers
 	float heading=getHeading((float) dof.mx, (float) dof.my);
-
+	// float heading=getHeading((float) dof.calcMag(dof.mx), (float) dof.calcMag(dof.my));
+	
 	float lowBound = desired_heading - DIRECTION_UNCERTAINTY;
 	float highBound = desired_heading + DIRECTION_UNCERTAINTY; 
 
@@ -2691,8 +2388,14 @@ note from the original library:
  See: http://www.ngdc.noaa.gov/geomag/declination.shtml
   */
   float heading;
-  
-  if (hy > 0)
+  dof.readMag(); //update gyro registers
+
+	hx = dof.calcMag(dof.mx);
+	hy = dof.calcMag(dof.my);
+	
+	Serial.print(hx); Serial.print(", "); Serial.println(hy);  
+	
+	if (hy > 0)
   {
     heading =  270 - (atan(hx / hy) * (180 / PI));
   
@@ -2707,6 +2410,22 @@ note from the original library:
     if (hx < 0) heading = 360;
     else heading = 180;
   }
+	
+	 // if (hy > 0)
+  // {
+    // heading = 90 - (atan(hx / hy) * (180 / PI));
+  // }
+  // else if (hy < 0)
+  // {
+    // heading = - (atan(hx / hy) * (180 / PI));
+  // }
+  // else // hy = 0
+  // {
+    // if (hx < 0) heading = 180;
+    // else heading = 0;
+  // }
+	
+	
   return heading;
 	
 
@@ -3695,8 +3414,8 @@ void TestIMU(){
 		Serial.println(heading);
 		
 		
-		Serial.println(heading); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
-		fioWriteInt(heading); //send the capacitive sensor value to fio.
+		// Serial.println(heading); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
+		// fioWrite(heading); //send the capacitive sensor value to fio.
 		//Serial.println(CapSensor.readTouch()); //print the touch status of all pins.
 		delay(1000);
 

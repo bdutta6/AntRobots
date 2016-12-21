@@ -255,7 +255,7 @@ void readDataFromDue(){
 			byte inLow = char2hex(inData[1]);
 			hexData = ((inHigh << 4) | inLow);
 	 
-			bool test_cap = true; 	 // if you want to test the capacitive sensors, set test_cap to true, and if-statements will be used to control the flow of the program to help debug
+			bool test_cap = false; 	 // if you want to test the capacitive sensors, set test_cap to true, and if-statements will be used to control the flow of the program to help debug
 			if(test_cap){ // if we are testing the capacitor, we will enter this clause
 				Serial.println(inData);
 				lcd.clear();

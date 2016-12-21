@@ -31,8 +31,8 @@
 #define AntSingleThresh1	455
 #define AntSingleThresh2	690
 
-#define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
-#define WallDoubleThresh2 50 
+#define WallDoubleThresh1 10000 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh2 100000
 
 #define AntDoubleThresh1 1	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
 #define AntDoubleThresh2 50 // Upper
@@ -41,13 +41,13 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 328 //62//300 // previously set to 270-
-#define IN_DIRECTION  26 //291//62 //  used to be 60
+#define OUT_DIRECTION 352 //62//300 // previously set to 270-
+#define IN_DIRECTION  36 //291//62 //  used to be 60
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
-#define PORT_DIRECTION        0//350    //left with respect to IN_DIRECTION
-#define STARBOARD_DIRECTION   12   //right with respect to IN_DIRECTION
+#define PORT_DIRECTION        12//350    //left with respect to IN_DIRECTION
+#define STARBOARD_DIRECTION   5   //right with respect to IN_DIRECTION
 
 // #define DIR_IN_R 260
 // #define DIR_IN_L 122

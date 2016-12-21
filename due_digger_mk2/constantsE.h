@@ -30,8 +30,8 @@
 #define AntSingleThresh1	50
 #define AntSingleThresh2	500
 
-#define WallDoubleThresh1 1 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
-#define WallDoubleThresh2 50 
+#define WallDoubleThresh1 10000 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh2 100000
 
 #define AntDoubleThresh1 1	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
 #define AntDoubleThresh2 50 // Upper
@@ -40,13 +40,13 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 290 //270//240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  45  //90//89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 294 //270//240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  40  //90//89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 305 //240//240//300 //170 is at the wall, towards me
 #define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
-#define PORT_DIRECTION        350 //5//11//11//355//350    //left with respect to IN_DIRECTION  //modified
-#define STARBOARD_DIRECTION   190 //170//150//167   //right with respect to IN_DIRECTION  //modified
+#define PORT_DIRECTION        352 //5//11//11//355//350    //left with respect to IN_DIRECTION  //modified
+#define STARBOARD_DIRECTION   213 //170//150//167   //right with respect to IN_DIRECTION  //modified
 
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging
