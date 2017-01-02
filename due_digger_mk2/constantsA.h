@@ -52,6 +52,15 @@
 #define PORT_DIRECTION        357 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   17 //150//167   //right with respect to IN_DIRECTION  //modified Ross10/11 changed 170->200
 
+////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
+#define HX_MIN -0.1800
+#define HX_MAX 0.1400
+
+#define HY_MIN -0.1900
+#define HY_MAX 0.0800
+
+#define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW
+
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging
 #define GOINGCHARGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while going charging

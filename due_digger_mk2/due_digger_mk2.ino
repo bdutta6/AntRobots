@@ -180,7 +180,8 @@ int checkPowerCount = 0; //variable to prevent robot from going charging due to 
 
 // This enumeration is used in the switch-case statements in loop() to conduct any necessary tests
 enum Test {
-	TEST_IMU, 
+	TEST_IMU,
+	TEST_IMU_CAL,
 	TEST_FORCE,
 	TEST_MAG,
 	TEST_CAP, 					// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
@@ -450,6 +451,9 @@ void loop(){
 	// This is advantageous in that adding a new test is as simple as adding a test state to the global enumeration and adding a test method to a separate test.cpp file (does not currently exist)
 	// enumeration defined in global declaration, and TEST_CASE is in RobotSelector
 	switch(TEST_CASE){
+		case TEST_IMU_CAL:
+			TestIMUcal();
+			break;
 		case TEST_IMU:
 			TestIMU();
 			break;
@@ -3492,7 +3496,26 @@ void TestPickDirection(){
 }
 
 
+void TestIMUcal(){
+	// Drive.RightForward(255);
+			// Drive.LeftForward(50);
+	Serial.println("hx, hy");
 
+	float heading;
+	float hx;
+	float hy;
+	while(1){
+		WDT_Restart(WDT);
+
+		dof.readMag(); //update registers
+
+		// // Get the raw readings from the IMU sensor
+		hx = dof.calcMag(dof.mx);
+		hy = dof.calcMag(dof.my);
+		Serial.print(hx); Serial.print(", "); Serial.println(hy);  
+
+	}
+}
 
 
 

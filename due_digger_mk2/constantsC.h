@@ -48,10 +48,14 @@
 #define PORT_DIRECTION					340 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   	272 //150//167   //right with respect to IN_DIRECTION  //modified
 
-// #define DIR_IN_R 260
-// #define DIR_IN_L 122
-// #define DIR_OUT_R 33
-// #define DIR_OUT_L 355
+////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
+#define HX_MIN -0.3300
+#define HX_MAX -0.0000
+
+#define HY_MIN -0.0500
+#define HY_MAX 0.2400
+
+#define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW
 
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging

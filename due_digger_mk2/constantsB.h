@@ -51,11 +51,11 @@
 #define STARBOARD_DIRECTION   190 //150//167   //right with respect to IN_DIRECTION  //modified
 
 ////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
-#define HX_MAX 0.1600
-#define HX_MIN -0.1500
+#define HX_MIN -0.1200
+#define HX_MAX 0.2000
 
-#define HY_MIN -0.9700
-#define HY_MAX -0.6900
+#define HY_MIN -0.7600
+#define HY_MAX -0.4700
 
 #define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW
 
