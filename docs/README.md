@@ -21,4 +21,15 @@ All of the batteries were dead, so there are two things that I need to do to get
 1. Learn how to charge the batteries
 2. Make a power cable so that the robots can run off of a power supply (3.6V).
 
+
+### October 7, 2016
+
+Will mentioned to me yesterday that the recharging process while the ants are running is not a straightforward process, and there are several files floating around on the lab desktop with tables I think might be necessary for regulating the charging method. See “C:\Users\vlinevich3\Desktop\Charging MPR121 Program vals.xlsx”.
+
+Continued going through the documentation left by JSP and fleshing out the Robotic Ant Status to get a better feel for the architecture and pre-existing problems. I also started up a Trello Board to track proposed changes from JSP. The Trello board is populated with the “List of things that need to be done in the future” in the Ant Robot Mk.2 Software Documentation
+
+Calling it a day. Feeling better about navigating the code. There seems to be some extraneous stuff left over from previous iterations, but I’d prefer to just get things running for now before going back and modifying working code to basically just look pretty. Best practices can be implemented after I have proven that I can get data with what we have right now.
+
+I was hoping to hear from JSP today, but I might just shoot him an email with all of my documented questions later tonight.
+
 [Guide to .md files](https://guides.github.com/features/mastering-markdown/)  
