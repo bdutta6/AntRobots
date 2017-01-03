@@ -615,18 +615,18 @@ void goingOutModeRoss(){
 		fioWrite(MASTER_GOING_OUT); //report over radio 
 	#endif
 
-	#if ALLOW_USELESS_RUNS
-		unsigned long whenModeStart=millis(); //the robot has X seconds to get to the tunnel or it has to get out
-	#endif
+	// #if ALLOW_USELESS_RUNS
+		// unsigned long whenModeStart=millis(); //the robot has X seconds to get to the tunnel or it has to get out
+	// #endif
 
-	unsigned long whenMovedHead=millis();  //initiate timer to myDelay head shaking; //pitch head up and down to make sure that the head sensor triggers if the robot is pushing in a tunnel
+	// unsigned long whenMovedHead=millis();  //initiate timer to myDelay head shaking; //pitch head up and down to make sure that the head sensor triggers if the robot is pushing in a tunnel
 
 
 	Arm.GripperGo(CLOSED_POS); //close the jaws //JSP
 
 	// TurnHeading(current_target_heading); //may need to add this for a case when the board resets
 	// add head bump sensor
-	Serial.println(F("goingIn is..."));
+	Serial.println(F("goingOutModeRoss is..."));
 	
 	
 	while(goingOut){
@@ -639,7 +639,6 @@ void goingOutModeRoss(){
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS); //JSP
 		
-		// goingOut = false; goingIn = true;
 		if (CheckPayload()){
 			Serial.println("Something found in payload");
 			// current_target_heading = OUT_DIRECTION;
@@ -665,7 +664,7 @@ void goingOutModeRoss(){
 		
 			//--- handle wrong way directions
 		if(checkWrongDirections()){
-			Serial.println("checkWrongDirections()returns true");
+			Serial.println("checkWrongDirections() returns true");
 
 			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
 		}	
@@ -710,33 +709,7 @@ void goingOutModeRoss(){
 		#endif
 		*/
   
-		// #if ALLOW_USELESS_RUNS //prob bugged
-			// Serial.println("ALLOW_USELESS_RUNS is true");
 
-			// if( millis() - whenModeStart > USELESS_RUN_THRESH){
-				// //bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
-				// bool goBack = true; // force the robot to go back 
-				// preferGyro=true; 
-
-				// if (goBack){
-					// Backward(BASE_SPEED);
-					// delay(2000);
-					// Stop();
-					// current_target_heading=OUT_DIRECTION;
-					// //TurnHeading(current_target_heading);
-					// enable_turnReversalMode(7);
-					// //enable_RestingMode(); //go to the charging station
-					// //enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
-					// return; 
-				// }
-				// //bool goBack = false;//BANI
-				// else{ //BANI 
-					// whenModeStart=millis(); //reset timer 
-					// WDT_Restart(WDT);
-					// //Serial.println("WDT8");
-				// }
-			// } 
-		// #endif
 		
 	} //end while(goingIn)
 	return;
@@ -892,8 +865,6 @@ void GoingInMode(){
 					current_target_heading=OUT_DIRECTION;
 					//TurnHeading(current_target_heading);
 					enable_turnReversalMode(7);
-					//enable_RestingMode(); //go to the charging station
-					//enable_GoingOutMode(); //BANI CHANGING MODE AS RESTING IS EXCLUSIVE TO LORENZ
 					return; 
 				}
 				//bool goBack = false;//BANI
@@ -1474,55 +1445,55 @@ unsigned long whenCheckedPayload=millis(); //used to occasionally check if paylo
 }
 //--------------------
 int seekCharging(){
-//---
-WDT_Restart(WDT);
-#ifdef FIO_LINK
-fioWrite(MASTER_GOING_CHARGING); //report going out
-#endif 
-//watchdogFlag=1; //action taken
-//bool IRactionHandled=false;
-//unsigned long whenIRactionHandled=millis(); //remember last IR action
-//unsigned long whenForcedBackwardKick=millis(); //remember last forced backward kick
-unsigned long whenCheckedPayload=millis(); //used to occasionally check if payload is still there 
-// bool maskHeadTrigger=false;
-// if(HEADON){
-// maskHeadTrigger=true; //if excavated load happens to block this sensor, disable it 
-// }
- current_target_heading=OUT_DIRECTION; 
- while(1){
- WDT_Restart(WDT);
- #ifdef MANUAL_ON
- handleManualOverride(); 
- #endif
- 
- //--IR contacts 
- /*
- IRactionHandled=handleIRcontacts();
- checkIfBackwardKickNeeded(&IRactionHandled,&whenIRactionHandled,&whenForcedBackwardKick);
- timeoutForceBackwardKick(&whenForcedBackwardKick); //force backward kick if the robot has not been backing out in a long time
- FollowLane();//poll camera and call PD
- WDT_Restart(WDT);
- */ 
-  //---contact handling	
-  if(CONTACT){
+	//---
 	WDT_Restart(WDT);
-  handleContact();
-  FollowLane();//poll camera and call PD
-  }
+	#ifdef FIO_LINK
+		fioWrite(MASTER_GOING_CHARGING); //report going out
+	#endif 
+	//watchdogFlag=1; //action taken
+	//bool IRactionHandled=false;
+	//unsigned long whenIRactionHandled=millis(); //remember last IR action
+	//unsigned long whenForcedBackwardKick=millis(); //remember last forced backward kick
+	unsigned long whenCheckedPayload=millis(); //used to occasionally check if payload is still there 
+	// bool maskHeadTrigger=false;
+	// if(HEADON){
+	// maskHeadTrigger=true; //if excavated load happens to block this sensor, disable it 
+	// }
+	current_target_heading=OUT_DIRECTION; 
+	while(1){
+		WDT_Restart(WDT);
+		#ifdef MANUAL_ON
+			handleManualOverride(); 
+		#endif
+ 
+		//--IR contacts 
+		/*
+		IRactionHandled=handleIRcontacts();
+		checkIfBackwardKickNeeded(&IRactionHandled,&whenIRactionHandled,&whenForcedBackwardKick);
+		timeoutForceBackwardKick(&whenForcedBackwardKick); //force backward kick if the robot has not been backing out in a long time
+		FollowLane();//poll camera and call PD
+		WDT_Restart(WDT);
+		*/ 
+		//---contact handling	
+		if(CONTACT){
+			WDT_Restart(WDT);
+			handleContact();
+			FollowLane();//poll camera and call PD
+		}
 	
-  //--- handle wrong way directions
-  if(checkWrongDirections()){
-  //whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
-  FollowLane();//poll camera and call PD
-  }	
+		//--- handle wrong way directions
+		if(checkWrongDirections()){
+			//whenForcedBackwardKick=millis(); //reset timer to prevent immediate backup
+			FollowLane();//poll camera and call PD
+		}	
   
-  // if (CHARGER) {//bingo!
-  // if (CHARGER || DUMPING_SWITCH) {//bingo! //VADIM
-  if (CHARGER) { //VADIM
-	Stop();
-  return 1;
-  }
- } //end while(1)
+		// if (CHARGER) {//bingo!
+		// if (CHARGER || DUMPING_SWITCH) {//bingo! //VADIM
+		if (CHARGER) { //VADIM
+			Stop();
+			return 1;
+		}
+	} //end while(1)
 }
 
 //---
@@ -1559,84 +1530,84 @@ void GoingCharging(){
 
 //----------------------------------------------------
 void ChargingMode(){
-//NOT GOING TO WORK. WE CUT THE CHARGING + wire 
-#ifdef FIO_LINK
-fioWrite(MASTER_CHARGING);
-#endif
-WDT_Restart(WDT);
-//need to add manual stuff. need to be able to turn relay on and off
-float C; //variable for storing current 
-//Serial.println("Entered Charging Mode");
-Stop(); delay(1000);
-//note: delay is used here instead of myDelay
-//need to add a little statement that checks if the voltage is actually increasing 
-WDT_Restart(WDT);
-Relay.PowerOff(); delay(1000); 
-float BatVoltage= Voltage.GrabAvg(25);
-float previousMaxVoltage=BatVoltage;
-unsigned long whenIncreasedVoltage=millis();
- while(BatVoltage < CHARGED_VOLTAGE){
- BatVoltage= Voltage.GrabAvg(25); //read current voltage
-  if(BatVoltage > previousMaxVoltage){
-  whenIncreasedVoltage=millis(); //reset timer
-  previousMaxVoltage=BatVoltage; //record new high
-  }
- WDT_Restart(WDT);
-  if( (millis() - whenIncreasedVoltage) > 300000){ //5 minutes
-  WDT_Restart(WDT);
-	break; //havent seen voltage increase in a while 
-  }
-
-  if(!CHARGER){ //not touching charging station
-  WDT_Restart(WDT);
-	Relay.PowerOn(); delay(1000); //turn power back on
-  // checkCamera();
-  bool redock_success=redock(); //if success, should we reset voltage tracking variables? 
-   if(!redock_success){
-   // enable_GoingCharging(); //need to find charging beacon again 
-   // return; //exit this mode   
-   seekCharging(); //find charging station again 
-   Relay.PowerOff();
-   }   
-  }
- delay(100); //small waiting delay
- // C=Current.ReadAvg(100); //debug
- }
- 
-//now the voltage level has jumped up, but we need to add juce
-unsigned long chargingStart=millis();
-//                                m  s   ms  
-unsigned long desiredChargingTime=9000000; //2.5hours of charging
- while ( millis() - chargingStart < desiredChargingTime){
- WDT_Restart(WDT);
- delay(1000); //do nothing
-  if(!CHARGER){ //not touching charging station
-  Relay.PowerOn(); delay(1000); //turn power back on
-  bool redock_success=redock();
+	//NOT GOING TO WORK. WE CUT THE CHARGING + wire 
+	#ifdef FIO_LINK
+		fioWrite(MASTER_CHARGING);
+	#endif
 	WDT_Restart(WDT);
-   if(!redock_success){
-   // enable_GoingCharging(); //need to find charging beacon again 
-   // return; //exit this mode   
-   seekCharging(); //find charging station again
-   Relay.PowerOff();
-   desiredChargingTime+=5*60*1000; //add some time to compensate 
-   } 
-  }
- // C=Current.ReadAvg(20);
-  // if( C > -0.099 && C <=0){ //good enough
-  // break; //exit this loop
-  // }
- }
- Relay.PowerOn(); //turn the power to the robot on
- WDT_Restart(WDT);
- delay(3000);
- WDT_Restart(WDT);
- //checkCamera();
- // checkIMU();
- // checkCamera();
-leaveChargingStation();
-Forward(BASE_SPEED); //start slowly driving forward, anti stuck kick 
-return;
+	//need to add manual stuff. need to be able to turn relay on and off
+	float C; //variable for storing current 
+	//Serial.println("Entered Charging Mode");
+	Stop(); delay(1000);
+	//note: delay is used here instead of myDelay
+	//need to add a little statement that checks if the voltage is actually increasing 
+	WDT_Restart(WDT);
+	Relay.PowerOff(); delay(1000); 
+	float BatVoltage= Voltage.GrabAvg(25);
+	float previousMaxVoltage=BatVoltage;
+	unsigned long whenIncreasedVoltage=millis();
+	while(BatVoltage < CHARGED_VOLTAGE){
+		BatVoltage= Voltage.GrabAvg(25); //read current voltage
+		if(BatVoltage > previousMaxVoltage){
+			whenIncreasedVoltage=millis(); //reset timer
+			previousMaxVoltage=BatVoltage; //record new high
+		}
+		WDT_Restart(WDT);
+		if( (millis() - whenIncreasedVoltage) > 300000){ //5 minutes
+			WDT_Restart(WDT);
+			break; //havent seen voltage increase in a while 
+		}	
+
+		if(!CHARGER){ //not touching charging station
+			WDT_Restart(WDT);
+			Relay.PowerOn(); delay(1000); //turn power back on
+			// checkCamera();
+			bool redock_success=redock(); //if success, should we reset voltage tracking variables? 
+			if(!redock_success){
+				// enable_GoingCharging(); //need to find charging beacon again 
+				// return; //exit this mode   
+				seekCharging(); //find charging station again 
+				Relay.PowerOff();
+			}   
+		}
+		delay(100); //small waiting delay
+		// C=Current.ReadAvg(100); //debug
+	}
+ 
+	//now the voltage level has jumped up, but we need to add juce
+	unsigned long chargingStart=millis();
+	//                                m  s   ms  
+	unsigned long desiredChargingTime=9000000; //2.5hours of charging
+	while ( millis() - chargingStart < desiredChargingTime){
+		WDT_Restart(WDT);
+		delay(1000); //do nothing
+		if(!CHARGER){ //not touching charging station
+			Relay.PowerOn(); delay(1000); //turn power back on
+			bool redock_success=redock();
+			WDT_Restart(WDT);
+			if(!redock_success){
+				// enable_GoingCharging(); //need to find charging beacon again 
+				// return; //exit this mode   
+				seekCharging(); //find charging station again
+				Relay.PowerOff();
+				desiredChargingTime+=5*60*1000; //add some time to compensate 
+			} 
+		}
+		// C=Current.ReadAvg(20);
+		// if( C > -0.099 && C <=0){ //good enough
+		// break; //exit this loop
+		// }
+	}
+	Relay.PowerOn(); //turn the power to the robot on
+	WDT_Restart(WDT);
+	delay(3000);
+	WDT_Restart(WDT);
+	//checkCamera();
+	// checkIMU();
+	// checkCamera();
+	leaveChargingStation();
+	Forward(BASE_SPEED); //start slowly driving forward, anti stuck kick 
+	return;
 }
 
 void RestingMode(){
@@ -2049,6 +2020,8 @@ void turnIMUoff(){
 void DumpPayload(){
 	/* this robot will make the robot drop payload and shake its head once to make sure that GM is not stuck to the gripper */
 	// Serial.print(goingIn); Serial.print(diggingMode); Serial.print(goingOut); Serial.print(dumpingMode); Serial.print(goingCharging); Serial.println(chargingMode); //debug
+	
+	do {
 	WDT_Restart(WDT);
 	Stop(); delay(1000); //stop Note: delay is used (not myDelay). we dont want to react to bumps
 	Arm.PitchGo(MID_ROW_ANGLE); delay(100); 
@@ -2074,10 +2047,10 @@ void DumpPayload(){
 	WDT_Restart(WDT);
 	Arm.GripperGo(CLOSED_POS);
 	
-	// Ross: recursive call within the DumpingPayload may not be the best idea? while loop with an iteration count?
-	if (CheckPayload()){
-		DumpPayload(); // in case the cohesive material got stuck inside gripper, do DumpPayload again
-	}
+	// Ross: recursive call within the DumpingPayload may not be the best idea? do-while loop with an iteration count?
+	} while(CheckPayload());
+		// DumpPayload(); // in case the cohesive material got stuck inside gripper, do DumpPayload again
+	// }
 	//Right(255); myDelay(2000); //make a u-turn. THIS SHOULD LATER BE REPLACED WITH A WHILE LOOP with camera feedback
 	//Forward(100); myDelay(200); //start slowly driving forward, camera guiding algorithm should kick in
 }
@@ -2105,7 +2078,6 @@ bool CheckPower(){
 	}
 }
 
-
 /** this method will make the robot turn to a given angle bearing using
 		magnetometer and gyroscope as a feedback
 		user also passes in 0 if we want the robot to turn left, or 1 if turn right. Default is set to left   **/
@@ -2113,13 +2085,6 @@ void TurnHeadingRoss(float desired_heading){
 
 	Serial.println("In TurnHeadingRoss()");
 	
-	
-		// turnIMUoff(); //turn the pin off
-		// delay(1000);
-		// turnIMUon();
-		// dof.begin();
-	
-
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	WDT_Restart(WDT);
 	
@@ -2151,7 +2116,7 @@ void TurnHeadingRoss(float desired_heading){
 	unsigned long switchTime = 7000;
 	
 	// unsigned long currentTime = millis();
-	do {
+	do{
 		fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
 
 		// update heading differences
@@ -2231,7 +2196,7 @@ void TurnHeadingRoss(float desired_heading){
 			// Stop();
 			// delay(50);
 
-	} while (!isWantedHeading(desired_heading));
+	}while(!isWantedHeading(desired_heading));
 	Stop();
 	// delay(3000);
 		
@@ -2304,8 +2269,6 @@ void TurnHeadingRoss(float desired_heading){
 	
 	return;
 }
-
-
 
 
 //----------------------------------------------------
@@ -2487,32 +2450,10 @@ note from the original library:
     else heading = 180;
   }
 	
-	 // if (hy > 0)
-  // {
-    // heading = 90 - (atan(hx / hy) * (180 / PI));
-  // }
-  // else if (hy < 0)
-  // {
-    // heading = - (atan(hx / hy) * (180 / PI));
-  // }
-  // else // hy = 0
-  // {
-    // if (hx < 0) heading = 180;
-    // else heading = 0;
-  // }
-	
-	
 	// Serial.println(heading); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.
 
   return heading;
 	
-
-}
-
-float mapMY(){
-
-
-
 }
 
 //----------------------------------------------------
@@ -2918,7 +2859,7 @@ void handleContact(){
 				Backward(BASE_SPEED);
 				delay(500); //force new action
 				break;
-			case BR | BL:   // not sure why this case is here, after the previous two cases
+			case BR | BL:
 				Stop();
 				delay(100);
 				Forward(BASE_SPEED);
@@ -3146,217 +3087,217 @@ void handleContact(){
 }
 
 
-int handleTurningContact(int turning_case){ // not used anywhere
-/* this method will change current turning_case turning direction,
-log the start of the contact, */
+// int handleTurningContact(int turning_case){ // not used anywhere
+// /* this method will change current turning_case turning direction,
+// log the start of the contact, */
 
-// Serial.print("case \t");
-// Serial.print(turning_case);
-// Serial.print("switches \t");
-// Serial.println(switchState);
+// // Serial.print("case \t");
+// // Serial.print(turning_case);
+// // Serial.print("switches \t");
+// // Serial.println(switchState);
 
-/* case 0: initially started with left  turn
-   case 1: initially started with right turn  
-   case 3: simple backing out routine 
+// /* case 0: initially started with left  turn
+   // case 1: initially started with right turn  
+   // case 3: simple backing out routine 
    
-   case 4: back left
-   case 5: front right
-   case 6: back right
-   case 7: front left 
+   // case 4: back left
+   // case 5: front right
+   // case 6: back right
+   // case 7: front left 
    
-   delay() should be used here instead of myDelay to avoid program getting stuck
-   */
+   // delay() should be used here instead of myDelay to avoid program getting stuck
+   // */
  
  
- //if left is pressed,  move 5
- //if right is pressed, move 7
+ // //if left is pressed,  move 5
+ // //if right is pressed, move 7
 
- //can embed anti jamming kick in a if(!Headon), but it must not be masked
+ // //can embed anti jamming kick in a if(!Headon), but it must not be masked
 
-	unsigned long start_of_contact=millis(); //record length of contact
-	/* // logContacts(start_of_contact); //stick this before every return */
+	// unsigned long start_of_contact=millis(); //record length of contact
+	// /* // logContacts(start_of_contact); //stick this before every return */
  
-	if(disableContacts){//if disable flag is set. 
-		if( millis()- whenDisabledContacts >= CONTACT_RESET_TIME){
-			disableContacts=false; //reset the flag
-		}
-		else if (millis()- whenDisabledContacts < CONTACT_RESET_TIME)  {
-			return turning_case;//exit and do nothing
-		}
-		WDT_Restart(WDT);
-	}
+	// if(disableContacts){//if disable flag is set. 
+		// if( millis()- whenDisabledContacts >= CONTACT_RESET_TIME){
+			// disableContacts=false; //reset the flag
+		// }
+		// else if (millis()- whenDisabledContacts < CONTACT_RESET_TIME)  {
+			// return turning_case;//exit and do nothing
+		// }
+		// WDT_Restart(WDT);
+	// }
 
 
-	switch(turning_case){
-		case 0:
-		case 1:
-			switch(switchState){
-				case LSF: //if bumped anywhere on a left side
-				case LSB:
-				case(LSF | LSB):
-					turning_case=5;
-					logContacts(start_of_contact);
-					// return turning_case;
-					break;
+	// switch(turning_case){
+		// case 0:
+		// case 1:
+			// switch(switchState){
+				// case LSF: //if bumped anywhere on a left side
+				// case LSB:
+				// case(LSF | LSB):
+					// turning_case=5;
+					// logContacts(start_of_contact);
+					// // return turning_case;
+					// break;
   
-				case RSF: //if bumped anywhere on a right side
-				case RSB:
-					case(RSF | RSB):
-					turning_case=7; 
-					logContacts(start_of_contact);
-					// return turning_case;
-					break;
+				// case RSF: //if bumped anywhere on a right side
+				// case RSB:
+					// case(RSF | RSB):
+					// turning_case=7; 
+					// logContacts(start_of_contact);
+					// // return turning_case;
+					// break;
   
-				default:
-					logContacts(start_of_contact);
-					// return turning_case;
-					break;
-			}
-			break;
+				// default:
+					// logContacts(start_of_contact);
+					// // return turning_case;
+					// break;
+			// }
+			// break;
 
-		case 5:
-  switch(switchState){
-  case LSF: //if bumped anywhere on a left side
-  case LSB:
-  case(LSF | LSB):
-  turning_case=5; 
-  logContacts(start_of_contact);
-  // return turning_case; //do nothing
-  break;
+		// case 5:
+  // switch(switchState){
+  // case LSF: //if bumped anywhere on a left side
+  // case LSB:
+  // case(LSF | LSB):
+  // turning_case=5; 
+  // logContacts(start_of_contact);
+  // // return turning_case; //do nothing
+  // break;
   
-  case RSF: //if bumped anywhere on a right side
-  case RSB:
-  case(RSF | RSB): 	
-  turning_case=7;
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+  // case RSF: //if bumped anywhere on a right side
+  // case RSB:
+  // case(RSF | RSB): 	
+  // turning_case=7;
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
 
-  case (BR | BL):
-  turning_case=5; 
-	WDT_Restart(WDT);
-  Forward(255); delay(300); //anti-jamming kick
-  Stop(); delay(50);
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+  // case (BR | BL):
+  // turning_case=5; 
+	// WDT_Restart(WDT);
+  // Forward(255); delay(300); //anti-jamming kick
+  // Stop(); delay(50);
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
   
-  default:
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
-  }
- break;
+  // default:
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
+  // }
+ // break;
 
- case 7:
-  switch(switchState){
-  case LSF: //if bumped anywhere on a left side
-  case LSB:
-  case(LSF | LSB):
-  turning_case=5; //mistake, i think, shouldnt be 5
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+ // case 7:
+  // switch(switchState){
+  // case LSF: //if bumped anywhere on a left side
+  // case LSB:
+  // case(LSF | LSB):
+  // turning_case=5; //mistake, i think, shouldnt be 5
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
   
-  case RSF: //if bumped anywhere on a right side
-  case RSB:
-  case(RSF | RSB):
-  turning_case=7;
-  logContacts(start_of_contact);
-  // return turning_case; //do nothing
-  break;
+  // case RSF: //if bumped anywhere on a right side
+  // case RSB:
+  // case(RSF | RSB):
+  // turning_case=7;
+  // logContacts(start_of_contact);
+  // // return turning_case; //do nothing
+  // break;
   
-  case (BR | BL):
-  turning_case=7; 
-  Forward(255); delay(300); //anti-jamming kick
-  Stop(); delay(50);
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+  // case (BR | BL):
+  // turning_case=7; 
+  // Forward(255); delay(300); //anti-jamming kick
+  // Stop(); delay(50);
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
    
-  default:
-  // Stop(); delay(200);
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
-  }
- break;
-//-----
+  // default:
+  // // Stop(); delay(200);
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
+  // }
+ // break;
+// //-----
 
- case 4:
-  switch(switchState){
-		case LSF: //if bumped anywhere on a left side
-		case LSB:
-		case(LSF | LSB):
-		turning_case=5; 
-		logContacts(start_of_contact);
-		// return turning_case; 
-		break;
+ // case 4:
+  // switch(switchState){
+		// case LSF: //if bumped anywhere on a left side
+		// case LSB:
+		// case(LSF | LSB):
+		// turning_case=5; 
+		// logContacts(start_of_contact);
+		// // return turning_case; 
+		// break;
 		
-		case RSF: //if bumped anywhere on a right side
-		case RSB:
-		case(RSF | RSB):
-		turning_case=6; 
-		logContacts(start_of_contact);
-		// return turning_case;
-		break;
+		// case RSF: //if bumped anywhere on a right side
+		// case RSB:
+		// case(RSF | RSB):
+		// turning_case=6; 
+		// logContacts(start_of_contact);
+		// // return turning_case;
+		// break;
 		
-		case BR:
-		case BL:
-		case (BR | BL):
-		turning_case=5;
-		Forward(255); delay(300); //anti-jamming kick
-		WDT_Restart(WDT);
-		Stop(); delay(50);
-		logContacts(start_of_contact);
-		// return turning_case;
-		break;
+		// case BR:
+		// case BL:
+		// case (BR | BL):
+		// turning_case=5;
+		// Forward(255); delay(300); //anti-jamming kick
+		// WDT_Restart(WDT);
+		// Stop(); delay(50);
+		// logContacts(start_of_contact);
+		// // return turning_case;
+		// break;
 		
-		default:
-		logContacts(start_of_contact);
-		// return turning_case;
-		break;
-	}
-	break;
+		// default:
+		// logContacts(start_of_contact);
+		// // return turning_case;
+		// break;
+	// }
+	// break;
 
- case 6:
-  switch(switchState){
-  case LSF: //if bumped anywhere on a left side
-  case LSB:
-  case(LSF | LSB):
-  turning_case=4;
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+ // case 6:
+  // switch(switchState){
+  // case LSF: //if bumped anywhere on a left side
+  // case LSB:
+  // case(LSF | LSB):
+  // turning_case=4;
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
   
-  case RSF: //if bumped anywhere on a right side
-  case RSB:
-  case(RSF | RSB):
-  turning_case=7;
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+  // case RSF: //if bumped anywhere on a right side
+  // case RSB:
+  // case(RSF | RSB):
+  // turning_case=7;
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
   
-  case BR:
-  case BL:
-  case (BR | BL):
-  turning_case=7;
-  WDT_Restart(WDT);
-	Forward(255); delay(300); //anti-jamming kick
-  Stop(); delay(50);
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
+  // case BR:
+  // case BL:
+  // case (BR | BL):
+  // turning_case=7;
+  // WDT_Restart(WDT);
+	// Forward(255); delay(300); //anti-jamming kick
+  // Stop(); delay(50);
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
    
-  default:
-  logContacts(start_of_contact);
-  // return turning_case;
-  break;
-  }
- break; 
- }
-return turning_case;//exit  
-}
+  // default:
+  // logContacts(start_of_contact);
+  // // return turning_case;
+  // break;
+  // }
+ // break; 
+ // }
+// return turning_case;//exit  
+// }
 
 // ********** END   {SUPPORT METHODS} ----------
 
