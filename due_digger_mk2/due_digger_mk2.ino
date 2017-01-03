@@ -215,7 +215,7 @@ unsigned long dirCheckTimer; //quick workaround to prevent instantaneous dir cha
 bool dirCheckFlag;
 int numOfConsequitiveBackwardKicks=0;
 
-bool preferGyro = false; //duct tape solution to use gyroscope to do 180 degree turns 
+// bool preferGyro = false; //duct tape solution to use gyroscope to do 180 degree turns 
 
 int StartIndicatorAddr = 0;
 
@@ -393,7 +393,7 @@ void StartLorenzRun(){
     
 		else{
 			WDT_Restart(WDT);
-			restingStart=millis(); //reset timer, and wait for another roll
+			restingStart = millis(); //reset timer, and wait for another roll
 			#ifdef FIO_LINK
 				fioWrite(ROLLED_REST); //maybe report a different byte for consecutive rests 
 			#endif   
@@ -866,8 +866,9 @@ void GoingInMode(){
  // return;
  // }
  
-		if( checkHeadSensor() ){
+		if(checkHeadSensor()){
 			Serial.println("checkHeadSensor() returns true");
+			enable_DiggingMode();
 			return; //found soemthing, lets dig 
 		}
 		/* 
@@ -882,7 +883,7 @@ void GoingInMode(){
 			if( millis() - whenModeStart > USELESS_RUN_THRESH){
 				//bool goBack = rollDiceProb(50); //%chance to roll true used to be 50
 				bool goBack = true; // force the robot to go back 
-				preferGyro=true; 
+				// preferGyro=true; 
 
 				if (goBack){
 					Backward(BASE_SPEED);
@@ -1639,136 +1640,140 @@ return;
 }
 
 void RestingMode(){
-numOfConsequitiveBackwardKicks=0;
-WDT_Restart(WDT);
-//this mode is exclusive to probabilistic digging 
-#if PROBABILITY_DIG
-
-  #ifdef FIO_LINK
-  fioWrite(MASTER_RESTING);
-  #endif
- int code=seekCharging(); //get to the charging station
-  if(code==2){
-	return;
-	}
- Stop(); //hit the breaks
-  #if !ALLOW_CHARGING_ON_REST
-  Backward(BASE_SPEED); //back up so that we are not charging
-   while(CHARGER || DUMPING_SWITCH){
-   //do nothing. Add timeout here too
-   }
-  delay(200);
-  Stop();
-  #endif
- WDT_Restart(WDT);
-  //--roll a dice here if we want more digging
-  if(!rollDice()){
-   #ifdef FIO_LINK
-   fioWrite(ROLLED_DIG);
-   #endif 
-  leaveChargingStation();
-  return;
-  }
-  else{
-  WDT_Restart(WDT);	
-   #ifdef FIO_LINK
-   fioWrite(ROLLED_REST);
-   #endif
-  
-   #if ALLOW_POWER_SAVINGS
-   Relay.PowerOff();
-   #endif  
-   #if ALLOW_CHARGING_ON_REST
-   Relay.PowerOff();
-   #endif
-  }
-
-//--- at this point we are charging if not backed out
-
- bool resting=true; //flow control
- unsigned long restingStart=millis(); //timer to keep the robot waiting/resting
- // probability digging 
-  while(resting){
+	numOfConsequitiveBackwardKicks=0;
 	WDT_Restart(WDT);
-   if( millis() - restingStart > RESTING_TIME ){ //determine if its time to roll a dice 
-    if(!rollDice()){
- 	#ifdef FIO_LINK
-    fioWrite(ROLLED_DIG);
-    #endif
-    Relay.PowerOn(); //can be packaged with #if
-    leaveChargingStation();
-    return;
-    }
-    else{
+	//this mode is exclusive to probabilistic digging 
+	#if PROBABILITY_DIG
+
+		#ifdef FIO_LINK
+			fioWrite(MASTER_RESTING);
+		#endif
+		int code=seekCharging(); //get to the charging station
+		if(code==2){
+			return;
+		}
+		Stop(); //hit the breaks
+		#if !ALLOW_CHARGING_ON_REST
+			Backward(BASE_SPEED); //back up so that we are not charging
+			while(CHARGER || DUMPING_SWITCH){
+				//do nothing. Add timeout here too
+			}
+			delay(200);
+			Stop();
+		#endif
 		WDT_Restart(WDT);
-    restingStart=millis(); //reset timer, and wait for another roll
-     #ifdef FIO_LINK
-     fioWrite(ROLLED_REST); //maybe report a different byte for consecutive rests 
-     #endif   
-    }
-   }
-   #if ALLOW_CHARGING_ON_REST
-  //re-dock if charging is allowed, found, and lost  
-	// #ifdef FIO_LINK//bani test
-    // fioWrite(CHECK_END);//bani test
-    // #endif//bani test
-	  if(!CHARGER){//bani
+		//--roll a dice here if we want more digging
+		if(!rollDice()){
+			#ifdef FIO_LINK
+				fioWrite(ROLLED_DIG);
+			#endif 
+			leaveChargingStation();
+			return;
+		}
+		else{
+			WDT_Restart(WDT);	
+			#ifdef FIO_LINK
+				fioWrite(ROLLED_REST);
+			#endif
 		
-    //if(!CHARGER || !DUMPING_SWITCH){ //not touching charging station, redock, may need to break out of here earlier?
-    WDT_Restart(WDT);
-		Relay.PowerOn(); delay(1000); //turn power back on
-  //this can be probably replaced with "go forward for a while, if not, do stuff below
-    bool redock_success=redock(); //if success, should we reset voltage tracking variables? 
-     if(!redock_success){
+			#if ALLOW_POWER_SAVINGS
+				Relay.PowerOff();
+			#endif  
+			#if ALLOW_CHARGING_ON_REST
+				Relay.PowerOff();
+			#endif
+		}
+
+		//--- at this point we are charging if not backed out
+
+		bool resting=true; //flow control
+		unsigned long restingStart=millis(); //timer to keep the robot waiting/resting
+		// probability digging 
+		while(resting){
+			WDT_Restart(WDT);
+			if( millis() - restingStart > RESTING_TIME ){ //determine if its time to roll a dice 
+				if(!rollDice()){
+					#ifdef FIO_LINK
+						fioWrite(ROLLED_DIG);
+					#endif
+					Relay.PowerOn(); //can be packaged with #if
+					leaveChargingStation();
+					return;
+				}
+				else{
+					WDT_Restart(WDT);
+					restingStart=millis(); //reset timer, and wait for another roll
+					#ifdef FIO_LINK
+						fioWrite(ROLLED_REST); //maybe report a different byte for consecutive rests 
+					#endif   
+				}
+			}
+			
+			#if ALLOW_CHARGING_ON_REST
+				//re-dock if charging is allowed, found, and lost  
+				// #ifdef FIO_LINK//bani test
+				// fioWrite(CHECK_END);//bani test
+				// #endif//bani test
+				if(!CHARGER){//bani
+		
+					//if(!CHARGER || !DUMPING_SWITCH){ //not touching charging station, redock, may need to break out of here earlier?
+					WDT_Restart(WDT);
+					Relay.PowerOn(); delay(1000); //turn power back on
+					//this can be probably replaced with "go forward for a while, if not, do stuff below
+					bool redock_success=redock(); //if success, should we reset voltage tracking variables? 
+					if(!redock_success){
 		 	
-     code=seekCharging(); //find charging station again 
-      if(code==2){return;} //
-		 Relay.PowerOff();
-     }   
-    }	
-   #endif
+						code=seekCharging(); //find charging station again 
+						if(code==2){
+							return;
+						} //
+						Relay.PowerOff();
+					}   
+				}	
+			#endif
   
-  #if !ALLOW_CHARGING_ON_REST //case where charging is NOT RFF
+			#if !ALLOW_CHARGING_ON_REST //case where charging is NOT RFF
    
-	 if(CHARGER){//bani
-	 //if(CHARGER || DUMPING_SWITCH){//bani
-	 WDT_Restart(WDT);
-   Relay.PowerOn(); delay(1000); //turn power back on
-   Backward(BASE_SPEED); delay(500); //back out, we dont want to be touching the charging station
-   Stop();
-    #if ALLOW_POWER_SAVINGS
-    Relay.PowerOff(); delay(500); //turn power back off
-    #endif
-   }
-  #endif
+				if(CHARGER){//bani
+					//if(CHARGER || DUMPING_SWITCH){//bani
+					WDT_Restart(WDT);
+					Relay.PowerOn(); delay(1000); //turn power back on
+					Backward(BASE_SPEED); delay(500); //back out, we dont want to be touching the charging station
+					Stop();
+					#if ALLOW_POWER_SAVINGS
+						Relay.PowerOff();
+						delay(500); //turn power back off
+					#endif
+				}
+			#endif
   
-  if(CheckPower()){
-	WDT_Restart(WDT);
-  enable_GoingCharging();
-  return;
-  }
- }//end of while //bani removed
- return;//bani
- // #else//bani
+			if(CheckPower()){
+				WDT_Restart(WDT);
+				enable_GoingCharging();
+				return;
+			}
+		}//end of while //bani removed
+		return;//bani
+		// #else//bani
  
  
- // seekCharging();// get to the charger//bani removed this else snippet as it screws with the rest of the code
- // delay(10000); //10 seconds//bani
- // leaveDumpingSite();//bani
- // return;//bani
+		// seekCharging();// get to the charger//bani removed this else snippet as it screws with the rest of the code
+		// delay(10000); //10 seconds//bani
+		// leaveDumpingSite();//bani
+		// return;//bani
 
- #endif
+		#endif
 
-goToDumpingSite();
-delay(RESTING_TIME); //wait 
-leaveDumpingSite();
+	goToDumpingSite();
+	delay(RESTING_TIME); //wait 
+	leaveDumpingSite();
 
-//enable_GoingInMode;//BANI
-//return;//BANI...TO MOVE IT OUT OF MONOTONOUS LOOP
- // #ifdef ALLOW_USELESS_RUNS //and not Probability dig 
- // goToDumpingSite();
- // leaveDumpingSite();
-// #endif
+	//enable_GoingInMode;//BANI
+	//return;//BANI...TO MOVE IT OUT OF MONOTONOUS LOOP
+	// #ifdef ALLOW_USELESS_RUNS //and not Probability dig 
+	// goToDumpingSite();
+	// leaveDumpingSite();
+	// #endif
 }
 
 // ********** END   {MODE DEFINITION} ----------
@@ -1783,7 +1788,7 @@ bool checkHeadSensor(){
 		WDT_Restart(WDT);
 		/* This method will give clearnace for digging mode if head sensor detects  */
 		if ( (FSensor.Detected()) ){ //am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
-			enable_DiggingMode();
+			// enable_DiggingMode();
 			return 1; //JSP
 			
 			// you will never get here!!!!!!!!!!!!!!!!!!!!!
@@ -1875,8 +1880,6 @@ bool checkHeadSensor(){
 	
 	Forward(BASE_SPEED);
 	return 0;//looks like we lost it
-
-	
 }
 
 
@@ -3651,7 +3654,7 @@ void TestGripperSensor(){
 }
 void TestTurnHeading(){
 	Serial.print("Ross");
-	preferGyro = false;
+	// preferGyro = false;
 	restingMode = true;
 	
 	while(1){
