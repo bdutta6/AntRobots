@@ -14,7 +14,63 @@ Last Modified Date: 10/13/2016 - #2 in test_branch?
 #include <Wire.h>
 #include "mpr121.h"
 
+
+
 extern int switchState;
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "MotorBoard.h"
+#include "myPID.h"
+#include "PowerRelay.h"
+// #include "driveMethods.h"
+
+
+// #include "DigitalProximity.h" //possibly a bug. compiler cant find extern DigitalProximity
+// // #include "IRsensor.h" //possibly a bug. compiler cant find extern IRsensor
+// //---used by Forward, Backward, Right, Left, Stop
+// extern char lastDriveState;
+// extern MotorBoard Drive;
+// extern uint16_t x1, xc, x7; //declare storage variables
+// //---used by DriveForward
+// extern double Setpoint, Input, Output; //define vars
+// extern myPID PD;
+extern void FollowLane();
+// extern uint16_t Area1, Areac, Area7; //declare storage variables;
+// extern bool goingIn;
+// //used by ...
+// extern void GetDetectedSigs();
+// extern bool Object[]; //various objects. MAY NEED TO SPECIFY INDIVIDUALLY
+// // extern bool Object[6]; //COTTON
+// //---used by FollowLane
+// extern void myDelay(unsigned long);
+// extern void TurnHeading(float);
+// extern unsigned long last_dash; //keep track of last robot dash forward if trail is missing
+// //---used by pick_going_charging_direction
+// extern uint16_t DUMPING_TARGET_THRESH;
+// //---used by go_docking
+// extern void bumpDelay(unsigned long delayTime);
+// extern bool isChargerDetected();
+// extern void handleContact();
+// // extern bool handleIRcontacts();
+// extern void enable_ChargingMode();
+// extern void enable_GoingInMode();
+// extern void enable_RestingMode();
+// extern void enable_GoingCharging();
+// extern bool CheckPower();
+// // extern GripperSensor HeadSensor;
+// extern  DigitalProximity FrontBumpSensor;
+// // extern IRsensor IRright;
+// // extern IRsensor IRleft;
+// // extern GripperSensor HeadSensor;
+// //---used by redock
+// extern PowerRelay Relay;  
+// //---used by get_back_on_trail
+// extern int current_target_heading;
+
+/////////////////////////////////////////////////////////////////////////////
+
 
 CapacitiveSensor::CapacitiveSensor(int CapSensorPin){
 	irqpin = CapSensorPin;
@@ -326,11 +382,13 @@ The readings from getDetectedContacts must be the same for checkMeasurementNum*1
 **/
 int CapacitiveSensor:: getSwitchState(){
 	checkMeasurementNum = 2; //number of check comparison of switchstate.
+	unsigned long timeDelay;
 	int i = 0; // integer used for iterating
 	int last_switchState = getDetectedContacts();
 	// Serial.println(last_switchState);
 	int new_switchState = 0;
 	while (i < checkMeasurementNum){ //repeat measurements to assure that switchstate is correct and not caused by coincident measurements
+		FollowLane();
 		new_switchState = getDetectedContacts();
 		if (new_switchState != last_switchState){
 			switchState = 0; //check failed. switchstate is different from last measurement. set switchState to 0
@@ -338,7 +396,12 @@ int CapacitiveSensor:: getSwitchState(){
 		}
 		last_switchState = new_switchState;
 		i++;
-		delay(100);
+		timeDelay = millis();
+		while(millis() - timeDelay < 100){
+			FollowLane();
+		}
+		
+		// delay(100);
 	}
 	
 	return switchState; //check passed. return the switchstate.

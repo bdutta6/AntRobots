@@ -484,11 +484,38 @@ void writeLCD(int lcddata) { //this function written by bani
 			lcd.print("Turn Reversal");
 			break;
 	 
-	 case MASTER_EXIT_TUNNEL:
+		case MASTER_EXIT_TUNNEL:
 		 lcd.clear();
 		 lcd.setBrightness(30);
 		 lcd.print("Exit Tunnel");
 		 break;
+		 
+		 
+		case MASTER_RESTING:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Resting");
+			break;
+		
+		case ROLLED_REST:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Rolled rest");
+			break;
+		 
+		 
+		case ROLLED_DIG:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Rolled dig");
+			break;
+			
+		case MASTER_USELESS_RUN:
+			lcd.clear();
+			lcd.setBrightness(30);
+			lcd.print("Useless run");
+			break;
+		 
 	 
 	 default:
 		// lcd.clear();

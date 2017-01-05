@@ -47,18 +47,17 @@ bool myPID::Compute()
    if(!inAuto) return false;
    unsigned long now = millis();
    unsigned long timeChange = (now - lastTime);
-   if(timeChange>=SampleTime)
-   {
-      /*Compute all the working error variables*/
+	if(timeChange>=SampleTime){
+		/*Compute all the working error variables*/
 	  double input = *myInput;
-      double error = *mySetpoint - input;
-      ITerm+= (ki * error);
-      if(ITerm > outMax) ITerm= outMax;
-      else if(ITerm < outMin) ITerm= outMin;
-      double dInput = (input - lastInput);
+    double error = *mySetpoint - input;
+    ITerm+= (ki * error);
+    if(ITerm > outMax) ITerm = outMax;
+    else if(ITerm < outMin) ITerm = outMin;
+    double dInput = (input - lastInput);
  
-      /*Compute PID Output*/
-      double output = kp * error + ITerm - kd * dInput; //Vadim Linevich: minus sign in front of kd is actually a fix for a "derivative kick"
+    /*Compute PID Output*/
+    double output = kp * error + ITerm - kd * dInput; //Vadim Linevich: minus sign in front of kd is actually a fix for a "derivative kick"
       
 	  if(output > outMax) output = outMax;
       else if(output < outMin) output = outMin;
