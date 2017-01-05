@@ -44,7 +44,7 @@
 #define IN_DIRECTION  					175 // Ross 11/16 90 -> 25 //89//30 //  used to be 60  //Ross10/11 90->290
 // #define GET_BACK_DIRECTION 			25 //compass direction
 // #define CHARGING_DIRECTION 			240//240//300 //170 is at the wall, towards me
-#define DIRECTION_UNCERTAINTY 	10 //used to be 5. increased to 10
+#define DIRECTION_UNCERTAINTY 	80 //used to be 5. increased to 10
 #define PORT_DIRECTION					340 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   	272 //150//167   //right with respect to IN_DIRECTION  //modified
 

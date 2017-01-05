@@ -44,7 +44,7 @@
 #define IN_DIRECTION  40  //90//89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 305 //240//240//300 //170 is at the wall, towards me
-#define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
+#define DIRECTION_UNCERTAINTY 80 //used to be 5. increased to 10
 #define PORT_DIRECTION        352 //5//11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   213 //170//150//167   //right with respect to IN_DIRECTION  //modified
 
