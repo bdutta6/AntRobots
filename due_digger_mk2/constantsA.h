@@ -44,11 +44,11 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 279 //240//291//300 // previously set to 270-  //modified // Ross10/11 changed 270->291 
-#define IN_DIRECTION  60//89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 263 //240//291//300 // previously set to 270-  //modified // Ross10/11 changed 270->291 
+#define IN_DIRECTION  90 //89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
-#define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
+#define DIRECTION_UNCERTAINTY 60 //used to be 5. increased to 10
 #define PORT_DIRECTION        357 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   17 //150//167   //right with respect to IN_DIRECTION  //modified Ross10/11 changed 170->200
 

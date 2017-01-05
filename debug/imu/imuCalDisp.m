@@ -72,17 +72,108 @@ yunit = r * sin(th) + y;
 
 %% Plot unit circle mapping
 figure
-title('Raw IMU Output')
-grid on
-hold on
 plot(xunit, yunit, a(:,1), a(:,2), '+', b(:,1), b(:,2), 'o', c(:,1), c(:,2), '*', d(:,1), d(:,2), '.', e(:,1), e(:,2), 'x')
+hold on
+title('Raw IMU Output')
+xlabel('hx')
+ylabel('hy')
+grid on
+legend('Unit Circle', 'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
 hold off
 
 figure
-title('Raw IMU Output + Calibration Mapping')
-grid on
 hold on
+title('Raw IMU Output + Calibration Mapping')
 plot(xunit, yunit, xNewA, yNewA, '+', xNewB, yNewB, 'o', xNewC, yNewC, '*', xNewD, yNewD, '.', xNewE, yNewE, 'x')
+xlabel('hx')
+ylabel('hy')
+legend('Unit Circle', 'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
+grid on
 hold off
+
+%% Compute Headings stuff
+
+% Get the heading values for a unit circle
+hVals = zeros(length(xunit), 1);
+for i = 1:length(xunit)
+    hVals(i) = getHeading(xunit(i), yunit(i));
+end
+
+% Set up original and new heading matrices
+headingsA = zeros(length(a),1);
+headingsAnew = zeros(length(a),1);
+
+headingsB = zeros(length(b),1);
+headingsBnew = zeros(length(b),1);
+
+headingsC = zeros(length(c),1);
+headingsCnew = zeros(length(c),1);
+
+headingsD = zeros(length(d),1);
+headingsDnew = zeros(length(d),1);
+
+headingsE = zeros(length(e),1);
+headingsEnew = zeros(length(e),1);
+
+
+% Compute them
+for i = 1:length(a)
+
+    headingsA(i) = getHeading(a(i,1), a(i,2));
+    headingsAnew(i) = getHeading(xNewA(i), yNewA(i));
+
+end
+
+for i = 1:length(b)
+    
+    headingsB(i) = getHeading(b(i,1), b(i,2));
+    headingsBnew(i) = getHeading(xNewB(i), yNewB(i));
+
+end
+
+for i = 1:length(c)
+    
+    headingsC(i) = getHeading(c(i,1), c(i,2));
+    headingsCnew(i) = getHeading(xNewC(i), yNewC(i));
+
+end
+
+for i = 1:length(d)
+    
+    headingsD(i) = getHeading(d(i,1), d(i,2));
+    headingsDnew(i) = getHeading(xNewD(i), yNewD(i));
+
+end
+
+for i = 1:length(e)
+    headingsE(i) = getHeading(e(i,1), e(i,2));
+    headingsEnew(i) = getHeading(xNewE(i), yNewE(i));
+end
+
+
+
+% Plot the original heading values as a function of the hx reading - There
+% is a scale factor difference only in the horizatonal axis. The vertical
+% axis differences are what we care about, which display the errors in the
+% hy values returned by the sensor
+figure
+hold on
+plot(a(:,1), headingsA, '.', b(:,1), headingsB, '.', c(:,1), headingsC, '.', d(:,1), headingsD, '.', e(:,1), headingsE, '.')
+grid on
+title('Raw IMU Output')
+xlabel('hx')
+ylabel('Heading')
+legend('Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
+hold off
+
+
+figure
+plot(xNewA, headingsAnew, '.', xNewB, headingsBnew, '.', xNewC, headingsCnew, '.', xNewD, headingsDnew, '.', xNewE, headingsEnew, '.', xunit, hVals, '-')
+grid on
+title('Raw IMU Output + Calibration Mapping')
+xlabel('hx')
+ylabel('Heading')
+legend('Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Unit Circle')
+
 
 

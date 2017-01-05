@@ -1,6 +1,6 @@
 clear; clc; close all;
 
-m = csvread('alphaIMU.csv', 1);
+m = csvread('echoIMU.csv', 1);
 
 xMin = min(m(:,1));
 yMin = min(m(:,2));
@@ -55,6 +55,17 @@ for i = 1:length(m)
     headings(i) = getHeading(m(i,1), m(i,2));
     headings2(i) = getHeading(xNew(i), yNew(i));
 end
+
+figure
+plot(xunit, hVals, '.')
+xlabel('hx')
+ylabel('arctan(hx/hy)')
+legend('Unit Circle')
+hold on
+plot(m(:,1), headings, '.')
+
+
+
 
 %% Generate output for contants files
 

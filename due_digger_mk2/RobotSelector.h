@@ -25,7 +25,7 @@
 // TEST_TURN_HE ADING,
 // TEST_PID_CONTROLLER
 // TEST_NOTHING,
-#define TEST_CASE TEST_IMU_CAL
+#define TEST_CASE TEST_NOTHING
 #define ROBOT_A
 // Robot A is on COM 3,  radio on COM 8
 // Robot B is on COM 11, radio on COM 7
