@@ -246,56 +246,56 @@ int CapacitiveSensor:: getDetectedContacts(){
 	if((pin0 > AntDoubleThresh1 && pin0 < AntDoubleThresh2) || (pin0 > AntSingleThresh1 && pin0 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_A_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin0 == WallDoubleThresh ||(pin0 > WallSingleThresh1 && pin0 < WallSingleThresh2)){// && pin0 < WallThresh2){
-		switchState=switchState | SWITCH_A_MASK_WALL;  //bitwise OR  operation
+	else if ((pin0 > WallDoubleThresh1 && pin0 < WallDoubleThresh2) ||(pin0 > WallSingleThresh1 && pin0 < WallSingleThresh2)){// && pin0 < WallThresh2){
+		switchState = switchState | SWITCH_A_MASK_WALL;  //bitwise OR  operation
 	}
 
 	if((pin1 > AntDoubleThresh1 && pin1 < AntDoubleThresh2) || (pin1 > AntSingleThresh1 && pin1 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_B_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin1 == WallDoubleThresh ||(pin1 > WallSingleThresh1 && pin1 < WallSingleThresh2)){// && pin1 < WallThresh2){
+	else if ((pin1 > WallDoubleThresh1 && pin1 < WallDoubleThresh2) ||(pin1 > WallSingleThresh1 && pin1 < WallSingleThresh2)){// && pin1 < WallThresh2){
 		switchState=switchState | SWITCH_B_MASK_WALL;  //bitwise OR  operation
 	}
 
 	if((pin2 > AntDoubleThresh1 && pin2 < AntDoubleThresh2) || (pin2 > AntSingleThresh1 && pin2 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_C_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin2 == WallDoubleThresh ||(pin2 > WallSingleThresh1 && pin2 < WallSingleThresh2)){
+	else if ((pin2 > WallDoubleThresh1 && pin2 < WallDoubleThresh2) ||(pin2 > WallSingleThresh1 && pin2 < WallSingleThresh2)){
 		switchState=switchState | SWITCH_C_MASK_WALL;  //bitwise OR  operation
 	}
 
 	if((pin3 > AntDoubleThresh1 && pin3 < AntDoubleThresh2) || (pin3 > AntSingleThresh1 && pin3 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_D_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin3 == WallDoubleThresh ||(pin3 > WallSingleThresh1 && pin3 < WallSingleThresh2)){
+	else if ((pin3 > WallDoubleThresh1 && pin3 < WallDoubleThresh2) ||(pin3 > WallSingleThresh1 && pin3 < WallSingleThresh2)){
 		switchState=switchState | SWITCH_D_MASK_WALL;  //bitwise OR  operation
 	}
 
 	if((pin4 > AntDoubleThresh1 && pin4 < AntDoubleThresh2) || (pin4 > AntSingleThresh1 && pin4 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_E_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin4 == WallDoubleThresh ||(pin4 > WallSingleThresh1 && pin4 < WallSingleThresh2)){
+	else if ((pin4 > WallDoubleThresh1 && pin4 < WallDoubleThresh2) ||(pin4 > WallSingleThresh1 && pin4 < WallSingleThresh2)){
 		switchState=switchState | SWITCH_E_MASK_WALL;  //bitwise OR  operation
 	}
 
 	if((pin5 > AntDoubleThresh1 && pin5 < AntDoubleThresh2) || (pin5 > AntSingleThresh1 && pin5 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_F_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin5 == WallDoubleThresh ||(pin5 > WallSingleThresh1 && pin5 < WallSingleThresh2)){
+	else if ((pin5 > WallDoubleThresh1 && pin5 < WallDoubleThresh2) ||(pin5 > WallSingleThresh1 && pin5 < WallSingleThresh2)){
 		switchState=switchState | SWITCH_F_MASK_WALL;  //bitwise OR  operation
 	}
 
 	if((pin6 > AntDoubleThresh1 && pin6 < AntDoubleThresh2) || (pin6 > AntSingleThresh1 && pin6 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_G_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin6 == WallDoubleThresh ||(pin6 > WallSingleThresh1 && pin6 < WallSingleThresh2)){
+	else if ((pin6 > WallDoubleThresh1 && pin6 < WallDoubleThresh2) ||(pin6 > WallSingleThresh1 && pin6 < WallSingleThresh2)){
 		switchState=switchState | SWITCH_G_MASK_WALL;  //bitwise OR  operation
 	}
 
 	if((pin7 > AntDoubleThresh1 && pin7 < AntDoubleThresh2) || (pin7 > AntSingleThresh1 && pin7 < AntSingleThresh2)){
 		switchState=switchState | SWITCH_H_MASK_ANT;  //bitwise OR  operation
 	}
-	else if (pin7 == WallDoubleThresh ||(pin7 > WallSingleThresh1 && pin7 < WallSingleThresh2)){
+	else if ((pin7 > WallDoubleThresh1 && pin7 < WallDoubleThresh2) ||(pin7 > WallSingleThresh1 && pin7 < WallSingleThresh2)){
 		switchState=switchState | SWITCH_H_MASK_WALL;  //bitwise OR  operation
 	}
 	
@@ -328,7 +328,7 @@ int CapacitiveSensor:: getSwitchState(){
 	checkMeasurementNum = 2; //number of check comparison of switchstate.
 	int i = 0; // integer used for iterating
 	int last_switchState = getDetectedContacts();
-	Serial.println(last_switchState);
+	// Serial.println(last_switchState);
 	int new_switchState = 0;
 	while (i < checkMeasurementNum){ //repeat measurements to assure that switchstate is correct and not caused by coincident measurements
 		new_switchState = getDetectedContacts();

@@ -13,7 +13,7 @@ Voltmeter :: Voltmeter(){}
 
 float Voltmeter :: Read(){
 int reading = analogRead(voltage_pin);
-float volt = ( (float)reading/1023)* Vcc*(R2+R1)/R2 ; //pin reads 0 if there is 0V on a pin and 1023 when the voltage is VCC
+float volt = ( (float)reading/1023)* Vcc *(R2+R1)/R2 ; //pin reads 0 if there is 0V on a pin and 1023 when the voltage is VCC
 //volt=volt * R2/(R1+R2); //voltage divider adjustment
 return volt;
 }

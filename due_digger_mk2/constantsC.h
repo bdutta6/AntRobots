@@ -9,40 +9,53 @@
 #define LOWEST_ALLOWABLE_VOLTAGE 3.4//5v Power is lost when battery level reaches 3v, step up chip no longer functions  //3.3 too low
 #define CHARGED_VOLTAGE 3.8 // 3.65 appears to be the max voltage  //3.79 was too high
 
-
-// #define TURNING_THRESH 1000 //minimum area needed to terminate feedback turning  //modified
+////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
 #define HIGH_ROW_ANGLE  120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
 #define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
-#define CLOSED_POS 110//179, JSP  //grip servo fully closed angle
+
+////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
+#define CLOSED_POS 179//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
-#define ForceSensorThresh 50 // JSP
-#define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
-#define WallSingleThresh1	380 //Wall Detection, Single Contact Threshold for Capacitive Sensor
-#define WallSingleThresh2 460 //Wall Detection, Single Contact Threshold for Capacitive Sensor
-#define AntSingleThresh1	480
-#define AntSingleThresh2	520
-#define WallDoubleThresh 14//1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
-#define AntDoubleThresh1 15	//for Ant Detection, two or more contact threshold for Capacitive Sensor
-#define AntDoubleThresh2 18
 
+#define ForceSensorThresh 50 // JSP
+
+////////////////////////////////////////////// Capacitive Sensor Parameters //////////////////////////////////////////////
+// #define AntThresh 3 // Ant Detection Threshold for Capacitive Sensor
+#define WallSingleThresh1	525 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
+#define WallSingleThresh2 650 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
+
+#define AntSingleThresh1	525
+#define AntSingleThresh2	500
+
+#define WallDoubleThresh1 10000 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
+#define WallDoubleThresh2 100000
+
+#define AntDoubleThresh1 1	//for Ant Detection, two or more contact threshold for Capacitive Sensor - Lower
+#define AntDoubleThresh2 50 // Upper
+
+////////////////////////////////////////////// PixyCam Parameters //////////////////////////////////////////////
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
-//PARAMETERS FOR DIRECTION FUNCTIONS
-#define OUT_DIRECTION 288 // Ross 11/15 -> 270 -> 287 //240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  315 // Ross 11/16 90 -> 25 //89//30 //  used to be 60  //Ross10/11 90->290
-#define GET_BACK_DIRECTION 25 //compass direction
-#define CHARGING_DIRECTION 240//240//300 //170 is at the wall, towards me
-#define DIRECTION_UNCERTAINTY 10 //used to be 5. increased to 10
-#define PORT_DIRECTION        300//11//11//355//350    //left with respect to IN_DIRECTION  //modified
-#define STARBOARD_DIRECTION   170//150//167   //right with respect to IN_DIRECTION  //modified
+////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
+#define OUT_DIRECTION 					295 // Ross 11/15 -> 270 -> 287 //240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  					175 // Ross 11/16 90 -> 25 //89//30 //  used to be 60  //Ross10/11 90->290
+// #define GET_BACK_DIRECTION 			25 //compass direction
+// #define CHARGING_DIRECTION 			240//240//300 //170 is at the wall, towards me
+#define DIRECTION_UNCERTAINTY 	80 //used to be 5. increased to 10
+#define PORT_DIRECTION					340 //11//11//355//350    //left with respect to IN_DIRECTION  //modified
+#define STARBOARD_DIRECTION   	272 //150//167   //right with respect to IN_DIRECTION  //modified
 
-// #define DIR_IN_R 260
-// #define DIR_IN_L 122
-// #define DIR_OUT_R 33
-// #define DIR_OUT_L 355
+////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
+#define HX_MIN -0.3300
+#define HX_MAX -0.0000
+
+#define HY_MIN -0.0500
+#define HY_MAX 0.2400
+
+#define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW
 
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging

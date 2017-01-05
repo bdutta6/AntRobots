@@ -11,7 +11,7 @@
 // TEST_MAG,
 
 // remember that the thresholds might be different when the robot is plugged in.
-// This will make it harder to debug issues associated with the capacitive sensors.
+// This will make it harder to debug issues asso	ciated with the capacitive sensors.
 // Also remember that there is a parameter in the Fio software that needs to be changed in
 // order to test the capacitive sensors
 // TEST_CAP, 					
@@ -22,12 +22,12 @@
 // TEST_CAMERA, 
 // TEST_GRIPPER_SENSOR,
 // TEST_POWER_SENSORS, 
-// TEST_TURN_HEADING,
+// TEST_TURN_HE ADING,
 // TEST_PID_CONTROLLER
 // TEST_NOTHING,
 #define TEST_CASE TEST_NOTHING
-#define ROBOT_C
-// Robot A is on COM 3,  radio on COM 8
+#define ROBOT_A
+// Robot A is on COM 3,  radio on COM 8
 // Robot B is on COM 11, radio on COM 7
 // Robot C is on COM 10, radio on COM 6
 // Robot D is on COM 12, radio was never setup

@@ -24,7 +24,11 @@ int DigitalProximity :: Read() {
 }
 
 bool DigitalProximity :: isDetected(){
-int val=Read();
-if (val < detectionThresh){ return true;}
-else{ return false;}
+	int val=Read();
+	if (val < detectionThresh){
+		return true;
+	}
+	else{
+		return false;
+	}
 }
