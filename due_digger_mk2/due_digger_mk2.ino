@@ -681,6 +681,7 @@ void GoingInMode(){
 		Arm.GripperGo(CLOSED_POS); //JSP		
 		
 		// unsigned long checkPayTime = millis();
+		Forward(BASE_SPEED);
 		if (CheckPayload()){
 			Serial.println("Something found in payload");
 			current_target_heading = OUT_DIRECTION;
@@ -715,7 +716,7 @@ void GoingInMode(){
 		
 			//--- handle wrong way directions
 		// unsigned long dirTime = millis();
-
+		Forward(BASE_SPEED);
 		if(!isWantedHeading(IN_DIRECTION)){
 			Serial.println("Not facing the correct direction");
 			Stop();
@@ -734,6 +735,7 @@ void GoingInMode(){
 		// delay(100);
 		// Forward(BASE_SPEED); 
 		// unsigned long chargerTime = millis();
+		Forward(BASE_SPEED);
 		if(CHARGER){
 			Serial.println("Charging if-statement");
 
@@ -774,6 +776,7 @@ void GoingInMode(){
 		// delay(100);
 		// Forward(BASE_SPEED);
  		// unsigned long headTime = millis();
+		Forward(BASE_SPEED);
 		if(checkHeadSensor()){
 			Serial.println("checkHeadSensor() returns true");
 			enable_DiggingMode();
@@ -1524,12 +1527,6 @@ void RestingMode(){
 
 
 // ********** BEGIN (SUPPORT METHODS} **********
-
-
-
-
-
-
 
 void lorenz(){
 	Relay.PowerOff();

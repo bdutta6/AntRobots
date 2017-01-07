@@ -14,63 +14,11 @@ Last Modified Date: 10/13/2016 - #2 in test_branch?
 #include <Wire.h>
 #include "mpr121.h"
 
-
-
 extern int switchState;
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include "MotorBoard.h"
-#include "myPID.h"
-#include "PowerRelay.h"
-// #include "driveMethods.h"
-
-
-// #include "DigitalProximity.h" //possibly a bug. compiler cant find extern DigitalProximity
-// // #include "IRsensor.h" //possibly a bug. compiler cant find extern IRsensor
-// //---used by Forward, Backward, Right, Left, Stop
-// extern char lastDriveState;
-// extern MotorBoard Drive;
-// extern uint16_t x1, xc, x7; //declare storage variables
-// //---used by DriveForward
-// extern double Setpoint, Input, Output; //define vars
-// extern myPID PD;
-extern void FollowLane();
-// extern uint16_t Area1, Areac, Area7; //declare storage variables;
-// extern bool goingIn;
-// //used by ...
-// extern void GetDetectedSigs();
-// extern bool Object[]; //various objects. MAY NEED TO SPECIFY INDIVIDUALLY
-// // extern bool Object[6]; //COTTON
-// //---used by FollowLane
-// extern void myDelay(unsigned long);
-// extern void TurnHeading(float);
-// extern unsigned long last_dash; //keep track of last robot dash forward if trail is missing
-// //---used by pick_going_charging_direction
-// extern uint16_t DUMPING_TARGET_THRESH;
-// //---used by go_docking
-// extern void bumpDelay(unsigned long delayTime);
-// extern bool isChargerDetected();
-// extern void handleContact();
-// // extern bool handleIRcontacts();
-// extern void enable_ChargingMode();
-// extern void enable_GoingInMode();
-// extern void enable_RestingMode();
-// extern void enable_GoingCharging();
-// extern bool CheckPower();
-// // extern GripperSensor HeadSensor;
-// extern  DigitalProximity FrontBumpSensor;
-// // extern IRsensor IRright;
-// // extern IRsensor IRleft;
-// // extern GripperSensor HeadSensor;
-// //---used by redock
-// extern PowerRelay Relay;  
-// //---used by get_back_on_trail
-// extern int current_target_heading;
-
-/////////////////////////////////////////////////////////////////////////////
-
+extern void FollowLane(); // used in the delay of getSwitchState()
+extern bool goingIn;
+extern bool goingOut;
 
 CapacitiveSensor::CapacitiveSensor(int CapSensorPin){
 	irqpin = CapSensorPin;
@@ -397,11 +345,18 @@ int CapacitiveSensor:: getSwitchState(){
 		last_switchState = new_switchState;
 		i++;
 		timeDelay = millis();
-		while(millis() - timeDelay < 100){
-			FollowLane();
-		}
 		
-		// delay(100);
+		// There is a delay time that requires a 100ms delay.
+		// If we are going in or out, use the delay period to follow the 
+		if (goingIn || goingOut){
+			while(millis() - timeDelay < 100){
+				FollowLane();
+			}
+		}
+		// If we are in a different state, ie diggin or dumping...just delay for 100ms
+		else{
+				delay(100);
+		}
 	}
 	
 	return switchState; //check passed. return the switchstate.

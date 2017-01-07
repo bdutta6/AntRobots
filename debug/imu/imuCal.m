@@ -1,6 +1,6 @@
 clear; clc; close all;
 
-m = csvread('echoIMU.csv', 1);
+m = csvread('charlieIMU.csv', 1);
 
 xMin = min(m(:,1));
 yMin = min(m(:,2));
@@ -59,7 +59,7 @@ end
 figure
 plot(xunit, hVals, '.')
 xlabel('hx')
-ylabel('arctan(hx/hy)')
+ylabel('Heading')
 legend('Unit Circle')
 hold on
 plot(m(:,1), headings, '.')

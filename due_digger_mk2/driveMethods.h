@@ -187,17 +187,17 @@ void FollowLane(){
 	// Serial.println("your pixy camera is not working");
 	GetDetectedSigs(); //poll camera
 	// Serial.println(" ;-) "); //VADIM
-	// if(goingIn){
-		// if(COTTON){ // area7 is associated with the area of cotton seen
-			// if(Area7>200){ //150
-				// DriveForward(x7);
-				// // Serial.print('c');
-				// // Serial.print("\t");
-				// // Serial.println(x7);
-				// return;
-			// }
-		// }
-	// }
+	if(goingIn){
+		if(COTTON){ // area7 is associated with the area of cotton seen
+			if(Area7>200){ //150
+				DriveForward(x7);
+				// Serial.print('c');
+				// Serial.print("\t");
+				// Serial.println(x7);
+				return;
+			}
+		}
+	}
 
 	if(TRAIL1){
 		if(Area1>150){
