@@ -17,113 +17,113 @@ extern int nextMode;
 
 //extern void masterWrite(int protocolCode);
 void enable_GoingInMode(){
-goingIn       = true;
-diggingMode   = false;
-goingOut      = false;
-dumpingMode   = false;
-goingCharging = false;
-chargingMode  = false;
-restingMode   = false;
-exitTunnelMode = false;
-turnReversalMode = false;
+	goingIn       = true;
+	diggingMode   = false;
+	goingOut      = false;
+	dumpingMode   = false;
+	goingCharging = false;
+	chargingMode  = false;
+	restingMode   = false;
+	exitTunnelMode = false;
+	turnReversalMode = false;
 }
 
 void enable_DiggingMode(){
-goingIn       = false;
-diggingMode   = true;
-goingOut      = false;
-dumpingMode   = false;
-goingCharging = false;
-chargingMode  = false;
-restingMode   = false;
-exitTunnelMode = false;
-turnReversalMode = false;
+	goingIn       = false;
+	diggingMode   = true;
+	goingOut      = false;
+	dumpingMode   = false;
+	goingCharging = false;
+	chargingMode  = false;
+	restingMode   = false;
+	exitTunnelMode = false;
+	turnReversalMode = false;
 }
 
 void enable_GoingOutMode(){
-goingIn       = false;
-diggingMode   = false;
-goingOut      = true;
-dumpingMode   = false;
-goingCharging = false;
-chargingMode  = false;
-restingMode   = false;
-exitTunnelMode = false;
-turnReversalMode = false;
+	goingIn       = false;
+	diggingMode   = false;
+	goingOut      = true;
+	dumpingMode   = false;
+	goingCharging = false;
+	chargingMode  = false;
+	restingMode   = false;
+	exitTunnelMode = false;
+	turnReversalMode = false;
 }
 
 void enable_DumpingMode(){
-goingIn       = false;
-diggingMode   = false;
-goingOut      = false;
-dumpingMode   = true;
-goingCharging = false;
-chargingMode  = false;
-exitTunnelMode = false;
-turnReversalMode = false;
+	goingIn       = false;
+	diggingMode   = false;
+	goingOut      = false;
+	dumpingMode   = true;
+	goingCharging = false;
+	chargingMode  = false;
+	exitTunnelMode = false;
+	turnReversalMode = false;
 }
 
 void enable_GoingCharging(){
-goingIn       = false;
-diggingMode   = false;
-goingOut      = false;
-dumpingMode   = false;
-goingCharging = true;
-chargingMode  = false;
-restingMode   = false;
-exitTunnelMode = false;
-turnReversalMode = false;
+	goingIn       = false;
+	diggingMode   = false;
+	goingOut      = false;
+	dumpingMode   = false;
+	goingCharging = true;
+	chargingMode  = false;
+	restingMode   = false;
+	exitTunnelMode = false;
+	turnReversalMode = false;
 }
 
 void enable_ChargingMode(){
-goingIn       = false;
-diggingMode   = false;
-goingOut      = false;
-dumpingMode   = false;
-goingCharging = false;
-chargingMode  = true; //ensure proper state variables since ISR interrupt routine is used
-restingMode   = false;
-exitTunnelMode = false;
-turnReversalMode = false;
+	goingIn       = false;
+	diggingMode   = false;
+	goingOut      = false;
+	dumpingMode   = false;
+	goingCharging = false;
+	chargingMode  = true; //ensure proper state variables since ISR interrupt routine is used
+	restingMode   = false;
+	exitTunnelMode = false;
+	turnReversalMode = false;
 }
 
 
 void enable_RestingMode(){
-goingIn       = false;
-diggingMode   = false;
-goingOut      = false;
-dumpingMode   = false;
-goingCharging = false;
-chargingMode  = false;
-restingMode   = true;
-exitTunnelMode = false;
-turnReversalMode = false;
+	goingIn       = false;
+	diggingMode   = false;
+	goingOut      = false;
+	dumpingMode   = false;
+	goingCharging = false;
+	chargingMode  = false;
+	restingMode   = true;
+	exitTunnelMode = false;
+	turnReversalMode = false;
 }
 
 void enable_exitTunnelMode(){
-goingIn       = false;
-diggingMode   = false;
-goingOut      = false;
-dumpingMode   = false;
-goingCharging = false;
-chargingMode  = false;
-restingMode   = false;
-exitTunnelMode = true;
-turnReversalMode = false;
+	goingIn       = false;
+	diggingMode   = false;
+	goingOut      = false;
+	dumpingMode   = false;
+	goingCharging = false;
+	chargingMode  = false;
+	restingMode   = false;
+	exitTunnelMode = true;
+	turnReversalMode = false;
 }
 
 void enable_turnReversalMode(int modeNumber){
-//int modeNumber shows the next mode the robot will take after the turn reversal mode is completed
-goingIn       = false;
-diggingMode   = false;
-goingOut      = false;
-dumpingMode   = false;
-goingCharging = false;
-chargingMode  = false;
-restingMode   = false;
-exitTunnelMode = false;
-turnReversalMode = true;
-nextMode = modeNumber;
+	//int modeNumber shows the next mode the robot will take after the turn reversal mode is completed
+	goingIn       = false;
+	diggingMode   = false;
+	goingOut      = false;
+	dumpingMode   = false;
+	goingCharging = false;
+	chargingMode  = false;
+	restingMode   = false;
+	exitTunnelMode = false;
+	turnReversalMode = true;
+	nextMode = modeNumber;
 }
 
 

@@ -423,7 +423,7 @@ void loop(){
 			while(1){
 				
 			
-				int testPanel = 7; // takes on values from 0 up to and including 7
+				int testPanel = 6; // takes on values from 0 up to and including 7
 				WDT_Restart(WDT);
 				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.				
 				fioWriteInt(CapSensor.getOneContact(testPanel)); //send the capacitive sensor value to fio.
@@ -554,12 +554,14 @@ void goingOutModeRoss(){
 		// Serial.print("The goingIn cycle-time is: ");
 		// Serial.println(millis() - previousTime);
 		// previousTime = millis();
+		
+		FollowLane(); //poll camera and call PD
 
 		WDT_Restart(WDT);
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS); //JSP
 		 
-		// Checks for Contact
+		// Checks for Contact -- will be calling followLane() within the contact check loop
 		if(CONTACT){
 			WDT_Restart(WDT);
 			handleContact();
@@ -572,6 +574,7 @@ void goingOutModeRoss(){
 		}
 		
 			//--- handle wrong way directions
+		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		if(!isWantedHeading(OUT_DIRECTION)){
 			Serial.println("Not facing the correct direction");
 			Stop();
@@ -584,29 +587,14 @@ void goingOutModeRoss(){
 					fioWrite(MASTER_GOING_OUT); //report over radio 
 				#endif
 		}	
-		
 		FollowLane(); //poll camera and call PD
-		// GetDetectedSigs(); //poll camera, get latest vision info
  
-		// if(DUMPING_SWITCH){//BANI
-			// Serial.println("Dumping switch");
-
-			// //if(CHARGER ){
-			// Backward(BASE_SPEED);
-			// delay(1000); //move back
-			// //TurnHeading(IN_DIRECTION); //turn back in
-			// enable_turnReversalMode(1);
-			// FollowLane();//poll camera and call PD
-			// WDT_Restart(WDT);
-		// } 
-
+		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		if(CHARGER){
 			Stop();
 			enable_DumpingMode();
 			return;
 		}
-	
-
 		FollowLane();//poll camera and call PD
 		WDT_Restart(WDT);
 
@@ -614,11 +602,12 @@ void goingOutModeRoss(){
  // enable_GoingCharging();
  // return;
  // }
- 
+ 		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		if(checkHeadSensor()){
 			Serial.println("checkHeadSensor() returns true");
 			// return; //found soemthing, lets dig 
 		}
+		FollowLane();
 		/* 
 		#ifdef MANUAL_ON
 			handleManualOverride(); 

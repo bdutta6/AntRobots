@@ -27,8 +27,8 @@
 #define WallSingleThresh1	525 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Lower
 #define WallSingleThresh2 650 //Wall Detection, Single Contact Threshold for Capacitive Sensor - Upper
 
-#define AntSingleThresh1	525
-#define AntSingleThresh2	500
+#define AntSingleThresh1	50
+#define AntSingleThresh2	525
 
 #define WallDoubleThresh1 10000 //1 //for Wall Detection, two or more contact threshold for Capacitive Sensor
 #define WallDoubleThresh2 100000
