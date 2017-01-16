@@ -19,6 +19,8 @@ extern int switchState;
 extern void FollowLane(); // used in the delay of getSwitchState()
 extern bool goingIn;
 extern bool goingOut;
+extern bool turnReversalMode;
+
 
 CapacitiveSensor::CapacitiveSensor(int CapSensorPin){
 	irqpin = CapSensorPin;
@@ -336,7 +338,9 @@ int CapacitiveSensor:: getSwitchState(){
 	// Serial.println(last_switchState);
 	int new_switchState = 0;
 	while (i < checkMeasurementNum){ //repeat measurements to assure that switchstate is correct and not caused by coincident measurements
-		FollowLane();
+		if (goingIn || goingOut){
+			FollowLane();
+		}
 		new_switchState = getDetectedContacts();
 		if (new_switchState != last_switchState){
 			switchState = 0; //check failed. switchstate is different from last measurement. set switchState to 0
@@ -349,16 +353,20 @@ int CapacitiveSensor:: getSwitchState(){
 		// There is a delay time that requires a 100ms delay.
 		// If we are going in or out, use the delay period to follow the 
 		if (goingIn || goingOut){
+			Serial.print("goingIn is "); 			Serial.println(goingIn); 
+			Serial.print("goingOut is "); 			Serial.println(goingOut); 
 			while(millis() - timeDelay < 100){
 				FollowLane();
+				Serial.println("1");
+
 			}
 		}
 		// If we are in a different state, ie diggin or dumping...just delay for 100ms
 		else{
 				delay(100);
 		}
+		
 	}
-	
 	return switchState; //check passed. return the switchstate.
 }
 

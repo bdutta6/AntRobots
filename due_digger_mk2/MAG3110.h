@@ -33,7 +33,7 @@ Modified Last on 05/09/16
 
 #define x_calib	64580
 #define y_calib	30 //3000
-#define field_threshold	3000
+#define field_threshold	5000// 3000
 
 class MAG3110
 {

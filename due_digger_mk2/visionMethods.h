@@ -119,7 +119,7 @@ void GetDetectedSigs(){
 				// break; 
    
 				//SHOULD BE case 6. disabling this feature
-				case 3: //green tunnel beguin
+				case 3: // GREEN
 					//i=3;
 					Area[3]=pixy.blocks[j].width * pixy.blocks[j].height; //calculate block area of a current match
 					if( (Area[3] > MaxArea[3]) ){//if this block has the biggest area comparing to the blocks of the same color detected in this instance, store information

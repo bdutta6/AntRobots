@@ -3,7 +3,7 @@
 #define RobotSelector_h
 
 // TESTING VARIABLES DEFINED HERE
-#define TEST_MODE 1
+// #define TEST_MODE 1
 
 // All TEST_CASE options are given below. The enumeration is defined in the the {GLOBAL VARIABLE DECLARATION} section of due_digger_mk2.ino
 // TEST_IMU, 
@@ -26,12 +26,26 @@
 // TEST_PID_CONTROLLER
 // TEST_NOTHING,
 #define TEST_CASE TEST_NOTHING
-#define ROBOT_C
-// Robot A is on COM 3,  radio on COM 8
-// Robot B is on COM 11, radio on COM 7
-// Robot C is on COM 10, radio on COM 6
-// Robot D is on COM 12, radio was never setup
-// Robot E is on COM 15,//BANI JSP
+#define ROBOT_A
+
+// ********** BEGIN {SET BEHAVIOR} **********
+//--comment things out if unwanted 
+//lorenz stuff
+#define PROBABILITY_DIG 1 //0 for active, 1 for lorenz
+#define RESTING_TIME 20000// number of seconds before rerolling probabilty in lorenz mode -- was originally 20000
+#define lorenzProb 89.64 
+
+//useless run stuff turn back if it did not reach the face
+#define ALLOW_USELESS_RUNS 1 // 1 is allow
+#define USELESS_RUN_THRESH 75000 //used to be 75000 
+
+//dont worry about this stuff
+#define ALLOW_CHARGING_ON_REST 0
+#define ALLOW_POWER_SAVINGS 0
+//VADIM. FIND A TIMER FROM A PREVIOUS CODE> THIS WAS BROKEN 
+// #define BACKWARDS_KICK_TIME 1000   //every so often the robot will drive back for this many seconds. needed for avoiding getting stuck 
+//run trhesh: 40s too short, 120s too long
+// **********  END   {SET BEHAVIOR} ---------
 
 #ifdef ROBOT_A
 #include "defA.h"        //definition macros

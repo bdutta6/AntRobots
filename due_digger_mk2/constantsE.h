@@ -40,19 +40,19 @@
 #define MINIMUM_AREA_THRESH 20   //ensure that only blocks that are at least this big are considered. Also can be configured in camera via PIXYMON
 
 ////////////////////////////////////////////// IMU Direction Parameters //////////////////////////////////////////////
-#define OUT_DIRECTION 294 //270//240//291//300 // previously set to 270-  //modified
-#define IN_DIRECTION  40  //90//89//30 //  used to be 60  //modified
+#define OUT_DIRECTION 256 //270//240//291//300 // previously set to 270-  //modified
+#define IN_DIRECTION  85  //90//89//30 //  used to be 60  //modified
 #define GET_BACK_DIRECTION 25 //compass direction
 #define CHARGING_DIRECTION 305 //240//240//300 //170 is at the wall, towards me
-#define DIRECTION_UNCERTAINTY 80 //used to be 5. increased to 10
+#define DIRECTION_UNCERTAINTY 60 //used to be 5. increased to 10
 #define PORT_DIRECTION        352 //5//11//11//355//350    //left with respect to IN_DIRECTION  //modified
 #define STARBOARD_DIRECTION   213 //170//150//167   //right with respect to IN_DIRECTION  //modified
 
 ////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
-#define HX_MIN -0.1500
-#define HX_MAX 0.1800
+#define HX_MIN -0.1200
+#define HX_MAX 0.1900
 
-#define HY_MIN 0.4400
+#define HY_MIN 0.4300
 #define HY_MAX 0.7200
 
 #define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW

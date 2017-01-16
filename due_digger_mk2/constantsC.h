@@ -49,8 +49,8 @@
 #define STARBOARD_DIRECTION   	272 //150//167   //right with respect to IN_DIRECTION  //modified
 
 ////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
-#define HX_MIN -0.3300
-#define HX_MAX -0.0000
+#define HX_MIN -0.3400
+#define HX_MAX 0.0100
 
 #define HY_MIN -0.0500
 #define HY_MAX 0.2400

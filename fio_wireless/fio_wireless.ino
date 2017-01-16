@@ -63,6 +63,8 @@ unsigned long whenLastComm; //timer to keep track of when DUE send a response
 bool isCheckTriggered=false; //keep track if there is a pending request
 unsigned long whenCheckStart=millis(); //timer to keep track when check was triggered
 serLCD lcd(lcdTx_pin);
+
+
 void setup() {
   readyResetPin(); //configure reset pin
   Serial.begin(9600); //set up serial communication to send out data via Xbees
@@ -71,7 +73,9 @@ void setup() {
   digitalWrite(lcdPower_pin, HIGH); //power the lcd
   // mySerial.begin(9600);//bani
 	// delay(500);//bani
-  
+  	// lcd.clear();
+		// lcd.setBrightness(30);
+		// lcd.print("Fio setup");
 
 	// mySerial.print(124); //4800bps//bani
   // mySerial.print(12);//bani
@@ -210,13 +214,13 @@ void loop(){
   // if ((millis() - whenLastComm) > COMMUNICATION_TIMEOUT) {// DUE has not sent ANY reports back. Code must be stuck
 	// resetDue(); //force restart DUE
   // }
-  if(isCheckTriggered){
-   if( millis() - whenCheckStart > CHECK_TIMEOUT ){
-   isCheckTriggered=false; //maybe this is a fix for an infinite restart? 
-   whenCheckStart=millis();
-   resetDue();
-   }  
-  }
+	if(isCheckTriggered){
+		if( millis() - whenCheckStart > CHECK_TIMEOUT ){
+			isCheckTriggered=false; //maybe this is a fix for an infinite restart? 
+			whenCheckStart=millis();
+			resetDue();
+		}  
+	}
 }
 
 
@@ -282,20 +286,20 @@ void readDataFromDue(){
 					isCheckTriggered=false; //reset flag	
 					break;
 		
-				case CHECK_START:
-					lcd.clear();
-					lcd.setBrightness(30);
-					lcd.print("CHECK_START!!");
-					isCheckTriggered=true; //set flag 
-					whenCheckStart=millis(); //grab time 
-					break;
+				// case CHECK_START:
+					// lcd.clear();
+					// lcd.setBrightness(30);
+					// lcd.print("CHECK_START!!");
+					// isCheckTriggered=true; //set flag 
+					// whenCheckStart=millis(); //grab time 
+					// break;
 		
-				case CHECK_END:
-					lcd.clear();
-					lcd.setBrightness(30);
-					lcd.print("CHECK_END!!");
-					isCheckTriggered=false; //reset flag	
-					break;
+				// case CHECK_END:
+					// lcd.clear();
+					// lcd.setBrightness(30);
+					// lcd.print("CHECK_END!!");
+					// isCheckTriggered=false; //reset flag	
+					// break;
 		
 		
 					case FRONT_SIDE_ANT:
@@ -383,29 +387,25 @@ void readyResetPin(){
 }
 
 void resetDue(){
- // Serial.println("bang");
+	// Serial.println("bang");
   pinMode(resetDue_pin,OUTPUT);//bani JSP RESETTING PROBLEM
- //pinMode(resetDue_pin,INPUT); //put the pin in high impeadence mode 
- digitalWrite(resetDue_pin,HIGH); //turn on pullup resistor and activate transistor
- // delay(2000); //wait, let everything power cycle. Reduced from 5s to 2s
+	//pinMode(resetDue_pin,INPUT); //put the pin in high impeadence mode 
+	digitalWrite(resetDue_pin,HIGH); //turn on pullup resistor and activate transistor
+	// delay(2000); //wait, let everything power cycle. Reduced from 5s to 2s
 	unsigned long dummyTimer = millis(); //with the due killed, empty the serial buffer
 	while( fioSerial.available() ){
-	char garbage = fioSerial.read();
-	 if( millis() - dummyTimer > 5000 ){
-	 break; 
-	 }	 
-	
+		char garbage = fioSerial.read();
+		if( millis() - dummyTimer > 5000 ){
+			break; 
+		}	 
 	};
   delay(2000);	
- 
  
  digitalWrite(resetDue_pin,LOW); //turn the pullup resistor off and deactive transistor
  pinMode(resetDue_pin,INPUT); //put the pin back to high impeadence mode 
  isCheckTriggered=false; //reset flag
  whenCheckStart=millis(); //reset timer
   
-
- 
  asm volatile ("  jmp 0"); //also reset FIO. ugly but whatever
 
 }
@@ -627,21 +627,21 @@ void software_Reboot() {
   if (myFile)
     myFile.close();
   
-  // Remove all files
-  SD.remove("statelog.txt");
-  SD.remove("currlog.txt");
-  SD.remove("voltlog.txt");
-  SD.remove("powerlog.txt");
-	SD.remove("conlog.txt");//BANI
-	SD.remove("debuglog.txt");
+		// Remove all files
+		SD.remove("statelog.txt");
+		SD.remove("currlog.txt");
+		SD.remove("voltlog.txt");
+		SD.remove("powerlog.txt");
+		SD.remove("conlog.txt");//BANI
+		SD.remove("debuglog.txt");
   
-  #if DEBUG
-    Serial.println(F("Files Removed"));
-  #endif
-  resetDue(); //reset DUE  
-  delay(1000);  // Close any open files  
-  // Restart
-  asm volatile ("  jmp 0");
+		#if DEBUG
+			Serial.println(F("Files Removed"));
+		#endif
+		resetDue(); //reset DUE  
+		delay(1000);  // Close any open files  
+		// Restart
+		asm volatile ("  jmp 0");
 }
 
 

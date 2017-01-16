@@ -70,7 +70,7 @@ int MAG3110::measure_values()
   int field_measurement = sqrt(pow(x - x_calib, 2)); //+ pow(y - y_calib, 2));
   // Serial.print("field_measurement=");    
 
-	// Serial.println(field_measurement);
+	Serial.println(field_measurement);
 	
 	return field_measurement;
 }

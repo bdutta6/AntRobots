@@ -6,7 +6,7 @@ extern bool goingCharging;
 extern void ChargingMode();
 
 void initiateChargingDetector(){
-	pinMode(ChargingDetectorPin,INPUT); //set pin as input
+	pinMode(ChargingDetectorPin, INPUT); //set pin as input
 	// digitalWrite(ChargingDetectorPin,HIGH); //turn on pullup resistor
 }
 

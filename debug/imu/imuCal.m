@@ -1,6 +1,6 @@
 clear; clc; close all;
 
-m = csvread('charlieIMU.csv', 1);
+m = csvread('echoIMU.csv', 1);
 
 xMin = min(m(:,1));
 yMin = min(m(:,2));
@@ -57,12 +57,15 @@ for i = 1:length(m)
 end
 
 figure
-plot(xunit, hVals, '.')
+plot(xunit, hVals)
 xlabel('hx')
 ylabel('Heading')
-legend('Unit Circle')
 hold on
-plot(m(:,1), headings, '.')
+plot(xNew, headings, '.')
+plot(xNew, headings2, '.')
+legend('Unit Circle', 'Uncalibrated' , 'Calibrated')
+
+
 
 
 
