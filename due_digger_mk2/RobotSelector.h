@@ -26,7 +26,7 @@
 // TEST_PID_CONTROLLER
 // TEST_NOTHING,
 #define TEST_CASE TEST_NOTHING
-#define ROBOT_A
+#define ROBOT_D
 
 // ********** BEGIN {SET BEHAVIOR} **********
 //--comment things out if unwanted 

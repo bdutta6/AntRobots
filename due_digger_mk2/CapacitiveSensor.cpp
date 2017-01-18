@@ -3,9 +3,6 @@
 Modified by : Ross Warkentin
 email: ross.warkentin@gmail.com
 
-Last Modified Date: 10/13/2016 - #2 in test_branch?
-- and this is in master?
-
 **/
 
 #include "Arduino.h"
@@ -17,8 +14,12 @@ Last Modified Date: 10/13/2016 - #2 in test_branch?
 extern int switchState;
 
 extern void FollowLane(); // used in the delay of getSwitchState()
+extern void FollowLaneBackwards(); // used in the delay of getSwitchState()
+
 extern bool goingIn;
 extern bool goingOut;
+extern bool exitTunnel;
+
 extern bool turnReversalMode;
 
 
@@ -341,6 +342,9 @@ int CapacitiveSensor:: getSwitchState(){
 		if (goingIn || goingOut){
 			FollowLane();
 		}
+		if(exitTunnel){
+			FollowLaneBackwards();
+		}
 		new_switchState = getDetectedContacts();
 		if (new_switchState != last_switchState){
 			switchState = 0; //check failed. switchstate is different from last measurement. set switchState to 0
@@ -357,10 +361,18 @@ int CapacitiveSensor:: getSwitchState(){
 			Serial.print("goingOut is "); 			Serial.println(goingOut); 
 			while(millis() - timeDelay < 100){
 				FollowLane();
-				Serial.println("1");
+				// Serial.println("1");
 
 			}
 		}
+		
+		else if (exitTunnel){
+			while(millis() - timeDelay < 100){
+				FollowLaneBackwards();
+				// Serial.println("1");
+			}
+		}
+
 		// If we are in a different state, ie diggin or dumping...just delay for 100ms
 		else{
 				delay(100);
