@@ -26,18 +26,23 @@
 // TEST_PID_CONTROLLER
 // TEST_NOTHING,
 #define TEST_CASE TEST_NOTHING
-#define ROBOT_D
+#define ROBOT_E
 
 // ********** BEGIN {SET BEHAVIOR} **********
 //--comment things out if unwanted 
 //lorenz stuff
-#define PROBABILITY_DIG 1 //0 for active, 1 for lorenz
+#define PROBABILITY_DIG 0 //0 for active, 1 for lorenz
 #define RESTING_TIME 20000// number of seconds before rerolling probabilty in lorenz mode -- was originally 20000
-#define lorenzProb 89.64 
+#define lorenzProb 21.61    
 
 //useless run stuff turn back if it did not reach the face
-#define ALLOW_USELESS_RUNS 1 // 1 is allow
+#define ALLOW_USELESS_RUNS 0// 1 is allow
 #define USELESS_RUN_THRESH 75000 //used to be 75000 
+
+
+// This will be used in the handleContact
+#define REVERSE_ON_CONTACT 0
+#define REVERSE_ON_CONTACT_PROB 0
 
 //dont worry about this stuff
 #define ALLOW_CHARGING_ON_REST 0

@@ -14,11 +14,11 @@ email: ross.warkentin@gmail.com
 extern int switchState;
 
 extern void FollowLane(); // used in the delay of getSwitchState()
-extern void FollowLaneBackwards(); // used in the delay of getSwitchState()
+extern void FollowLaneBackward(); // used in the delay of getSwitchState()
 
 extern bool goingIn;
 extern bool goingOut;
-extern bool exitTunnel;
+extern bool exitTunnelMode;
 
 extern bool turnReversalMode;
 
@@ -342,8 +342,8 @@ int CapacitiveSensor:: getSwitchState(){
 		if (goingIn || goingOut){
 			FollowLane();
 		}
-		if(exitTunnel){
-			FollowLaneBackwards();
+		if(exitTunnelMode){
+			FollowLaneBackward();
 		}
 		new_switchState = getDetectedContacts();
 		if (new_switchState != last_switchState){
@@ -366,9 +366,9 @@ int CapacitiveSensor:: getSwitchState(){
 			}
 		}
 		
-		else if (exitTunnel){
+		else if (exitTunnelMode){
 			while(millis() - timeDelay < 100){
-				FollowLaneBackwards();
+				FollowLaneBackward();
 				// Serial.println("1");
 			}
 		}

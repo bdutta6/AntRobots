@@ -243,6 +243,7 @@ void setup(){
 	WDT_Restart(WDT);
 	pullResetPinLow(); //pull reset pin low 
 
+	
 	#if PROBABILITY_DIG
 		int someRandValue=analogRead(A4); //read ADC val from the unused pin
 		randomSeed(someRandValue); //set up random generator seed ///input can be changed to analogRead(int unused analog pin);
@@ -268,6 +269,10 @@ void setup(){
 	// watchdogReset=millis(); //initiate watchdog timer 
 	//initiateSwitches(); //sets up pins for contact switches
 	initiateChargingDetector(); //set up contact charger detector
+	delay(1000);
+
+	
+	
 	//Wire.begin(); //for capacitive sensor
 	//mpr121_setup(); //for capacitive sensor
 
@@ -292,12 +297,16 @@ void setup(){
 	WDT_Restart(WDT);
 
 	CapSensor.setup();
-	FSensor.setup();
-	pixy.init();        //Starts I2C communication with a camera
-
-	WDT_Restart(WDT);
-
 	delay(1000);
+
+	
+	FSensor.setup();
+	delay(1000);
+
+	pixy.init();        //Starts I2C communication with a camera
+	delay(1000);
+
+
 	WDT_Restart(WDT);
 	
 	
@@ -469,9 +478,6 @@ void loop(){
 					Serial.println("Charger not detected");
 				}
 				
-			
-			
-			
 				delay(1000);
 			}
 			
@@ -662,6 +668,19 @@ void goingOutModeRoss(){
 				fioWrite(MASTER_GOING_OUT); //report over radio 
 			#endif
 		}
+		
+		// If we run into the media - copied from front contact
+		if(checkHeadSensor()){
+			Backward(BASE_SPEED);
+			delay(500);
+			Drive.RightForward(255);
+			Drive.LeftForward(75);
+			delay(500);
+			Drive.RightForward(75);
+			Drive.LeftForward(255);
+			delay(500);
+		}
+		
 	
  
 		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
@@ -781,6 +800,8 @@ void GoingInMode(){
 		// unsigned long contactTime = millis();
 		if(CONTACT){
 			// Serial.println("Something contacted");
+			
+			
 			WDT_Restart(WDT);
 			handleContact();
 			
@@ -1080,7 +1101,9 @@ void exitTunnel(){
 	// Stop(); myDelay(1000); //debug myDelay
 	// enable_GoingOutMode();
 	// HeadSensor.threshold=940; //return threshold to its original value 
-	unsigned long exitStart=millis(); //grab a time to enable timeout 
+	unsigned long exitStart=millis(); //grab a time to enable timeout
+	unsigned long exitStartTimeout=millis(); //grab a time to enable timeout 
+
 	bool inTunnel=true; //am I in the tunnel?, assume that we are to start 
 
 	while(inTunnel){
@@ -1092,17 +1115,21 @@ void exitTunnel(){
 		
 		WDT_Restart(WDT);
 		// GetDetectedSigs(); //get the colors
-		Backward(BASE_SPEED); //go backward
+		// Backward(BASE_SPEED); //go backward
 		// delay(100);
+		FollowLaneBackward();
 
+		Backward(BASE_SPEED); //go backward
 		// WDT_Restart(WDT); //JSP
-		if( (millis() - exitStart) > 10000 ){ //temporarily timeout //used to be 10
-			WDT_Restart(WDT); //JSP
+		if( (millis() - exitStart) > 10000 || (millis() - exitStartTimeout > 20000)){ // maximum exitTunnel time of 20 seconds before going into goingOut mode. Tune this
+			WDT_Restart(WDT);
 	  	inTunnel = false;
 		}
+		FollowLaneBackward();
+
 		
 		// Checks for Contact
-		// Backward(BASE_SPEED); //go backward
+		Backward(BASE_SPEED); //go backward
 		if(CONTACT){
 			// Serial.println("Something contacted");
 			WDT_Restart(WDT);
@@ -1111,6 +1138,8 @@ void exitTunnel(){
 
 	   	exitStart+=3500;//3000 //add time to compensate
 		}
+		FollowLaneBackward();
+
 		
 	} 
 	
@@ -1648,17 +1677,22 @@ void wakeUp(){
 	
 	pullResetPinLow(); //pull reset pin low 
 
-
-
 	Relay.PowerOn();
 	
 	initiateChargingDetector(); //set up contact charger detector
+	delay(1000);
 
 	
 	CapSensor.setup();
-	FSensor.setup();
-	pixy.init();        //Starts I2C communication with a camera
+	delay(1000);
 
+	FSensor.setup();
+	delay(1000);
+
+	pixy.init();        //Starts I2C communication with a camera
+	delay(1000);
+
+	
 	WDT_Restart(WDT);
 	uint16_t status = dof.begin(); //starts I2C communication with a IMU. status variable should have a hex value of 0x49D4. This should def be called, has calibration functions inside
 	dof.setMagScale(dof.M_SCALE_2GS);
@@ -2040,7 +2074,17 @@ void TurnHeadingRoss(float desired_heading){
 			// switchTurnDirection = millis();
 		}
 		
-		if(CHARGER){
+		
+		if(dof.checkStatus() != 0x49D4 || millis() - time_start > 22500){
+			Stop();
+			
+			Relay.PowerOff();
+			delay(1000);
+			wakeUp();
+			time_start = millis();
+		}
+		
+		if(CHARGER || checkHeadSensor()){
 			Serial.println("Charging if-statement");
 			
 			Stop(); 
@@ -3191,25 +3235,31 @@ void handleContact(){
 void TestDriveMotors(){
 	// captures the program here and repeats
 	while(1){
+	
+	
+	
 		WDT_Restart(WDT);
-		Serial.println(F("Forward"));
-		Forward(BASE_SPEED); delay(2000);
-		Stop(); delay(1000);
+		
+		
+		FollowLaneBackward();
+		// Serial.println(F("Forward"));
+		// Forward(BASE_SPEED); delay(2000);
+		// Stop(); delay(1000);
 
-		WDT_Restart(WDT);
-		Serial.println(F("Backward"));
-		Backward(BASE_SPEED); delay(2000);
-		Stop(); delay(1000);
+		// WDT_Restart(WDT);
+		// Serial.println(F("Backward"));
+		// Backward(BASE_SPEED); delay(2000);
+		// Stop(); delay(1000);
 
-		WDT_Restart(WDT);
-		Serial.println(F("Right"));
-		Right(DEFAULT_TURNING_SPEED); delay(2000);
-		Stop(); delay(1000);
+		// WDT_Restart(WDT);
+		// Serial.println(F("Right"));
+		// Right(DEFAULT_TURNING_SPEED); delay(2000);
+		// Stop(); delay(1000);
 
-		WDT_Restart(WDT);
-		Serial.println(F("Left"));     
-		Left(DEFAULT_TURNING_SPEED); delay(2000); 
-		Stop(); delay(1000);
+		// WDT_Restart(WDT);
+		// Serial.println(F("Left"));     
+		// Left(DEFAULT_TURNING_SPEED); delay(2000); 
+		// Stop(); delay(1000);
 
 		}
 }

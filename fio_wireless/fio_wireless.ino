@@ -382,15 +382,15 @@ void readDataFromDue(){
 } 
 
 void readyResetPin(){
- pinMode(resetDue_pin,INPUT); //put pin in high impeadence mode
- digitalWrite(resetDue_pin,LOW); //turn pullup resistor off
+	pinMode(resetDue_pin,INPUT); //put pin in high impeadence mode
+	digitalWrite(resetDue_pin,LOW); //turn pullup resistor off
 }
 
 void resetDue(){
 	// Serial.println("bang");
-  pinMode(resetDue_pin,OUTPUT);//bani JSP RESETTING PROBLEM
+  pinMode(resetDue_pin, OUTPUT);//bani JSP RESETTING PROBLEM
 	//pinMode(resetDue_pin,INPUT); //put the pin in high impeadence mode 
-	digitalWrite(resetDue_pin,HIGH); //turn on pullup resistor and activate transistor
+	digitalWrite(resetDue_pin, HIGH); //turn on pullup resistor and activate transistor
 	// delay(2000); //wait, let everything power cycle. Reduced from 5s to 2s
 	unsigned long dummyTimer = millis(); //with the due killed, empty the serial buffer
 	while( fioSerial.available() ){
