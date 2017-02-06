@@ -510,7 +510,7 @@ void loop(){
 			while(1){
 				
 			
-				int testPanel = 6; // takes on values from 0 up to and including 7
+				int testPanel = 7; // takes on values from 0 up to and including 7
 				WDT_Restart(WDT);
 				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.				
 				fioWriteInt(CapSensor.getOneContact(testPanel)); //send the capacitive sensor value to fio.
@@ -2496,7 +2496,7 @@ void handleContact(){
 		switch(switchState & SWITCH_WALL_MASK){
 			case FL:
 				//Serial.println("FL");
-				fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				Backward(BASE_SPEED);
 				delay(500);
@@ -2601,7 +2601,7 @@ void handleContact(){
 			case (LSF | LSB | BL):
 			case (FL | LSF | LSB | BL):
 					//Serial.println("FL");
-				fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				Backward(BASE_SPEED);
 				delay(500);
@@ -2620,7 +2620,7 @@ void handleContact(){
 			case (RSF | RSB | BR):
 			case (FR | RSF | RSB | BR):
 					//Serial.println("FL");
-				fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				Backward(BASE_SPEED);
 				delay(500);
@@ -2785,7 +2785,7 @@ void handleContact(){
 				delay(500); //force new action
 				break;
 			case BR | BL:
-				fioWrite(BACK_SIDE_WALL); // added fiowrites to debug
+				// fioWrite(BACK_SIDE_WALL); // added fiowrites to debug
 				Stop();
 				delay(100);
 				Forward(BASE_SPEED);
@@ -2822,7 +2822,7 @@ void handleContact(){
 					case (RSF | RSB | BR):
 					case (FR | RSF | RSB | BR):
 						//Serial.println("FL");
-						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 						Backward(BASE_SPEED);
 						delay(500);
@@ -2845,7 +2845,7 @@ void handleContact(){
 					case (LSF | LSB | BL):
 					case (FL | LSF | LSB | BL):
 						//Serial.println("FL");
-						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 						Backward(BASE_SPEED);
 						delay(500);
@@ -2926,7 +2926,7 @@ void handleContact(){
 					case (RSF | RSB | BR):
 					case (FR | RSF | RSB | BR):
 						//Serial.println("FL");
-						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 						Backward(BASE_SPEED);
 						delay(500);
@@ -2949,7 +2949,7 @@ void handleContact(){
 					case (LSF | LSB | BL):
 					case (FL | LSF | LSB | BL):
 						//Serial.println("FL");
-						fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 						Backward(BASE_SPEED);
 						delay(500);

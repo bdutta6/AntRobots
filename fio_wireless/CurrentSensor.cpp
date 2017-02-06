@@ -1,10 +1,16 @@
 #include "Arduino.h"
 #include "CurrentSensor.h"
 
-CurrentSensor :: CurrentSensor(int analogPin)
+
+
+CurrentSensor :: CurrentSensor(){}
+
+
+void CurrentSensor :: setPin(int analogPin)
 {
 _analogPin=analogPin;
 }
+
 
 int CurrentSensor :: ReadRaw()
 {

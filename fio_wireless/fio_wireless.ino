@@ -51,8 +51,8 @@ AntComm Comm; //quick fix, should really get rid of the constructor input
 
 #define CURRENT_SAMPLE_SIZE 100 //sets a number of samples to be used for reading current averages
 #define VOLTAGE_SAMPLE_SIZE 100
-Voltmeter Voltage(voltage_pin);
-CurrentSensor Current(current_sensor_pin); //sets up a current sensor. 
+Voltmeter Voltage;
+CurrentSensor Current; //sets up a current sensor. 
 
 SoftwareSerial fioSerial(softwhareSerialRx_pin,softwhareSerialTx_pin);
 //SoftwareSerial mySerial(lcdRx_pin,lcdTx_pin);//bani
@@ -60,8 +60,8 @@ String inData=""; //string to hold incoming data
 int hexData=0x00;
 unsigned long whenLastComm; //timer to keep track of when DUE send a response 
 
-bool isCheckTriggered=false; //keep track if there is a pending request
-unsigned long whenCheckStart=millis(); //timer to keep track when check was triggered
+// bool isCheckTriggered=false; //keep track if there is a pending request
+// unsigned long whenCheckStart=millis(); //timer to keep track when check was triggered
 serLCD lcd(lcdTx_pin);
 
 
@@ -71,6 +71,12 @@ void setup() {
 	fioSerial.begin(19200);
 	pinMode(lcdPower_pin, OUTPUT); //power the lcd
   digitalWrite(lcdPower_pin, HIGH); //power the lcd
+	Voltage.setPin(voltage_pin);
+	Current.setPin(current_sensor_pin);
+	
+	
+	
+	
   // mySerial.begin(9600);//bani
 	// delay(500);//bani
   	// lcd.clear();
@@ -214,13 +220,13 @@ void loop(){
   // if ((millis() - whenLastComm) > COMMUNICATION_TIMEOUT) {// DUE has not sent ANY reports back. Code must be stuck
 	// resetDue(); //force restart DUE
   // }
-	if(isCheckTriggered){
-		if( millis() - whenCheckStart > CHECK_TIMEOUT ){
-			isCheckTriggered=false; //maybe this is a fix for an infinite restart? 
-			whenCheckStart=millis();
-			resetDue();
-		}  
-	}
+	// if(isCheckTriggered){
+		// if( millis() - whenCheckStart > CHECK_TIMEOUT ){
+			// isCheckTriggered=false; //maybe this is a fix for an infinite restart? 
+			// whenCheckStart=millis();
+			// resetDue();
+		// }  
+	// }
 }
 
 
@@ -283,7 +289,7 @@ void readDataFromDue(){
 					lcd.setBrightness(30);
 					lcd.print("RESET_REQUEST!!");
 					resetDue();
-					isCheckTriggered=false; //reset flag	
+					// isCheckTriggered=false; //reset flag	
 					break;
 		
 				// case CHECK_START:
@@ -403,10 +409,10 @@ void resetDue(){
  
  digitalWrite(resetDue_pin,LOW); //turn the pullup resistor off and deactive transistor
  pinMode(resetDue_pin,INPUT); //put the pin back to high impeadence mode 
- isCheckTriggered=false; //reset flag
- whenCheckStart=millis(); //reset timer
+ // isCheckTriggered=false; //reset flag
+ // whenCheckStart=millis(); //reset timer
   
- asm volatile ("  jmp 0"); //also reset FIO. ugly but whatever
+ // asm volatile ("  jmp 0"); //also reset FIO. ugly but whatever
 
 }
 
@@ -641,7 +647,7 @@ void software_Reboot() {
 		resetDue(); //reset DUE  
 		delay(1000);  // Close any open files  
 		// Restart
-		asm volatile ("  jmp 0");
+		// asm volatile ("  jmp 0");
 }
 
 

@@ -4,7 +4,9 @@
 //#define R2 1.65 //k omhs ,two 3.3k resistors in parallel
 #define R2 3.3 //k omhs ,two 3.3k resistors in parallel
 
-Voltmeter :: Voltmeter(int analogPin){
+Voltmeter :: Voltmeter(){}
+
+void Voltmeter :: setPin(int analogPin){
  _analogPin=analogPin;
   // pinMode(_analogPin,OUTPUT); //fixed this bug
   //pinMode(_analogPin,INPUT); //set pin mode

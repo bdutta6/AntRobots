@@ -20,7 +20,8 @@
 class CurrentSensor
 {
 	public:
-	CurrentSensor(int analogPin);  	   			//class constructor
+	CurrentSensor();  	   			//class constructor
+	void setPin(int current_sensor_pin); // this will set up the pin
 	int ReadRaw();                				//this will read out a raw value
 	int ReadRawAvg(int CURRENT_SAMPLE_SIZE);	//this will read out an average of raw readings. TESTED for 50 samples. Larger number of samples may result in overload
         float Read();                  				//this will read out a value in Amperes

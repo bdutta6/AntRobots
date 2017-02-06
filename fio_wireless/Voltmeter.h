@@ -9,15 +9,17 @@
 
 class Voltmeter{
  public:
- Voltmeter(int analogPin);
- float Read();
- float GrabMin(int Samples=20);
- float GrabAvg(int Samples=20);
- private:
- const float Vcc=3.3; //ADC pin voltage
- int _analogPin;
- int _Samples;
- float _SampleMin=0; //initiate 
+	 Voltmeter();
+	 void setPin(int analogPin);
+
+	 float Read();
+	 float GrabMin(int Samples=20);
+	 float GrabAvg(int Samples=20);
+	 private:
+	 const float Vcc=3.3; //ADC pin voltage
+	 int _analogPin;
+	 int _Samples;
+	 float _SampleMin=0; //initiate 
 };
 
 
