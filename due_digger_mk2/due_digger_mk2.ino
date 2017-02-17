@@ -91,6 +91,21 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 #include "MAG3110.h"
 
 
+#include <SPI.h> // SPI comm with SD card
+#include <SD.h> // SD card library
+File myFile;
+#define CS 4            // Chip select
+#define SD_CLR_SWITCH 6  // Clear files from SD card
+#define CURRENT_SAMPLE_SIZE 100 //sets a number of samples to be used for reading current averages
+#define VOLTAGE_SAMPLE_SIZE 100
+
+
+
+
+#include "hardSerLCD.h"
+hardSerLCD lcd;
+
+
 // #include <wdt.h>
 // **********  END   {LIBRARY IMPORT} ---------
 
@@ -187,6 +202,7 @@ enum Test {
 	TEST_MAG,
 	TEST_CAP, 					// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
 	TEST_CHARGER,
+	TEST_CURRENT,
 	TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
 	TEST_DRIVE_MOTORS, 
 	TEST_SERVO_MOTORS, 
@@ -221,6 +237,11 @@ int numOfConsequitiveBackwardKicks=0;
 
 int StartIndicatorAddr = 0;
 
+void printFresh(String lcddata){
+    lcd.clear();
+		lcd.setBrightness(30);
+    lcd.print(lcddata);
+}
 
 void WDT_Setup(){ // my default time is 18 seconds
 	//15 seconds - resets when exiting tunnel
@@ -239,6 +260,9 @@ void WDT_Setup(){ // my default time is 18 seconds
 }    
 
 // ********** BEGIN (SETUP SCRIPT} **********
+
+unsigned long globalTimerDiff = 0;
+
 void setup(){
 	WDT_Restart(WDT);
 	pullResetPinLow(); //pull reset pin low 
@@ -264,7 +288,95 @@ void setup(){
 	// pixy.init();        //Starts I2C communication with a camera
 
 	WDT_Restart(WDT);
-	initiateFioSerial(); //start Fio serial on channel 2
+	
+	
+	// initiateFioSerial(); //start Fio serial on channel 2
+	lcd.begin(&Serial2, 9600); 
+	
+	
+	
+	  if (!SD.begin(CS)) {
+		      Serial.println("SD initialization failed!");
+		}
+		else{
+		    Serial.println("SD initialization done.");
+		}
+
+		 // Notify start of data logging in the file
+		//bani opens contact logging file
+	myFile = SD.open("conlog.txt",FILE_WRITE);
+  if (myFile) {
+    myFile.println(F("-999\t-999"));
+    myFile.close();
+    #if DEBUG
+      Serial.println(F("contact logging started"));
+    #endif
+  }
+  else {
+    #if DEBUG
+      Serial.println(F("error opening file"));
+    #endif    
+  }
+	//bani
+	
+  myFile = SD.open("statelog.txt",FILE_WRITE);
+  if (myFile) {
+    myFile.println(F("-999\t-999"));
+    myFile.close();
+    // #if DEBUG
+      Serial.println(F("state lo     asd gging started"));
+    // #endif
+  }
+  else {
+    #if DEBUG
+      Serial.println(F("error opening file"));
+    #endif    
+  }
+  myFile = SD.open("currlog.txt",FILE_WRITE);
+  if (myFile) {
+    myFile.println(F("-999\t-999"));
+    myFile.close();
+    #if DEBUG
+      Serial.println(F("current logging started"));
+    #endif
+  }
+  else {
+    #if DEBUG
+      Serial.println(F("error opening file"));
+    #endif    
+  }
+  myFile = SD.open("voltlog.txt",FILE_WRITE);
+  if (myFile) {
+    myFile.println(F("-999\t-999"));
+    myFile.close();
+    #if DEBUG
+      Serial.println(F("voltage logging started"));
+    #endif
+  }
+  else {
+    #if DEBUG
+      Serial.println(F("error opening file"));
+    #endif    
+  }
+  myFile = SD.open("powerlog.txt",FILE_WRITE);
+  if (myFile) {
+    myFile.println(F("-999\t-999"));
+    myFile.close();
+    #if DEBUG
+      Serial.println(F("power logging started"));
+    #endif
+  }
+  else {
+    #if DEBUG
+      Serial.println(F("error opening file"));
+    #endif    
+  }
+		
+		
+		Current.setPin(currentSensorPin);
+
+	
+	
 	// Serial.println(F("Ready")); //debug line
 	// watchdogReset=millis(); //initiate watchdog timer 
 	//initiateSwitches(); //sets up pins for contact switches
@@ -279,7 +391,8 @@ void setup(){
 	/* initiate servos and move them to test  */
 	Arm.Attach(); //hook up servos to pwm pins
 	
-	Arm.PitchGo(HIGH_ROW_ANGLE); delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
+	Arm.PitchGo(HIGH_ROW_ANGLE);
+	delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
 	//Arm.GripperGo(MID_POS); delay(500);
 	//Arm.GripperGo(OPEN_POS); delay(200);
 	Arm.GripperGo(CLOSED_POS);
@@ -288,7 +401,7 @@ void setup(){
 	Arm.PitchGo(HIGH_ROW_ANGLE-5);    //lower the arm slightly; this shows that the robot has been reset.
 	delay(500);
 	Arm.PitchGo(HIGH_ROW_ANGLE);
-	/* initiate various boolean sttate variables */
+	/* initiate various boolean state variables */
 	// initiateSwitches(); //sets up pins for contact switches
 		
 
@@ -365,10 +478,9 @@ void setup(){
 	
 	// Ross: This is just an output that I added to see when the robot has reset
 	#ifdef FIO_LINK
-			fioWrite(MASTER_RESTING);
+			printFresh("Setup complete");
 			delay(1000);
 	#endif
-	
 	WDT_Restart(WDT);
 	
 }
@@ -439,12 +551,26 @@ void loop(){
 
 	Serial.println("main loop");
 	
+	
 	// This is advantageous in that adding a new test is as simple as adding a test state to the global enumeration and adding a test method to a separate test.cpp file (does not currently exist)
 	// enumeration defined in global declaration, and TEST_CASE is in RobotSelector
 	switch(TEST_CASE){
 		case TEST_IMU_CAL:
 			TestIMUcal();
 			break;
+			
+		case TEST_CURRENT:
+		float C;
+		// pinMode(currentSensorPin, INPUT);
+			Serial.println(String(currentSensorPin));
+			while(1){
+				Serial.println("Analog reading is " + String(analogRead(currentSensorPin)));
+			  C=Current.ReadAvg(CURRENT_SAMPLE_SIZE);
+				Serial.println("Current reading is " + String(C));
+				WDT_Restart(WDT);
+
+			
+			}
 		case TEST_IMU:
 			TestIMU();
 			break;
@@ -513,7 +639,7 @@ void loop(){
 				int testPanel = 7; // takes on values from 0 up to and including 7
 				WDT_Restart(WDT);
 				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.				
-				fioWriteInt(CapSensor.getOneContact(testPanel)); //send the capacitive sensor value to fio.
+				printFresh(String(CapSensor.getOneContact(testPanel))); //send the capacitive sensor value to fio.
 				delay(1000);
 
 				}
@@ -607,13 +733,14 @@ void loop(){
 //----------------------------------------------------
 void goingOutModeRoss(){
 	Serial.println(F("Beginning of GoingInMode()"));
+	writeSDcard('M', "Going Out", millis());
 
 	WDT_Restart(WDT);
 	numOfConsequitiveBackwardKicks = 0;
 
 	#ifdef FIO_LINK
 		Serial.println(F("FIO_LINK defined"));
-		fioWrite(MASTER_GOING_OUT); //report over radio 
+		printFresh("Going out"); //report over radio 
 	#endif
 
 	// #if ALLOW_USELESS_RUNS
@@ -622,7 +749,7 @@ void goingOutModeRoss(){
 
 	// unsigned long whenMovedHead=millis();  //initiate timer to myDelay head shaking; //pitch head up and down to make sure that the head sensor triggers if the robot is pushing in a tunnel
 
-
+	Arm.PitchGo(HIGH_ROW_ANGLE);
 	Arm.GripperGo(CLOSED_POS); //close the jaws //JSP
 
 	// TurnHeading(current_target_heading); //may need to add this for a case when the board resets
@@ -636,6 +763,12 @@ void goingOutModeRoss(){
 		// Serial.println(millis() - previousTime);
 		// previousTime = millis();
 		
+		
+		if(millis() - globalTimerDiff > 2000){
+			sendPowerUsage();
+			globalTimerDiff = millis();
+		}
+		
 					//--- handle wrong way directions
 		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		if(!isWantedHeading(OUT_DIRECTION)){
@@ -648,14 +781,14 @@ void goingOutModeRoss(){
 			
 				#ifdef FIO_LINK
 					Serial.println(F("FIO_LINK defined"));
-					fioWrite(MASTER_GOING_OUT); //report over radio 
+					printFresh("Going out"); //report over radio 
 				#endif
 		}	
 		FollowLane(); //poll camera and call PD
 
 		WDT_Restart(WDT);
-		Arm.PitchGo(HIGH_ROW_ANGLE);
-		Arm.GripperGo(CLOSED_POS); //JSP
+		// Arm.PitchGo(HIGH_ROW_ANGLE);
+		// Arm.GripperGo(CLOSED_POS); //JSP
 		 
 		// Checks for Contact -- will be calling followLane() within the contact check loop
 		if(CONTACT){
@@ -665,8 +798,10 @@ void goingOutModeRoss(){
 			// Rewrite fio to goinging state so we know we are out of the turning state
 			#ifdef FIO_LINK
 				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_OUT); //report over radio 
+				printFresh("Going out"); //report over radio 
 			#endif
+				writeSDcard('M', "Going Out", millis());
+
 		}
 		
 		// If we run into the media - copied from front contact
@@ -724,13 +859,15 @@ void goingOutModeRoss(){
 //----------------------------------------------------
 void GoingInMode(){
 	Serial.println(F("Beginning of GoingInMode()"));
+	writeSDcard('M', "Going in", millis());
+
 
 	WDT_Restart(WDT);
 	numOfConsequitiveBackwardKicks = 0;
 
 	#ifdef FIO_LINK
 		Serial.println(F("FIO_LINK defined"));
-		fioWrite(MASTER_GOING_IN); //report over radio 
+		printFresh("Going in"); //report over radio 
 	#endif
 
 	#if ALLOW_USELESS_RUNS
@@ -753,6 +890,11 @@ void GoingInMode(){
 
 	while(goingIn){
 	
+		if(millis() - globalTimerDiff > 2000){
+			sendPowerUsage();
+			globalTimerDiff = millis();
+		}
+	
 		unsigned long loopTime = millis();
 
 		// while(1){
@@ -772,7 +914,7 @@ void GoingInMode(){
 			
 			#ifdef FIO_LINK
 				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_IN); //report over radio 
+				printFresh("Going in"); //report over radio 
 			#endif
 		}
 		// Serial.print("dirTime is "); Serial.println(millis() - dirTime);	
@@ -808,8 +950,10 @@ void GoingInMode(){
 			// Rewrite fio to goinging state so we know we are out of the turning state
 			#ifdef FIO_LINK
 				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_IN); //report over radio 
+				printFresh("Going in"); //report over radio 
 			#endif
+				writeSDcard('M', "Going in", millis());
+
 		}
 		// Serial.print("contactTime is "); Serial.println(millis() - contactTime);
 		
@@ -840,7 +984,7 @@ void GoingInMode(){
 			
 			#ifdef FIO_LINK
 				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_GOING_IN); //report over radio 
+				printFresh("Going in"); //report over radio 
 			#endif
 		}
 		// Serial.print("chargerTime is "); Serial.println(millis() - chargerTime);
@@ -891,7 +1035,7 @@ void GoingInMode(){
 
 				if (goBack){
 					#ifdef FIO_LINK
-						fioWrite(MASTER_USELESS_RUN); //report over radio 
+						printFresh("Useless run"); //report over radio 
 					#endif
 					Backward(BASE_SPEED);
 					delay(2000);
@@ -919,13 +1063,16 @@ void GoingInMode(){
 
 void DiggingMode(){
 	//no manual control, no contact support
-	// #ifdef FIO_LINK//BANI LCD
-	// fioWrite(DISP_DIGGING); //report over radio //BANI LCD
-	// #endif//BANI LCD
+
+	
 
 	#ifdef FIO_LINK
-		fioWrite(MASTER_DIGGING); //report digging mode
+		printFresh("Digging"); //report digging mode
 	#endif
+	
+	writeSDcard('M', "Digging", millis());
+
+	
 	//Serial.println("Digging!!!");
 	Arm.GripperGo(OPEN_POS); //open gripper up
 	// Arm.PitchGo(LOW_ROW_ANGLE);//raise the arm high
@@ -934,6 +1081,12 @@ void DiggingMode(){
 	#define EXCAVATION_PENALTY 8000
 	bool newAttempt=true; 
 	while(diggingMode){
+	
+				if(millis() - globalTimerDiff > 2000){
+			sendPowerUsage();
+			globalTimerDiff = millis();
+		}
+	
 		WDT_Restart(WDT);
 		newAttempt=true; //this will be reset if checkHeadSensor comes on
 			//if(DUMPING_SWITCH){ //digging in a wrong area. cancel this mode and go back to goingIn
@@ -953,8 +1106,10 @@ void DiggingMode(){
 			// Serial.println("WDT5");
 			#ifdef FIO_LINK
 				Serial.println(F("FIO_LINK defined"));
-				fioWrite(MASTER_DIGGING); //report over radio 
+				printFresh("Digging"); //report over radio 
 			#endif
+				writeSDcard('M', "Digging", millis());
+
 		}
 			
 		WDT_Restart(WDT);
@@ -985,9 +1140,11 @@ void DiggingMode(){
 			Forward(BASE_SPEED);
 			delay(200);
 			Dig(); //Digging Motion
+			Stop(); //back up a little
+
 			Arm.GripperGo(CLOSED_POS); //close gripper
-			delay(100);
-			Backward(BASE_SPEED);
+			delay(1000);
+			Backward(100);
 			delay(300);
 			Stop(); //back up a little
 			Arm.PitchGo(HIGH_ROW_ANGLE);
@@ -1001,9 +1158,10 @@ void DiggingMode(){
 				Arm.GripperGo(OPEN_POS);
 				Arm.PitchGo(MID_ROW_ANGLE);
 				Dig(); //Digging Motion, JSP
+				Stop();
 				Arm.GripperGo(CLOSED_POS); //close gripper
-				delay(100);
-				Backward(BASE_SPEED);
+				delay(1000);
+				Backward(100);
 				delay(300);
 				Stop(); //back up a little
 				Arm.PitchGo(HIGH_ROW_ANGLE);
@@ -1093,8 +1251,12 @@ void Dig(){
 
 
 void exitTunnel(){
+
+	writeSDcard('M', "Exit Tunnel", millis());
+
+
 	WDT_Restart(WDT);
-	fioWrite(MASTER_EXIT_TUNNEL);
+	printFresh("Exit tunnel");
 	Arm.PitchGo(HIGH_ROW_ANGLE);
 	// Backward(255); myDelay(3000); 
 	// TurnHeading(OUT_DIRECTION); //turn towards dumping area
@@ -1110,8 +1272,13 @@ void exitTunnel(){
 	
 		#ifdef FIO_LINK
 			Serial.println(F("FIO_LINK defined"));
-			fioWrite(MASTER_EXIT_TUNNEL); //report over radio 
+			printFresh("Exit tunnel"); //report over radio 
 		#endif
+		
+		if(millis() - globalTimerDiff > 2000){
+			sendPowerUsage();
+			globalTimerDiff = millis();
+		}
 		
 		WDT_Restart(WDT);
 		// GetDetectedSigs(); //get the colors
@@ -1137,6 +1304,8 @@ void exitTunnel(){
 			WDT_Restart(WDT);
 
 	   	exitStart+=3500;//3000 //add time to compensate
+			writeSDcard('M', "Exit Tunnel", millis());
+
 		}
 		FollowLaneBackward();
 
@@ -1147,7 +1316,6 @@ void exitTunnel(){
 	WDT_Restart(WDT); //JSP
 	//HeadSensor.threshold=700; //return threshold to its original value. may add a second check //JSP
 	current_target_heading=OUT_DIRECTION;
-	// fioWrite(MASTER_GOING_CHARGING);
 
 	delay(1000);
 	enable_turnReversalMode(3); //3 denotes that the robot will go into going_out mode after turn reversal mode
@@ -1159,15 +1327,18 @@ void DumpingMode(){
 	//renamed Deposit Mode. dumping run
 	WDT_Restart(WDT);
 	// #ifdef FIO_LINK
+	
+	
+		writeSDcard('M', "Dumping", millis());
 
-	// fioWrite(MASTER_DUMPING); //report dumping mode
+
 	// #endif
 	//this mode is allocated for further development of smart media stacking and such	
 	//added feedback dumping feature 11/10/2014 (dump untill head sensor is cleared)
 	if (!uselessRun){
 	
 		#ifdef FIO_LINK
-			fioWrite(MASTER_DUMPING); //report dumping mode
+			printFresh("Dumping"); //report dumping mode
 		#endif
 	
 		DumpPayload(); //drop cotton balls
@@ -1211,9 +1382,7 @@ void DumpingMode(){
 	} //surveying completed
 	WDT_Restart(WDT);
 
-	// #ifdef FIO_LINK
-		// fioWrite(MASTER_DUMPING); //report dumping mode
-	// #endif
+
 
 	// enable_GoingInMode();
 	Backward(BASE_SPEED); 
@@ -1261,7 +1430,7 @@ void leaveDumpingSite(){
 void goToDumpingSite(){
 WDT_Restart(WDT);
 #ifdef FIO_LINK
-fioWrite(MASTER_USELESS_RUN); //report going out //replace with useless run
+printFresh("Useless run"); //report going out //replace with useless run
 #endif 
 current_target_heading=OUT_DIRECTION;
 unsigned long whenForcedBackwardKick=millis(); //remember last forced backward kick
@@ -1327,7 +1496,7 @@ int seekCharging(){
 	//---
 	WDT_Restart(WDT);
 	#ifdef FIO_LINK
-		fioWrite(MASTER_GOING_CHARGING); //report going out
+		printFresh("Going charging"); //report going out
 	#endif 
 	//watchdogFlag=1; //action taken
 	//bool IRactionHandled=false;
@@ -1411,7 +1580,7 @@ void GoingCharging(){
 void ChargingMode(){
 	//NOT GOING TO WORK. WE CUT THE CHARGING + wire 
 	#ifdef FIO_LINK
-		fioWrite(MASTER_CHARGING);
+		printFresh("Charging");
 	#endif
 	WDT_Restart(WDT);
 	//need to add manual stuff. need to be able to turn relay on and off
@@ -1490,13 +1659,15 @@ void ChargingMode(){
 }
 
 void RestingMode(){
+	writeSDcard('M', "Resting", millis());
+
 	numOfConsequitiveBackwardKicks=0;
 	WDT_Restart(WDT);
 	//this mode is exclusive to probabilistic digging 
 	#if PROBABILITY_DIG
 
 		#ifdef FIO_LINK
-			fioWrite(MASTER_RESTING);
+			printFresh("Resting");
 		#endif
 		int code=seekCharging(); //get to the charging station
 		if(code==2){
@@ -1515,7 +1686,7 @@ void RestingMode(){
 		//--roll a dice here if we want more digging
 		if(!rollDice()){
 			#ifdef FIO_LINK
-				fioWrite(ROLLED_DIG);
+				printFresh("Rolled dig");
 			#endif 
 			leaveChargingStation();
 			return;
@@ -1523,7 +1694,7 @@ void RestingMode(){
 		else{
 			WDT_Restart(WDT);	
 			#ifdef FIO_LINK
-				fioWrite(ROLLED_REST);
+				printFresh("Rolled rest");
 			#endif
 		
 			#if ALLOW_POWER_SAVINGS
@@ -1540,11 +1711,16 @@ void RestingMode(){
 		unsigned long restingStart=millis(); //timer to keep the robot waiting/resting
 		// probability digging 
 		while(resting){
+		
+					if(millis() - globalTimerDiff > 2000){
+			sendPowerUsage();
+			globalTimerDiff = millis();
+		}
 			WDT_Restart(WDT);
 			if( millis() - restingStart > RESTING_TIME ){ //determine if its time to roll a dice 
 				if(!rollDice()){
 					#ifdef FIO_LINK
-						fioWrite(ROLLED_DIG);
+						printFresh("Rolled dig");
 					#endif
 					Relay.PowerOn(); //can be packaged with #if
 					leaveChargingStation();
@@ -1554,7 +1730,7 @@ void RestingMode(){
 					WDT_Restart(WDT);
 					restingStart=millis(); //reset timer, and wait for another roll
 					#ifdef FIO_LINK
-						fioWrite(ROLLED_REST); //maybe report a different byte for consecutive rests 
+						printFresh("Rolled rest"); //maybe report a different byte for consecutive rests 
 					#endif   
 				}
 			}
@@ -1562,7 +1738,6 @@ void RestingMode(){
 			#if ALLOW_CHARGING_ON_REST
 				//re-dock if charging is allowed, found, and lost  
 				// #ifdef FIO_LINK//bani test
-				// fioWrite(CHECK_END);//bani test
 				// #endif//bani test
 				if(!CHARGER){//bani
 		
@@ -1632,13 +1807,14 @@ void RestingMode(){
 //// ********** BEGIN (SUPPORT METHODS} **********
 
 void lorenzMode(){
+	writeSDcard('M', "Lorenz", millis());
 
 	// Arm.PitchGo(HIGH_ROW_ANGLE);
 	// Arm.GripperGo(CLOSED_POS); //JSP		
 
 	Relay.PowerOff();
 	#ifdef FIO_LINK
-		fioWrite(MASTER_RESTING);
+		printFresh("Resting");
 	#endif
 
 	bool resting=true; //flow control
@@ -1646,11 +1822,15 @@ void lorenzMode(){
 	
 	// probability digging 
 	while(resting){
+			if(millis() - globalTimerDiff > 2000){
+			sendPowerUsage();
+			globalTimerDiff = millis();
+		}
 		WDT_Restart(WDT);
 		if( millis() - restingStart > RESTING_TIME ){ //determine if its time to roll a dice 
 			if(rollDiceProb(lorenzProb)){ // time to dig
 				#ifdef FIO_LINK
-					fioWrite(ROLLED_DIG);
+					printFresh("Rolled dig");
 				#endif
 				wakeUp(); //can be packaged with #if
 				current_target_heading=IN_DIRECTION;
@@ -1662,7 +1842,7 @@ void lorenzMode(){
 				WDT_Restart(WDT);
 				restingStart = millis(); //reset timer, and wait for another roll
 				#ifdef FIO_LINK
-					fioWrite(ROLLED_REST); //maybe report a different byte for consecutive rests 
+					printFresh("Rolled rest"); //maybe report a different byte for consecutive rests 
 				#endif   
 			}
 		}
@@ -1913,17 +2093,13 @@ void turnIMUoff(){
 		// }
 		// turnIMUoff(); //turn the pin off 
 		// delay(3000);
-		// fioWrite(RESET_REQUEST); //WATCHDOG DOESNT SEEM TO RESET I2C
 		// delay(3000);	
 		
 		// while(1){
 			// //watchdog timer, do your thing 
 		// }
-		// /*  fioWrite(RESET_REQUEST);
 		 // delay(3000);
-		 // fioWrite(RESET_REQUEST); //resend for redundancy to make sure that the command was recieved. 
 		 // delay(3000);
-		 // fioWrite(RESET_REQUEST);
 		 // delay(3000); */
 
 		 // // arduinoReset(); //situation is hopeless. Mash reset button  
@@ -2006,13 +2182,15 @@ bool CheckPower(){
 /** this method will make the robot turn to a given angle bearing using
 		magnetometer  **/
 void TurnHeadingRoss(float desired_heading){
+	writeSDcard('M', "Turn heading", millis());
+
 
 	Serial.println("In TurnHeadingRoss()");
 	
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TurnHeading Setup Process Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	WDT_Restart(WDT);
 	
-	fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
+	printFresh("Turn heading"); // Write something to the LCD
 	
 	unsigned long watchdog2Timer=millis(); // 2 minute time out timer, exit out of here if the robot fails to turn in 2 minutes 
 		
@@ -2041,7 +2219,11 @@ void TurnHeadingRoss(float desired_heading){
 	
 	// unsigned long currentTime = millis();
 	do{
-		fioWrite(MASTER_TURN_REVERSAL); // Write something to the LCD
+				printFresh("Turn heading");
+						if(millis() - globalTimerDiff > 2000){
+			sendPowerUsage();
+			globalTimerDiff = millis();
+		}
 
 		// update heading differences
 		// dof.readMag(); //update magnetometer registers
@@ -2071,6 +2253,8 @@ void TurnHeadingRoss(float desired_heading){
 			// Serial.println("---------------------------------------------------------Something contacted");
 			WDT_Restart(WDT);
 			handleContact();
+				writeSDcard('M', "Turn heading", millis());
+
 			// switchTurnDirection = millis();
 		}
 		
@@ -2100,7 +2284,6 @@ void TurnHeadingRoss(float desired_heading){
 		if((millis() - switchTurnDirection) > switchTime){
 			// Stop();
 
-			// fioWrite(MASTER_CHARGING); // Write something to the LCD
 			// Stop();
 			// delay(3000); 
 			Serial.println("Switching Directions");
@@ -2390,10 +2573,12 @@ note from the original library:
 
 
 void handleContact(){
+
 	// WDT_Restart(WDT);
 	//this is the simplified, "back out" method
 	
 	Serial.println("Something contacted");
+	writeSDcard('M', "Contact", millis());
 	
 	unsigned long start_of_contact=millis(); //record length of contact
 	// logContacts(start_of_contact); //stick this before every return
@@ -2429,14 +2614,17 @@ void handleContact(){
 		if ((FS & SWITCH_ANT_MASK) != 0b0000000000000000){  //is the contact ant or wall?
 			// the contact is ant
 			#ifdef FIO_LINK
-				fioWrite(FRONT_SIDE_ANT);
+				printFresh("Front side - Ant");
+				writeSDcard('N', "Front side - Ant", millis());
 			#endif
 		}
 		
 		else if ((FS & SWITCH_ANT_MASK) == 0b0000000000000000){
 			// the contact is wall
 			#ifdef FIO_LINK
-				fioWrite(FRONT_SIDE_WALL);
+				printFresh("Front side - Wall");
+				writeSDcard('N', "Front side - Wall", millis());
+
 			#endif
 		}
 	}
@@ -2445,14 +2633,16 @@ void handleContact(){
 		if ((RS & SWITCH_ANT_MASK) != 0b0000000000000000){  //is the contact ant or wall?
 			// the contact is ant
 			#ifdef FIO_LINK
-				fioWrite(RIGHT_SIDE_ANT);
+				printFresh("Right side - Ant");
+				writeSDcard('N', "Right side - Ant", millis());
 			#endif
 		}
 		
 		else{
 			// the contact is wall
 			#ifdef FIO_LINK
-				fioWrite(RIGHT_SIDE_WALL);
+				printFresh("Right side - Wall");
+				writeSDcard('N', "Right side - Wall", millis());
 			#endif
 		}
 	}
@@ -2461,13 +2651,17 @@ void handleContact(){
 		if ((LS & SWITCH_ANT_MASK) != 0b0000000000000000){  //is the contact ant or wall?
 			// the contact is ant
 			#ifdef FIO_LINK
-				fioWrite(LEFT_SIDE_ANT);
+				printFresh("Left side - Ant");
+				writeSDcard('N', "Left side - Ant", millis());
+
 			#endif
 		}
 		else{
 			// the contact is wall
 			#ifdef FIO_LINK
-				fioWrite(LEFT_SIDE_WALL);
+				printFresh("Left side - Wall");
+				writeSDcard('N', "Left side - Wall", millis());
+
 			#endif
 		}
 	}
@@ -2476,13 +2670,17 @@ void handleContact(){
 		if ((BS & SWITCH_ANT_MASK) != 0b0000000000000000){  //is the contact ant or wall?
 			// the contact is ant
 			#ifdef FIO_LINK
-				fioWrite(BACK_SIDE_ANT);
+				printFresh("Back side - Ant");
+				writeSDcard('N', "Back side - Ant", millis());
+
 			#endif
 		}
 		else{
 			// the contact is wall
 			#ifdef FIO_LINK
-				fioWrite(BACK_SIDE_WALL);
+				printFresh("Back side - Wall");
+				writeSDcard('N', "Back side - Wall", millis());
+
 			#endif
 		}
 	}
@@ -2496,7 +2694,6 @@ void handleContact(){
 		switch(switchState & SWITCH_WALL_MASK){
 			case FL:
 				//Serial.println("FL");
-				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				Backward(BASE_SPEED);
 				delay(500);
@@ -2540,7 +2737,6 @@ void handleContact(){
 				delay(500); // added a delay so this actually does something
 				// if(goingIn){
 				// #ifdef FIO_LINK
-				// fioWrite(RIGHT_SIDE); //report going out
 				// #endif 
 				// }
 				break;
@@ -2555,7 +2751,6 @@ void handleContact(){
 				delay(500); // added a delay so this actually does something
 				// if(goingIn){
 				// #ifdef FIO_LINK
-				// fioWrite(LEFT_SIDE); //report going out
 				// #endif
 				// }
 				break;
@@ -2590,7 +2785,6 @@ void handleContact(){
 				WDT_Restart(WDT);
 				// if(goingIn){
 				// #ifdef FIO_LINK
-				// fioWrite(BACK); //report going out
 				// #endif
 				// }
 				break;
@@ -2601,7 +2795,6 @@ void handleContact(){
 			case (LSF | LSB | BL):
 			case (FL | LSF | LSB | BL):
 					//Serial.println("FL");
-				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				Backward(BASE_SPEED);
 				delay(500);
@@ -2620,7 +2813,6 @@ void handleContact(){
 			case (RSF | RSB | BR):
 			case (FR | RSF | RSB | BR):
 					//Serial.println("FL");
-				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				Backward(BASE_SPEED);
 				delay(500);
@@ -2651,7 +2843,6 @@ void handleContact(){
 			case BR: //back 
 				// IMPLEMENT SOMETHING LIKE THIS
 				// //Serial.println("FL");
-				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				// Backward(BASE_SPEED);
 				// delay(500);
@@ -2666,7 +2857,6 @@ void handleContact(){
 			case BL:
 								// IMPLEMENT SOMETHING LIKE THIS
 				// //Serial.println("FL");
-				// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 				// Backward(BASE_SPEED);
 				// delay(500);
@@ -2785,7 +2975,6 @@ void handleContact(){
 				delay(500); //force new action
 				break;
 			case BR | BL:
-				// fioWrite(BACK_SIDE_WALL); // added fiowrites to debug
 				Stop();
 				delay(100);
 				Forward(BASE_SPEED);
@@ -2822,7 +3011,6 @@ void handleContact(){
 					case (RSF | RSB | BR):
 					case (FR | RSF | RSB | BR):
 						//Serial.println("FL");
-						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 						Backward(BASE_SPEED);
 						delay(500);
@@ -2845,7 +3033,6 @@ void handleContact(){
 					case (LSF | LSB | BL):
 					case (FL | LSF | LSB | BL):
 						//Serial.println("FL");
-						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 						Backward(BASE_SPEED);
 						delay(500);
@@ -2888,11 +3075,6 @@ void handleContact(){
 						Drive.RightForward(255);
 						delay(500);
 						//Drive.LeftForward(75);
-						// if(goingIn){
-						// #ifdef FIO_LINK
-						// fioWrite(BACK); //report going out
-						// #endif
-						// }
 						break;
 
 					default:
@@ -2926,7 +3108,6 @@ void handleContact(){
 					case (RSF | RSB | BR):
 					case (FR | RSF | RSB | BR):
 						//Serial.println("FL");
-						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
 
 						Backward(BASE_SPEED);
 						delay(500);
@@ -2949,7 +3130,7 @@ void handleContact(){
 					case (LSF | LSB | BL):
 					case (FL | LSF | LSB | BL):
 						//Serial.println("FL");
-						// fioWrite(FRONT_SIDE_WALL); // added fiowrites to debug
+						// printFresh("Front side - Wall"); // added to debug
 
 						Backward(BASE_SPEED);
 						delay(500);
@@ -2992,11 +3173,8 @@ void handleContact(){
 					//Drive.RightForward(75);
 					Drive.LeftForward(255);
 					delay(500);
-					// if(goingIn){
-					// #ifdef FIO_LINK
-					// fioWrite(BACK); //report going out
-					// #endif
-					// }
+
+					
 					break;
 
 				default:
@@ -3496,13 +3674,13 @@ void TestPowerRelay(){
 }
 
 void TestGripperSensor(){
-	// while(1){
-		// WDT_Restart(WDT);
-		// //int val=HeadSensor.Read(); //JSP
-		// // int val=analogRead(GripperSensorPin);
-		// Serial.println(analogRead(GripperSensorPin)); //JSP
-		// delay(1000);
-	// }
+	while(1){
+		WDT_Restart(WDT);
+		//int val=HeadSensor.Read(); //JSP
+		// int val=analogRead(GripperSensorPin);
+		Serial.println(analogRead(ForceSensor)); //JSP
+		delay(1000);
+	}
 }
 void TestTurnHeading(){
 	
@@ -3510,14 +3688,14 @@ void TestTurnHeading(){
 			
 		WDT_Restart(WDT); // prevent from resetting
 		
-		fioWrite(MASTER_GOING_IN); //report over radio
+		printFresh("Going in"); //report over radio
 		enable_turnReversalMode(1);
 		TurnHeadingRoss(IN_DIRECTION); // turn towards the bed
 		Forward(BASE_SPEED); delay(4000); Stop();	// drive forward for a total of one second
 		
 		WDT_Restart(WDT); // prevent from resetting - not sure how long TurnHeading() will take
 		
-		fioWrite(MASTER_GOING_OUT); //report over radio
+		printFresh("Going out"); //report over radio
 		enable_turnReversalMode(3);
 		TurnHeadingRoss(OUT_DIRECTION); // turn towards the exit of the tunnel
 		Forward(BASE_SPEED); delay(4000); Stop();	// drive forward for a total of one second
@@ -3607,6 +3785,81 @@ void TestPowerSensors(){
 		// } 
 	// }
 // }
+
+
+
+void sendPowerUsage(){
+  unsigned long  now; //declare storage var
+  float C=Current.ReadAvg(CURRENT_SAMPLE_SIZE);
+  float V=Voltage.GrabAvg(VOLTAGE_SAMPLE_SIZE);
+  now=millis(); //grab time 
+  float Power=C*V; //compute power, P= current times voltage
+
+  writeSDcard('C', String(C), now);
+  writeSDcard('V', String(V), now);
+  writeSDcard('W', String(Power), now);
+  // Serial.print("C \t"); Serial.print(C); Serial.print("\t"); Serial.println(String(now));
+  String payload = String(now) + ",\t" + String(C);
+	Serial.println(payload);
+
+	
+	
+	// Serial.print("V \t"); Serial.println(V);
+  //Comm.Send('C',C,now); //send out current
+  //Comm.Send('V',V,now); //send out voltage
+  //Comm.Send('W',Power,now);
+  //delay(1000); //wait to avoid buffer overflow
+}
+
+
+void writeSDcard(char tag, String data, unsigned long time) {
+  // choose file to write
+  switch (tag) {
+	  case 'N':
+      myFile = SD.open("conlog.txt",FILE_WRITE);//BANI
+      break;
+    case 'M':
+      myFile = SD.open("statelog.txt",FILE_WRITE);
+      break;
+    case 'C':
+			Serial.println("Writing current----------------------");
+      myFile = SD.open("currlog.txt",FILE_WRITE);
+      break;
+    case 'V':
+      myFile = SD.open("voltlog.txt",FILE_WRITE);
+      break;
+    case 'W':
+      myFile = SD.open("powerlog.txt",FILE_WRITE);
+      break;
+		case 'D':
+			myFile = SD.open("debuglog.txt",FILE_WRITE);
+			break;
+  }
+  
+  // form payload
+  String payload = String(time) + ",\t" + data;
+	Serial.println(payload);
+  // payload = payload + data + '\t' + time;
+  
+  // write to SD card
+  if (myFile) {
+    myFile.println(payload);
+    myFile.close();
+  }
+  else {
+    #if DEBUG
+      Serial.println(F("error opening file"));
+    #endif    
+  }
+}
+
+
+
+
+
+
+
+
 
 
 bool CheckPayload(){
@@ -3703,10 +3956,8 @@ bool checkCharger(){
  // Relay.PowerOff();
  // delay(1000);
  
- // fioWrite(RESET_REQUEST); //ask a friend for a favor 
  // delay(1000);
   // while(1){ //keep resetting 
-  // fioWrite(RESET_REQUEST); //ask a friend for a favor 
   // delay(5000);
   // arduinoReset();// reset arduino 
   // delay(5000);
@@ -3729,7 +3980,7 @@ bool checkManualOverride(){
 	byte code=masterRead();
 	//Serial.print(code); Serial.print('\t'); Serial.println(code,HEX); //debug 
 	if(code == MANUAL_OVERRIDE_START){
-		fioWrite(MANUAL_OVERRIDE_START); //send back acknowledgement
+		printFresh("Manual override start"); //send back acknowledgement
 		manualMode=true;
 		return true;
 	}
@@ -3746,7 +3997,7 @@ void ManualControl(){
  // Serial.print(F("loop code:   ")); Serial.println(code,HEX);
   switch(code){
   case MANUAL_OVERRIDE_END:
-  fioWrite(MANUAL_OVERRIDE_END); //send back acknowledgement
+  printFresh("Manual override end"); //send back acknowledgement
   manualMode=false;
   return;
   break;

@@ -8,7 +8,8 @@ CurrentSensor :: CurrentSensor(){}
 
 void CurrentSensor :: setPin(int analogPin)
 {
-_analogPin=analogPin;
+	_analogPin=analogPin;
+	pinMode(analogPin, INPUT);
 }
 
 

@@ -7,7 +7,7 @@
 #include <SD.h> // SD card library
 #include "serLCD.h"
 #include "MasterSlaveProtocol.h"
-#define DEBUG 0 // to debug SD stuff
+#define DEBUG 1 // to debug SD stuff
 
 #define current_sensor_pin 0
 #define voltage_pin 1
@@ -73,7 +73,6 @@ void setup() {
   digitalWrite(lcdPower_pin, HIGH); //power the lcd
 	Voltage.setPin(voltage_pin);
 	Current.setPin(current_sensor_pin);
-	
 	
 	
 	
@@ -247,6 +246,9 @@ void sendPowerUsage(){
   //Comm.Send('W',Power,now);
   //delay(1000); //wait to avoid buffer overflow
 }
+
+
+
 //void sendRobotState(){
 // Comm.Send('M',state,whenState)
 // whenSendState=millis();
@@ -550,6 +552,8 @@ void writeLCD(int lcddata) { //this function written by bani
 		// lcd.setBrightness(30);
     // lcd.print(lcddata,HEX);
 }
+
+
 void writeSDcard(char tag, float data, unsigned long time) {
   // choose file to write
   switch (tag) {
@@ -574,8 +578,8 @@ void writeSDcard(char tag, float data, unsigned long time) {
   }
   
   // form payload
-  String payload;
-  payload = payload + data + '\t' + time;
+  String payload = '';
+  payload = payload + data + ', ' + time;
   
   // write to SD card
   if (myFile) {
@@ -609,6 +613,7 @@ void writeStringSDcard(char tag, String data, unsigned long time) {
       break;
 		case 'D':
 			myFile = SD.open("debuglog.txt",FILE_WRITE);
+			
 		
   }
   
@@ -641,9 +646,8 @@ void software_Reboot() {
 		SD.remove("conlog.txt");//BANI
 		SD.remove("debuglog.txt");
   
-		#if DEBUG
-			Serial.println(F("Files Removed"));
-		#endif
+		Serial.println(F("Files Removed"));
+
 		resetDue(); //reset DUE  
 		delay(1000);  // Close any open files  
 		// Restart

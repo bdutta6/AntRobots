@@ -16,7 +16,7 @@ hardSerLCD Z;
 
 void setup()
 {
-	 Z.begin(&Serial1, 9600);  
+	 Z.begin(&Serial2, 9600);  
 		
 
   // Serial2.begin(9600); // set up serial port for 9600 baud

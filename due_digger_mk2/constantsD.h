@@ -12,7 +12,7 @@
 
 ////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
-#define HIGH_ROW_ANGLE  120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
+#define HIGH_ROW_ANGLE  115 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
 #define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
 

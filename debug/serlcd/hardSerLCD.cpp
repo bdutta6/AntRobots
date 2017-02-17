@@ -67,6 +67,15 @@ void hardSerLCD::print(String input)
  
 }
 
+void hardSerLCD::printFresh(String input)
+{
+	_Serial->clear();
+	_Serial->setBrightness(30);
+ _Serial->print(input);
+ 
+}
+
+
 
 
 /* Initialize.. not used trying to implement all display sizes

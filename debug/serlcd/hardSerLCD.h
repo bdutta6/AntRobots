@@ -79,6 +79,7 @@ public:
 	void setBrightness(int);
 
 	void print(String);
+	void printFresh(String);
 
 	
 	

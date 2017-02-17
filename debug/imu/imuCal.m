@@ -1,6 +1,6 @@
 clear; clc; close all;
 
-m = csvread('deltaIMU.csv', 1);
+m = csvread('alphaIMU.csv', 1);
 
 xMin = min(m(:,1));
 yMin = min(m(:,2));
