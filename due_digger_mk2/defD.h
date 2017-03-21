@@ -35,6 +35,8 @@
 // #define SCLpin 21          //note that these last 2 define statements are not used in a code but included as a reminder that pins 4 and 5 are unavailabe
 // --- others
 
+#define CS 53            // Chip select
+
 //#define EncoderPinA1 7 //encoder 1 pin output A
 //#define EncoderPinB1 8 //encoder 1 pin output B
 //#define EncoderPinA2 32 //encoder 2 pin output A

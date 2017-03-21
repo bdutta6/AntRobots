@@ -56,6 +56,9 @@
 
 //--- charging detector
 #define ChargingDetectorPin 33 // pin 53 may be busted
+
+#define CS 53            // Chip select
+
 // **********  END   {PIN ASSIGNMENT ON ARDUINO FIO} ---------
 
 //--- emergency reset

@@ -9,12 +9,11 @@
 #define LOWEST_ALLOWABLE_VOLTAGE 3.4//5v Power is lost when battery level reaches 3v, step up chip no longer functions  //3.3 too low
 #define CHARGED_VOLTAGE 3.8 // 3.65 appears to be the max voltage  //3.79 was too high
 
-
 // #define TURNING_THRESH 1000 //minimum area needed to terminate feedback turning  //modified
 
 ////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
-#define HIGH_ROW_ANGLE  120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
+#define HIGH_ROW_ANGLE  120 //120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
 #define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
 
@@ -53,11 +52,11 @@
 #define STARBOARD_DIRECTION   17 //150//167   //right with respect to IN_DIRECTION  //modified Ross10/11 changed 170->200
 
 ////////////////////////////////////////////// IMU Bias Parameters //////////////////////////////////////////////
-#define HX_MIN -0.1400
-#define HX_MAX 0.1900
+#define HX_MIN -0.1600
+#define HX_MAX 0.1800
 
 #define HY_MIN -0.1800
-#define HY_MAX 0.1000
+#define HY_MAX 0.0900
 
 #define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW
 

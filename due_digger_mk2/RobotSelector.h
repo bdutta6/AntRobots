@@ -17,17 +17,34 @@
 // TEST_CAP, 					
 
 // TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
-// TEST_DRIVE_MOTORS, 
-// TEST_SERVO_MOTORS, 
-// TEST_CAMERA,
-// TEST_GRIPPER_SENSOR,
-// TEST_POWER_SENSORS, 
-// TEST_TURN_HEADING,
-// TEST_PID_CONTROLLER
-// TEST_NOTHING,
-// TEST_CURRENT
-#define TEST_CASE TEST_CURRENT
-#define ROBOT_A
+// This enumeration is used in the switch-case statements in loop() to conduct any necessary tests
+	// TEST_IMU,
+	// TEST_IMU_CAL,
+	// TEST_FORCE,
+	// TEST_MAG,
+	// TEST_CAP_0, 					// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
+	// TEST_CAP_1,
+	// TEST_CAP_2,
+	// TEST_CAP_3,
+	// TEST_CAP_4,
+	// TEST_CAP_5,
+	// TEST_CAP_6,
+	// TEST_CAP_7,
+	// TEST_CHARGER,
+	// TEST_CURRENT,
+	// TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
+	// TEST_DRIVE_MOTORS, 
+	// TEST_SERVO_MOTORS, 
+	// TEST_CAMERA,
+	// TEST_VOLTAGE,
+	// TEST_GRIPPER_SENSOR,
+	// TEST_POWER_SENSORS, 
+	// TEST_TURN_HEADING,
+	// TEST_PICK_DIRECTION,
+	// TEST_PID_CONTROLLER,
+	// TEST_NOTHING,
+#define TEST_CASE TEST_NOTHING
+#define ROBOT_E
 
 // ********** BEGIN {SET BEHAVIOR} **********
 //--comment things out if unwanted 

@@ -94,13 +94,10 @@ to Arduino family MCU's using ARDUINO IDE (works with v1.5.7)
 #include <SPI.h> // SPI comm with SD card
 #include <SD.h> // SD card library
 File myFile;
-#define CS 4            // Chip select
 #define SD_CLR_SWITCH 6  // Clear files from SD card
+
 #define CURRENT_SAMPLE_SIZE 100 //sets a number of samples to be used for reading current averages
 #define VOLTAGE_SAMPLE_SIZE 100
-
-
-
 
 #include "hardSerLCD.h"
 hardSerLCD lcd;
@@ -200,13 +197,21 @@ enum Test {
 	TEST_IMU_CAL,
 	TEST_FORCE,
 	TEST_MAG,
-	TEST_CAP, 					// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
+	TEST_CAP_0, 					// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
+	TEST_CAP_1,
+	TEST_CAP_2,
+	TEST_CAP_3,
+	TEST_CAP_4,
+	TEST_CAP_5,
+	TEST_CAP_6,
+	TEST_CAP_7,
 	TEST_CHARGER,
 	TEST_CURRENT,
 	TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
 	TEST_DRIVE_MOTORS, 
 	TEST_SERVO_MOTORS, 
-	TEST_CAMERA, 
+	TEST_CAMERA,
+	TEST_VOLTAGE,
 	TEST_GRIPPER_SENSOR,
 	TEST_POWER_SENSORS, 
 	TEST_TURN_HEADING,
@@ -282,31 +287,65 @@ void setup(){
 	// initiateSwitches();
 	delay(500); //ensure a power cycle after a watchdog reset //used to be 3s
 	WDT_Restart(WDT);
+	
+	lcd.begin(&Serial2, 9600); 
 
+	printFresh("Turning on relay...");
 	Relay.PowerOn(); //turn the power to the robot on
+	printFresh("Turning on relay...done");
+
+	/* initiate servos and move them to test  */
+	printFresh("Turning on servos...");
+
+	Arm.Attach(); //hook up servos to pwm pins
+	Arm.GripperGo(OPEN_POS);
+	delay(500);        //myDelay between servo movements
+
+	Arm.GripperGo(CLOSED_POS);
+
+	delay(500);        //myDelay between servo movements
+	
+	Arm.PitchGo(HIGH_ROW_ANGLE);
+	delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
+	//Arm.GripperGo(MID_POS); delay(500);
+	//Arm.GripperGo(OPEN_POS); delay(200);
+
+	// Arm.PitchGo(HIGH_ROW_ANGLE-5);    //lower the arm slightly; this shows that the robot has been reset.
+	// delay(500);
+	// Arm.PitchGo(HIGH_ROW_ANGLE);
+	printFresh("Turning on servos...done");
+
+	
+	printFresh("Turning on IMU...");
 	turnIMUon();
+	printFresh("Turning on IMU...done");
+
 	// pixy.init();        //Starts I2C communication with a camera
 
 	WDT_Restart(WDT);
 	
 	
 	// initiateFioSerial(); //start Fio serial on channel 2
-	lcd.begin(&Serial2, 9600); 
 	
 	
-	
+		printFresh("Connecting to SD card...");
+
 	  if (!SD.begin(CS)) {
 		      Serial.println("SD initialization failed!");
+					printFresh("Connecting to SD card...FAILED");
+					delay(2000);
 		}
 		else{
 		    Serial.println("SD initialization done.");
+				printFresh("Connecting to SD card...done");
+
 		}
 
 		 // Notify start of data logging in the file
 		//bani opens contact logging file
-	myFile = SD.open("conlog.txt",FILE_WRITE);
+	myFile = SD.open("conlog.csv",FILE_WRITE);
   if (myFile) {
-    myFile.println(F("-999\t-999"));
+    myFile.println(F("Time (milliseconds), Contact Type"));
     myFile.close();
     #if DEBUG
       Serial.println(F("contact logging started"));
@@ -319,12 +358,12 @@ void setup(){
   }
 	//bani
 	
-  myFile = SD.open("statelog.txt",FILE_WRITE);
+  myFile = SD.open("statelog.csv",FILE_WRITE);
   if (myFile) {
-    myFile.println(F("-999\t-999"));
+    myFile.println(F("Time (milliseconds), State"));
     myFile.close();
     // #if DEBUG
-      Serial.println(F("state lo     asd gging started"));
+      // Serial.println(F("state logging started"));
     // #endif
   }
   else {
@@ -332,9 +371,9 @@ void setup(){
       Serial.println(F("error opening file"));
     #endif    
   }
-  myFile = SD.open("currlog.txt",FILE_WRITE);
+  myFile = SD.open("currlog.csv",FILE_WRITE);
   if (myFile) {
-    myFile.println(F("-999\t-999"));
+    myFile.println(F("Time (milliseconds), Current (Amperes)"));
     myFile.close();
     #if DEBUG
       Serial.println(F("current logging started"));
@@ -345,9 +384,9 @@ void setup(){
       Serial.println(F("error opening file"));
     #endif    
   }
-  myFile = SD.open("voltlog.txt",FILE_WRITE);
+  myFile = SD.open("voltlog.csv",FILE_WRITE);
   if (myFile) {
-    myFile.println(F("-999\t-999"));
+    myFile.println(F("Time (milliseconds), Voltage (Volts)"));
     myFile.close();
     #if DEBUG
       Serial.println(F("voltage logging started"));
@@ -358,9 +397,9 @@ void setup(){
       Serial.println(F("error opening file"));
     #endif    
   }
-  myFile = SD.open("powerlog.txt",FILE_WRITE);
+  myFile = SD.open("powerlog.csv",FILE_WRITE);
   if (myFile) {
-    myFile.println(F("-999\t-999"));
+    myFile.println(F("Time (milliseconds), Power (Watts)"));
     myFile.close();
     #if DEBUG
       Serial.println(F("power logging started"));
@@ -372,35 +411,41 @@ void setup(){
     #endif    
   }
 		
-		
-		Current.setPin(currentSensorPin);
+	printFresh("Setting up power sensing...");
 
-	
+	Current.setPin(currentSensorPin);
+	Voltage.setPin(voltage_pin);
+	printFresh("Setting up power sensing...done");
 	
 	// Serial.println(F("Ready")); //debug line
 	// watchdogReset=millis(); //initiate watchdog timer 
 	//initiateSwitches(); //sets up pins for contact switches
+	printFresh("Setting up charing detector...");
+
 	initiateChargingDetector(); //set up contact charger detector
+	
 	delay(1000);
+	printFresh("Setting up charing detector...done");
 
 	
 	
 	//Wire.begin(); //for capacitive sensor
 	//mpr121_setup(); //for capacitive sensor
 
-	/* initiate servos and move them to test  */
-	Arm.Attach(); //hook up servos to pwm pins
-	
-	Arm.PitchGo(HIGH_ROW_ANGLE);
-	delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
-	//Arm.GripperGo(MID_POS); delay(500);
-	//Arm.GripperGo(OPEN_POS); delay(200);
-	Arm.GripperGo(CLOSED_POS);
+	// /* initiate servos and move them to test  */
+	// Arm.Attach(); //hook up servos to pwm pins
+		// Arm.GripperGo(CLOSED_POS);
 
-	delay(500);        //myDelay between servo movements
-	Arm.PitchGo(HIGH_ROW_ANGLE-5);    //lower the arm slightly; this shows that the robot has been reset.
-	delay(500);
-	Arm.PitchGo(HIGH_ROW_ANGLE);
+	// delay(500);        //myDelay between servo movements
+	
+	// Arm.PitchGo(HIGH_ROW_ANGLE);
+	// delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
+	// //Arm.GripperGo(MID_POS); delay(500);
+	// //Arm.GripperGo(OPEN_POS); delay(200);
+
+	// Arm.PitchGo(HIGH_ROW_ANGLE-5);    //lower the arm slightly; this shows that the robot has been reset.
+	// delay(500);
+	// Arm.PitchGo(HIGH_ROW_ANGLE);
 	/* initiate various boolean state variables */
 	// initiateSwitches(); //sets up pins for contact switches
 		
@@ -409,27 +454,37 @@ void setup(){
 	// initiateMaster(); //start i2c bus , probably redundant 
 	WDT_Restart(WDT);
 
+	printFresh("Setting up cap sensor...");
 	CapSensor.setup();
 	delay(1000);
+	printFresh("Setting up cap sensor...done");
 
-	
+
+	printFresh("Setting up mag sensor...");
+
 	FSensor.setup();
 	delay(1000);
+	printFresh("Setting up mag sensor...done");
+
+	printFresh("Setting up PixyCam...");
 
 	pixy.init();        //Starts I2C communication with a camera
 	delay(1000);
+	printFresh("Setting up PixyCam...done");
+
 
 
 	WDT_Restart(WDT);
 	
-	
+	printFresh("Setting up IMU...");
+
 	uint16_t status = dof.begin(); //starts I2C communication with a IMU. status variable should have a hex value of 0x49D4. This should def be called, has calibration functions inside
 	Serial.print("LSM9DS0 WHO_AM_I's returned: 0x");
   Serial.println(status, HEX);
   Serial.println("Should be 0x49D4");
   Serial.println();
-	
 	delay(1000);
+
 	WDT_Restart(WDT);
 	/* power electronics */
 
@@ -444,7 +499,8 @@ void setup(){
 
 	dof.setMagScale(dof.M_SCALE_2GS);
 	dof.setMagODR(dof.M_ODR_125);          //sets up magnetometers output data rate to the highest (fastest) available setting 
-	
+	printFresh("Setting up IMU...done");
+
 	// dof.setGyroODR(dof.G_ODR_760_BW_100);  //sets up gyro output data rate to the highest (fastest) available setting
 	// dof.setMagODR(dof.M_ODR_100);          //sets up magnetometers output data rate to the highest (fastest) available setting 
 	/* 
@@ -472,7 +528,11 @@ void setup(){
 	dirCheckFlag=false;
 	dirCheckTimer=millis();
 
+	printFresh("Determining state...");
+
 	determineState();
+	printFresh("Determining state...done");
+
 	
 	// enable_GoingInMode();
 	
@@ -568,16 +628,34 @@ void loop(){
 			  C=Current.ReadAvg(CURRENT_SAMPLE_SIZE);
 				Serial.println("Current reading is " + String(C));
 				WDT_Restart(WDT);
+				printFresh(String(C));
 
 			
 			}
+			break;
+			
+			
+		case TEST_VOLTAGE:
+		float V;
+		// pinMode(currentSensorPin, INPUT);
+			Serial.println(String(voltage_pin));
+			while(1){
+			delay(3000);
+				Serial.println("Analog reading is " + String(analogRead(voltage_pin)));
+				V = Voltage.GrabAvg(VOLTAGE_SAMPLE_SIZE);
+				Serial.println("Voltage reading is " + String(V));
+				printFresh(String(V));
+				delay(1000);
+				WDT_Restart(WDT);
+			}
+			break;
 		case TEST_IMU:
 			TestIMU();
 			break;
 		case TEST_PID_CONTROLLER:
-			if(goingOut){
+			// if(goingOut){
 				TestPDController();
-			}
+			// }
 			break;
 		case TEST_SWITCHES:
 			TestSwitches();
@@ -631,19 +709,41 @@ void loop(){
 			TestCamera();
 			WDT_Restart(WDT);
 			break;
-		case TEST_CAP:
+		
+		case TEST_CAP_0:
 				//for capacitive sensor test and calibration
-			while(1){
-				
-			
-				int testPanel = 7; // takes on values from 0 up to and including 7
-				WDT_Restart(WDT);
-				Serial.println(CapSensor.getOneContact(testPanel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.				
-				printFresh(String(CapSensor.getOneContact(testPanel))); //send the capacitive sensor value to fio.
-				delay(1000);
-
-				}
+			testCap(0);
 			break;
+		case TEST_CAP_1:
+				//for capacitive sensor test and calibration
+			testCap(1);
+			break;
+		
+		case TEST_CAP_2:
+				//for capacitive sensor test and calibration
+			testCap(2);
+			break;
+		case TEST_CAP_3:
+				//for capacitive sensor test and calibration
+			testCap(3);
+			break;
+		case TEST_CAP_4:
+				//for capacitive sensor test and calibration
+			testCap(4);
+			break;
+		case TEST_CAP_5:
+				//for capacitive sensor test and calibration
+			testCap(5);
+			break;
+		case TEST_CAP_6:
+				//for capacitive sensor test and calibration
+			testCap(6);
+			break;
+		case TEST_CAP_7:
+				//for capacitive sensor test and calibration
+			testCap(7);
+			break;			
+			
 		case TEST_DRIVE_MOTORS:
 			TestDriveMotors();		
 			break;
@@ -1082,7 +1182,7 @@ void DiggingMode(){
 	bool newAttempt=true; 
 	while(diggingMode){
 	
-				if(millis() - globalTimerDiff > 2000){
+		if(millis() - globalTimerDiff > 2000){
 			sendPowerUsage();
 			globalTimerDiff = millis();
 		}
@@ -1856,6 +1956,7 @@ void lorenzMode(){
 void wakeUp(){
 	
 	pullResetPinLow(); //pull reset pin low 
+	// MotorBoard Drive; //sets up motor drive, calling class MotorBoard to create an object "Drive"
 
 	Relay.PowerOn();
 	
@@ -1897,64 +1998,15 @@ void wakeUp(){
 //----------------------------------------------------
 bool checkHeadSensor(){
 
-	if(goingIn){
 		WDT_Restart(WDT);
-		/* This method will give clearnace for digging mode if head sensor detects  */
 		if ( FSensor.Detected() ){ //am I detecting something in front of me with my head sensor? Is it a false positive?
 		//goingIn condition is necessary because it could have been changed by contact switches
-			// enable_DiggingMode();
 			return 1; //JSP
 		}
   
-		// Forward(BASE_SPEED); //proceed forward slowly 
-		return 0; //nothing is detected
+		else{
+			return 0; //nothing is detected
 	}
- 
-	if(diggingMode){
-		WDT_Restart(WDT);
-		// delay(150); //wait a little to make sure that the gripper has finished closing before sampling 
-		if ( FSensor.Detected() ){//am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
-			return 1;
-
-		}
-		return 0; //nothing is detected
-	}
- 
-	// if(goingCharging || restingMode){
-		// //check if this is getting called ever
-		// WDT_Restart(WDT);
-		// if( FSensor.Detected() && !CHARGER){ //am I in the excavation area and touching GM?
-			// unsigned long sensor_timer=millis(); //make sure that we detect above threshold reading for some time to make sure its not just a noise spike
-			// while( FSensor.Detected() ){
-				// //Stop();   
-				// if( (millis()- sensor_timer)> 2000){//we saw this sensor spike for 2 seconds at least
-					// return 1;
-					// // break;
-				// }
-			// }
-		// }
-	// return 0;
-	// }
- 
- 
-	// so i think the issue here is that there is a second delay where only the PID controller feedback correction is directing the robot. There is an attempt at
-	// this in goingIn mode, but there is an early return.
- 
-	if(goingOut){
-		WDT_Restart(WDT);
-		/* This method will give clearnace for digging mode if head sensor detects  */
-		if ( (FSensor.Detected())){ //am I detecting something in front of me with my head sensor? Is it a false positive? //goingIn condition is necessary because it could have been changed by contact switches
-			// enable_DiggingMode();
-			return 1; //JSP
-
-		}
-  
-		// Forward(BASE_SPEED); //proceed forward slowly 
-		return 0; //nothing is detected
-	}
-	
-	// Forward(BASE_SPEED);
-	return 0;//looks like we lost it
 }
 
 
@@ -2579,6 +2631,8 @@ void handleContact(){
 	
 	Serial.println("Something contacted");
 	writeSDcard('M', "Contact", millis());
+	writeSDcard('N', String(switchState), millis());
+
 	
 	unsigned long start_of_contact=millis(); //record length of contact
 	// logContacts(start_of_contact); //stick this before every return
@@ -2615,7 +2669,7 @@ void handleContact(){
 			// the contact is ant
 			#ifdef FIO_LINK
 				printFresh("Front side - Ant");
-				writeSDcard('N', "Front side - Ant", millis());
+				// writeSDcard('N', "Front side - Ant", millis());
 			#endif
 		}
 		
@@ -2623,7 +2677,7 @@ void handleContact(){
 			// the contact is wall
 			#ifdef FIO_LINK
 				printFresh("Front side - Wall");
-				writeSDcard('N', "Front side - Wall", millis());
+				// writeSDcard('N', "Front side - Wall", millis());
 
 			#endif
 		}
@@ -2634,7 +2688,7 @@ void handleContact(){
 			// the contact is ant
 			#ifdef FIO_LINK
 				printFresh("Right side - Ant");
-				writeSDcard('N', "Right side - Ant", millis());
+				// writeSDcard('N', "Right side - Ant", millis());
 			#endif
 		}
 		
@@ -2642,7 +2696,7 @@ void handleContact(){
 			// the contact is wall
 			#ifdef FIO_LINK
 				printFresh("Right side - Wall");
-				writeSDcard('N', "Right side - Wall", millis());
+				// writeSDcard('N', "Right side - Wall", millis());
 			#endif
 		}
 	}
@@ -2652,7 +2706,7 @@ void handleContact(){
 			// the contact is ant
 			#ifdef FIO_LINK
 				printFresh("Left side - Ant");
-				writeSDcard('N', "Left side - Ant", millis());
+				// writeSDcard('N', "Left side - Ant", millis());
 
 			#endif
 		}
@@ -2660,7 +2714,7 @@ void handleContact(){
 			// the contact is wall
 			#ifdef FIO_LINK
 				printFresh("Left side - Wall");
-				writeSDcard('N', "Left side - Wall", millis());
+				// writeSDcard('N', "Left side - Wall", millis());
 
 			#endif
 		}
@@ -2671,7 +2725,7 @@ void handleContact(){
 			// the contact is ant
 			#ifdef FIO_LINK
 				printFresh("Back side - Ant");
-				writeSDcard('N', "Back side - Ant", millis());
+				// writeSDcard('N', "Back side - Ant", millis());
 
 			#endif
 		}
@@ -2679,10 +2733,11 @@ void handleContact(){
 			// the contact is wall
 			#ifdef FIO_LINK
 				printFresh("Back side - Wall");
-				writeSDcard('N', "Back side - Wall", millis());
+				// writeSDcard('N', "Back side - Wall", millis());
 
 			#endif
 		}
+
 	}
 //}
 
@@ -2833,7 +2888,7 @@ void handleContact(){
 				Stop();
 				break; 
 		}
-		logContacts(start_of_contact); 
+		// logContacts(start_of_contact); 
 		return;
 	}
 	//------------------------------
@@ -2893,13 +2948,13 @@ void handleContact(){
   //}
 	
 		}
-		logContacts(start_of_contact);
+		// logContacts(start_of_contact);
 		return; 
 	}
 	//------------------------------
 	else if(dumpingMode){
 		// do nothing, actually its not even called 
-		logContacts(start_of_contact);
+		// logContacts(start_of_contact);
 		return;
 	}
 	else if(chargingMode){
@@ -2927,7 +2982,8 @@ void handleContact(){
 		// }
 	 // break;
 	 // }
-		logContacts(start_of_contact); return; 
+		// logContacts(start_of_contact); 
+		return; 
 	}
 
 	else if(exitTunnelMode){
@@ -3185,7 +3241,7 @@ void handleContact(){
 			}
 		}
 	}
-	logContacts(start_of_contact); 
+	// logContacts(start_of_contact); 
 	switchState = 0; //reset switchState
 	return;  //default return
 }
@@ -3419,25 +3475,25 @@ void TestDriveMotors(){
 		WDT_Restart(WDT);
 		
 		
-		FollowLaneBackward();
-		// Serial.println(F("Forward"));
-		// Forward(BASE_SPEED); delay(2000);
-		// Stop(); delay(1000);
+		// FollowLaneBackward();
+		Serial.println(F("Forward"));
+		Forward(BASE_SPEED); delay(2000);
+		Stop(); delay(1000);
 
-		// WDT_Restart(WDT);
-		// Serial.println(F("Backward"));
-		// Backward(BASE_SPEED); delay(2000);
-		// Stop(); delay(1000);
+		WDT_Restart(WDT);
+		Serial.println(F("Backward"));
+		Backward(BASE_SPEED); delay(2000);
+		Stop(); delay(1000);
 
-		// WDT_Restart(WDT);
-		// Serial.println(F("Right"));
-		// Right(DEFAULT_TURNING_SPEED); delay(2000);
-		// Stop(); delay(1000);
+		WDT_Restart(WDT);
+		Serial.println(F("Right"));
+		Right(DEFAULT_TURNING_SPEED); delay(2000);
+		Stop(); delay(1000);
 
-		// WDT_Restart(WDT);
-		// Serial.println(F("Left"));     
-		// Left(DEFAULT_TURNING_SPEED); delay(2000); 
-		// Stop(); delay(1000);
+		WDT_Restart(WDT);
+		Serial.println(F("Left"));     
+		Left(DEFAULT_TURNING_SPEED); delay(2000); 
+		Stop(); delay(1000);
 
 		}
 }
@@ -3445,25 +3501,35 @@ void TestDriveMotors(){
 void TestPDController(){
 	while(1){
 		WDT_Restart(WDT);
-		GetDetectedSigs(); //poll camera
-		if(TRAIL1){
-			Input=x1; //grab input
-			PD.Compute(); //updates Rout
-			Serial.print("X-Coor: ");
-			Serial.print(Input);
+		FollowLane();
+		// GetDetectedSigs(); //poll camera
+		// if(TRAIL1){
+			// Input=x1; //grab input
+			// PD.Compute(); //updates Rout
+			// Serial.print("X-Coor: ");
+			// Serial.print(Input);
 			
-			Serial.print("             Area: ");
-			Serial.print(Area1);			
+			// Serial.print("             Area: ");
+			// Serial.print(Area1);			
 			
-			Serial.print("             Output: \t");
-			Serial.println(Output);
-			delay(1000);
-		}
+			// Serial.print("             Output: \t");
+			// Serial.println(Output);
+			// delay(1000);
+		// }
 	}
 }
 
 
+/**
+
+This method will run the robot servos through a pattern while the motors are contantly on. Becuase the current draw from the
+motors and the servos is rather high when stalled, if the servo range of motion is too large then they will stall causing the motor
+rotation rate to drop. This allows you to make an observation to determine the appropraite range of servo values.
+
+**/
 void TestServoMotors(){
+
+ Forward(BASE_SPEED);	
 	while(1){
 		WDT_Restart(WDT);
 		Serial.println(F("Opening gripper"));
@@ -3715,6 +3781,17 @@ void TestPowerSensors(){
 }
 //#endif
 
+
+void testCap(int panel){
+	while(1){			
+		WDT_Restart(WDT);
+		Serial.println(CapSensor.getOneContact(panel)); //print capacitive sensor value for only one pin, in this case, pin 0. Change the number to choose other pins.				
+		printFresh(String(CapSensor.getOneContact(panel))); //send the capacitive sensor value to fio.
+		delay(1000);
+	}
+}
+
+
 // void myDelay(unsigned long delayTime){
 // /* this function is an improvement of delay() function, but non blocking
 // so that interrupts can be serviced
@@ -3816,23 +3893,23 @@ void writeSDcard(char tag, String data, unsigned long time) {
   // choose file to write
   switch (tag) {
 	  case 'N':
-      myFile = SD.open("conlog.txt",FILE_WRITE);//BANI
+      myFile = SD.open("conlog.csv",FILE_WRITE);//BANI
       break;
     case 'M':
-      myFile = SD.open("statelog.txt",FILE_WRITE);
+      myFile = SD.open("statelog.csv",FILE_WRITE);
       break;
     case 'C':
-			Serial.println("Writing current----------------------");
-      myFile = SD.open("currlog.txt",FILE_WRITE);
+			// Serial.println("Writing current----------------------");
+      myFile = SD.open("currlog.csv",FILE_WRITE);
       break;
     case 'V':
-      myFile = SD.open("voltlog.txt",FILE_WRITE);
+      myFile = SD.open("voltlog.csv",FILE_WRITE);
       break;
     case 'W':
-      myFile = SD.open("powerlog.txt",FILE_WRITE);
+      myFile = SD.open("powerlog.csv",FILE_WRITE);
       break;
 		case 'D':
-			myFile = SD.open("debuglog.txt",FILE_WRITE);
+			myFile = SD.open("debuglog.csv",FILE_WRITE);
 			break;
   }
   
@@ -3853,15 +3930,6 @@ void writeSDcard(char tag, String data, unsigned long time) {
   }
 }
 
-
-
-
-
-
-
-
-
-
 bool CheckPayload(){
 	/* this method will check if the robot is still carrying payload.
 		inteded to be used in goingOut mode
@@ -3879,23 +3947,23 @@ bool CheckPayload(){
 }
 
 
-void logContacts(unsigned long start_of_contact){
-	/* this method remembers how long the switches were compressed
-		and sets a flag for disabling purposes if the switches were 
-		compressed for too long*/
-	WDT_Restart(WDT);
-	if( start_of_contact - whenWasLastContact < CONTINUOUS_CONTACT){//if short duration between counters
-		howLongWasContact=howLongWasContact+(millis()-start_of_contact); //add time to contact counter
-			if(howLongWasContact > CONTACT_TIME_LIMIT){
-				disableContacts=true; //mask them 
-				whenDisabledContacts=millis(); //record time of disabling contacts 
-			}
-	}
-	else{
-		howLongWasContact=(millis()-start_of_contact); //reset and update counter
-	}
-	whenWasLastContact=millis(); //remember when last contact was
-}
+// void logContacts(unsigned long start_of_contact){
+	// /* this method remembers how long the switches were compressed
+		// and sets a flag for disabling purposes if the switches were 
+		// compressed for too long*/
+	// WDT_Restart(WDT);
+	// if( start_of_contact - whenWasLastContact < CONTINUOUS_CONTACT){//if short duration between counters
+		// howLongWasContact=howLongWasContact+(millis()-start_of_contact); //add time to contact counter
+			// if(howLongWasContact > CONTACT_TIME_LIMIT){
+				// disableContacts=true; //mask them 
+				// whenDisabledContacts=millis(); //record time of disabling contacts 
+			// }
+	// }
+	// else{
+		// howLongWasContact=(millis()-start_of_contact); //reset and update counter
+	// }
+	// whenWasLastContact=millis(); //remember when last contact was
+// }
 
 // bool checkWatchdog(){
  // if(watchdogFlag){ //everything is good)

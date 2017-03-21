@@ -246,7 +246,7 @@ int CapacitiveSensor:: getDetectedContacts(){
 	// SWITCH_H_MASK_ANT  	0b1100000000000000
 	// SWITCH_I_MASK      	0b0000000000000000
 	// SWITCH_ANT_MASK    	0b1010101010101010
-	// SWITCH_WALL_MASK		0b0101010101010101
+	// SWITCH_WALL_MASK			0b0101010101010101
 
 
 	// switchState= switchA | switchB | switchC | switchD | switchE | switchF | switchG | switchH ;

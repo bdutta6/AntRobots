@@ -19,7 +19,7 @@ int CurrentSensor :: ReadRaw()
 
 int CurrentSensor :: ReadRawAvg(int CURRENT_SAMPLE_SIZE)
 {
- long _rawAvg =0;
+ long _rawAvg = 0;
  int currentVals[CURRENT_SAMPLE_SIZE]; //create an array to store current value readings
  int i; //create two dumb varials to run loops
  for(i=0; i<CURRENT_SAMPLE_SIZE; i++){

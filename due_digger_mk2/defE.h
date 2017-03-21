@@ -56,6 +56,9 @@
 
 //--- charging detector
 #define ChargingDetectorPin 33 // pin 53 may be busted
+
+#define CS 51            // Chip select
+
 // **********  END   {PIN ASSIGNMENT ON ARDUINO FIO} ---------
 
 //--- emergency reset
@@ -108,7 +111,7 @@
 #define BL_ANT  SWITCH_G_MASK_ANT    //Back Left, ANT
 #define BR_ANT  SWITCH_H_MASK_ANT   //Back Right, ANT
 
-#define CONTACT (CapSensor.isDetected()) //& ~SWITCH_I_MASK) //all but switch A mask
+#define CONTACT (CapSensor.getSwitchState()!=0) //& ~SWITCH_I_MASK) //all but switch A mask
 #define DUMPING_SWITCH SWITCH_I_MASK //bit wise AND
 
 #define HEADON FrontBumpSensor.isDetected() //check if bump is detected
