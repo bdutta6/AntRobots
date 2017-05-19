@@ -22,7 +22,6 @@ void setup(){
 
 }
 
-
 void loop(){
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS);
@@ -30,10 +29,7 @@ void loop(){
 		// while(1){
 			// Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		// }
-		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
-
-
-
+		Backward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		
 		// while(1){
 			// WDT_Restart(WDT);
