@@ -12,8 +12,8 @@
 #define phase2 5     // enable 2 from motor control board. Left  motor. (pwm) //pin 4 is stuck in on
 
 // --- arm servo control
-#define PitchPin 2 //servo motor actuating arm
-#define GripPin  3 //servo motor actuating gripper 10
+#define PitchPin 8 //servo motor actuating arm
+#define GripPin  9 //servo motor actuating gripper 10
 
 // --- power switching
 #define relay_pin1 9     //relay is turned on by this pin
@@ -22,7 +22,7 @@
 // #define relay_pin2 25     //relay is turned on by this pin and relay_pin1 if a two pin device is declared in PowerRelay.h file
 /* INPUT PINS */
 // --- sensors
-#define currentSensorPin A0 //current sensor gets connected to pin A0 (analog pin)
+#define currentSensorPin A0 //current sensor ge ts connected to pin A0 (analog pin)
 #define voltage_pin A1        //battery voltage probe is connected to pin A1 (analog pin)
 //#define GripperSensorPin A2 //analog reflective (line) sensor for gripper //JSP
 #define RUGripperPin A8 //JSP
