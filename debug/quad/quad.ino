@@ -23,13 +23,27 @@ void setup(){
 }
 
 void loop(){
-		Arm.PitchGo(HIGH_ROW_ANGLE);
-		Arm.GripperGo(CLOSED_POS);
-		delay(5000);
-		// while(1){
-			// Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
-		// }
-		Backward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
+	//	Arm.PitchGo(LOW_ROW_ANGLE);
+		//Arm.GripperGo(OPEN_POS);
+	//	delay(1500);
+    Forward(BASE_SPEED);
+    delay(7500);
+   Stop();
+  //  Arm.GripperGo(CLOSED_POS);
+ //   Arm.PitchGo(MID_ROW_ANGLE);
+    delay(1500);
+    Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
+    delay(7500);
+  //  Stop();
+ //   Arm.PitchGo(LOW_ROW_ANGLE);
+  //  Arm.GripperGo(OPEN_POS);
+  //  delay(1500);
+  //  Arm.PitchGo(HIGH_ROW_ANGLE);
+  //  Forward(BASE_SPEED);
+  //  delay(1000);
+    Stop();
+    delay(1000);
+	//	Backward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		
 		// while(1){
 			// WDT_Restart(WDT);
