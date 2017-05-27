@@ -48,7 +48,6 @@ void Forward(int speed){
   Drive.RightForward(speed);
   Drive.LeftForward(speed);
   lastDriveState=drivingForward;
-
 }
 //----------------------------------------------------
 void Backward(int speed){  
