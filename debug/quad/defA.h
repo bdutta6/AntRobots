@@ -6,17 +6,21 @@
 // --- drive motor control
 
 // MB1
-#define enable1 4     // phase  1 from motor control board. Right motor.
-#define phase1 3     // enable 1 from motor control board. Right motor. (pwm)
-#define enable2 2     // phase  2 from motor control board. Left  motor.
-#define phase2 5     // enable 2 from motor control board. Left  motor. (pwm) //pin 4 is stuck in on
+#define enable1 2     // enable  1 from motor control board. Right front motor.
+#define phase1 3     // phase 1 from motor control board. Right front motor. (pwm)
+#define enable2 4     // enable  2 from motor control board. Left front motor.
+#define phase2 5     // phase 2 from motor control board. Left front motor. (pwm) //pin 4 is stuck in on
+#define enable3 6    // enable 3 from motor control board. Right back motor.
+#define phase3 7     // phase 3 from motor control board. Right back motor. (pwm)
+#define enable4 8    // enable 4 from motor control board. Left back motor.
+#define phase4 9     // phase 4 from motor control board. Left back motor. (pwm)
 
 // --- arm servo control
-#define PitchPin 8 //servo motor actuating arm
-#define GripPin  9 //servo motor actuating gripper 10
+#define PitchPin 10 //servo motor actuating arm
+#define GripPin  11 //servo motor actuating gripper 10
 
 // --- power switching
-#define relay_pin1 9     //relay is turned on by this pin
+//#define relay_pin1 11     //relay is turned on by this pin
 #define IMUpower A3 //any digital pin to control the power to IMU
 
 // #define relay_pin2 25     //relay is turned on by this pin and relay_pin1 if a two pin device is declared in PowerRelay.h file

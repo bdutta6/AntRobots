@@ -7,33 +7,57 @@ MotorBoard :: MotorBoard(){
 // _phase1=phase1; _phase2=phase2; _enable1=enable1; _enable2=enable2; // storing passed values to private variables for robustness
 	pinMode(phase1, OUTPUT);
 	pinMode(phase2, OUTPUT);
+  pinMode(phase3, OUTPUT);
+  pinMode(phase4, OUTPUT);
 	pinMode(enable1, OUTPUT);
 	pinMode(enable2, OUTPUT);
+  pinMode(enable3, OUTPUT);
+  pinMode(enable4, OUTPUT);
 
 }
 
-void MotorBoard :: RightForward(int pwm){
+void MotorBoard :: RightFrontForward(int pwm){
 	Serial.println("In RightForward");
   digitalWrite(enable1,LOW);
   analogWrite(phase1,pwm);
 }
 
-void MotorBoard :: LeftForward(int pwm){
+void MotorBoard :: LeftFrontForward(int pwm){
   digitalWrite(enable2,LOW);
   analogWrite(phase2,pwm);  
 }
 
-void MotorBoard :: RightBackward(int pwm){
+void MotorBoard :: RightBackForward(int pwm){
+  digitalWrite(enable3,LOW);
+  analogWrite(phase3,pwm);  
+}
+
+void MotorBoard :: LeftBackForward(int pwm){
+  digitalWrite(enable4,LOW);
+  analogWrite(phase4,pwm);  
+}
+
+void MotorBoard :: RightFrontBackward(int pwm){
   digitalWrite(enable1,HIGH);
   analogWrite(phase1,255-pwm);//note 255-pwm inversion! Nevermind. changed back to pwm  
 }
 
-void MotorBoard :: LeftBackward(int pwm){
+void MotorBoard :: LeftFrontBackward(int pwm){
   digitalWrite(enable2,HIGH);
   analogWrite(phase2,255-pwm);  
 }
 
-void MotorBoard :: RightStop(){
+void MotorBoard :: RightBackBackward(int pwm){
+  digitalWrite(enable3,HIGH); //must change
+  analogWrite(phase3,255-pwm);  
+}
+
+void MotorBoard :: LeftBackBackward(int pwm){
+  digitalWrite(enable4,HIGH); //must change
+  analogWrite(phase4,255-pwm);  
+}
+
+void MotorBoard :: RightFrontStop(){
 //first method is commented out cause it sets both pins to HIGH which drains a tiny amount of current
 //second method is slightly better cause both pins are LOW
 /*   digitalWrite(_enable1,HIGH);
@@ -43,10 +67,26 @@ void MotorBoard :: RightStop(){
   analogWrite(phase1,0); 
 }
 
-void MotorBoard :: LeftStop(){
+void MotorBoard :: LeftFrontStop(){
 /*   digitalWrite(_enable2,HIGH);
   // analogWrite(_phase2,255); //THIS IS BAD. produces noise
   digitalWrite(_phase2,HIGH); */
   digitalWrite(enable2,LOW);
   analogWrite(phase2,0); 
+}
+
+void MotorBoard :: RightBackStop(){
+  /*   digitalWrite(_enable2,HIGH);
+  // analogWrite(_phase2,255); //THIS IS BAD. produces noise
+  digitalWrite(_phase2,HIGH); */
+  digitalWrite(enable3,LOW);
+  analogWrite(phase3,0); 
+}
+
+void MotorBoard :: LeftBackStop(){
+  /*   digitalWrite(_enable2,HIGH);
+  // analogWrite(_phase2,255); //THIS IS BAD. produces noise
+  digitalWrite(_phase2,HIGH); */
+  digitalWrite(enable4,LOW);
+  analogWrite(phase4,0); 
 }

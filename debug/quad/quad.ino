@@ -23,26 +23,47 @@ void setup(){
 }
 
 void loop(){
-	//	Arm.PitchGo(LOW_ROW_ANGLE);
-		//Arm.GripperGo(OPEN_POS);
-	//	delay(1500);
+//  Right(BASE_SPEED);
+//  delay(10000);
+//  Left(BASE_SPEED);
+//  delay(10000);
+//  Stop();
+//  delay(2500);
+//  Forward(BASE_SPEED);
+//  delay(5000);
+//  Stop();
+//  delay(1000);
+//  Backward(BASE_SPEED);
+//  delay(5000);
+//  Stop();
+//  delay(1000);
+
+
+		Arm.PitchGo(LOW_ROW_ANGLE);
+	  Arm.GripperGo(OPEN_POS);
+	  delay(1500);
     Forward(BASE_SPEED);
-    delay(7500);
-   Stop();
-  //  Arm.GripperGo(CLOSED_POS);
- //   Arm.PitchGo(MID_ROW_ANGLE);
+    delay(7000);
+    Stop();
+    Arm.GripperGo(CLOSED_POS);
+    Arm.PitchGo(MID_ROW_ANGLE);
     delay(1500);
     Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
-    delay(7500);
-  //  Stop();
- //   Arm.PitchGo(LOW_ROW_ANGLE);
-  //  Arm.GripperGo(OPEN_POS);
-  //  delay(1500);
-  //  Arm.PitchGo(HIGH_ROW_ANGLE);
-  //  Forward(BASE_SPEED);
-  //  delay(1000);
+    delay(6000);
+    Stop();
+    delay(250);
+    Right(BASE_SPEED);
+    delay(2500);
+    Stop();
+    Arm.PitchGo(LOW_ROW_ANGLE);
+    Arm.GripperGo(OPEN_POS);
+    delay(1500);
+    Arm.PitchGo(HIGH_ROW_ANGLE);
+    Left(BASE_SPEED);
+    delay(4000);
     Stop();
     delay(1000);
+    
 	//	Backward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		
 		// while(1){

@@ -44,36 +44,68 @@ extern MotorBoard Drive;
 //---used by get_back_on_trail
 // extern int current_target_heading;
 
+void RightForward(int speed){
+  Drive.RightFrontForward(speed);
+  Drive.RightBackForward(speed);
+}
+
+void LeftForward(int speed){
+  Drive.LeftFrontForward(speed);
+  Drive.LeftBackForward(speed);
+}
+
+void RightBackward(int speed){
+  Drive.RightFrontBackward(speed);
+  Drive.RightBackBackward(speed);
+}
+
+void LeftBackward(int speed){
+  Drive.LeftFrontBackward(speed);
+  Drive.LeftBackBackward(speed);
+}
+
+void RightStop(){
+  Drive.RightFrontStop();
+  Drive.RightBackStop();
+}
+
+void LeftStop(){
+  Drive.LeftFrontStop();
+  Drive.LeftBackStop();
+}
+//----------------------------------------------------
+
 void Forward(int speed){
-  Drive.RightForward(speed);
-  Drive.LeftForward(speed);
+  RightForward(speed);
+  LeftForward(speed);
   // lastDriveState=drivingForward;
 
 }
 //----------------------------------------------------
 void Backward(int speed){  
-  Drive.RightBackward(speed);
-  Drive.LeftBackward(speed);
+  RightBackward(speed);
+  LeftBackward(speed);
   // lastDriveState=drivingBackward;
 }
 //----------------------------------------------------
 void Right(int speed){
-  Drive.RightBackward(speed);
-  Drive.LeftForward(speed);
+  RightBackward(speed);
+  LeftForward(speed);
   // lastDriveState=turningRight;
 }
 //----------------------------------------------------
 void Left(int speed){
-  Drive.RightForward(speed);
-  Drive.LeftBackward(speed);
+  RightForward(speed);
+  LeftBackward(speed);
   // lastDriveState=turningLeft;
 }
 //----------------------------------------------------
 void Stop(){
- Drive.RightStop();
- Drive.LeftStop();
+  RightStop();
+  LeftStop();
  // lastDriveState=stopped;
 }
+
 //----------------------------------------------------
 // void DriveForward(uint16_t x){
 	// /* this method implements PID controller to drive forward
