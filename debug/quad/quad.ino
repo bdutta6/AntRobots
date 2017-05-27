@@ -47,7 +47,6 @@ void setup(){
 }
 
 void loop(){
-<<<<<<< HEAD
 
 		Arm.PitchGo(LOW_ROW_ANGLE);
 	  Arm.GripperGo(OPEN_POS);
@@ -75,7 +74,6 @@ void loop(){
     delay(1000);
     
 	//	Backward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
-=======
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		Arm.GripperGo(CLOSED_POS);
 		delay(5000);
@@ -83,7 +81,6 @@ void loop(){
 			// Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		// }
 		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
->>>>>>> 65dc124f9e5b89a3b2d861d4937e5d38400e0d1f
 		
 		// while(1){
 			// WDT_Restart(WDT);
