@@ -23,21 +23,6 @@ void setup(){
 }
 
 void loop(){
-//  Right(BASE_SPEED);
-//  delay(10000);
-//  Left(BASE_SPEED);
-//  delay(10000);
-//  Stop();
-//  delay(2500);
-//  Forward(BASE_SPEED);
-//  delay(5000);
-//  Stop();
-//  delay(1000);
-//  Backward(BASE_SPEED);
-//  delay(5000);
-//  Stop();
-//  delay(1000);
-
 
 		Arm.PitchGo(LOW_ROW_ANGLE);
 	  Arm.GripperGo(OPEN_POS);
