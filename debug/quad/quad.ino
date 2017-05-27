@@ -49,7 +49,9 @@ void setup(){
 
 void loop(){
 
-  TestCamera();
+  FollowLane();
+//  TestCamera();
+
 
 //		Arm.PitchGo(LOW_ROW_ANGLE);
 //	  Arm.GripperGo(OPEN_POS);
