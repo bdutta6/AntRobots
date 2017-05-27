@@ -45,6 +45,8 @@ void setup(){
 	Arm.Attach(); //hook up servos to pwm pins
 	delay(1000);
 	pixy.init();        //Starts I2C communication with a camera
+	delay(1000);
+	Serial.println("Setting up PixyCam...done");
 }
 
 void loop(){
