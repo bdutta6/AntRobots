@@ -228,9 +228,9 @@ void FollowLane(){
 		if(COTTON){ // area7 is associated with the area of cotton seen
 			if(Area7>200){ //150
 				DriveForward(x7);
-				// Serial.print('c');
-				// Serial.print("\t");
-				// Serial.println(x7);
+				 Serial.print('c');
+				 Serial.print("\t");
+				 Serial.println(x7);
 				return;
 			}
 		}
@@ -240,9 +240,9 @@ void FollowLane(){
 		if(Area1>150){
 			Serial.println("Driving forward");
 			DriveForward(x1);
-			// Serial.print('t');
-			// Serial.print("\t");
-			// Serial.println(x1);
+			 Serial.print('t');
+			 Serial.print("\t");
+			 Serial.println(x1);
 		}
 		
 		if(Area1<150){

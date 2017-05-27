@@ -33,6 +33,7 @@ double KI=KI;
 double KD=KD;
 myPID PD(&Input, &Output, &Setpoint, KP,KI,KD); //PID control
 char lastDriveState=0; //used to keep track of Forward/Backward/Right/Left/Stop commands
+bool goingIn=true;
 
 void setup(){
 	Serial.begin(9600); //Establishes Serial communication at a specified baud rate. This can be moved inside of the Ant Comm clas
@@ -48,39 +49,41 @@ void setup(){
 
 void loop(){
 
-		Arm.PitchGo(LOW_ROW_ANGLE);
-	  Arm.GripperGo(OPEN_POS);
-	  delay(1500);
-    Forward(BASE_SPEED);
-    delay(7000);
-    Stop();
-    Arm.GripperGo(CLOSED_POS);
-    Arm.PitchGo(MID_ROW_ANGLE);
-    delay(1500);
-    Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
-    delay(6000);
-    Stop();
-    delay(250);
-    Right(BASE_SPEED);
-    delay(2500);
-    Stop();
-    Arm.PitchGo(LOW_ROW_ANGLE);
-    Arm.GripperGo(OPEN_POS);
-    delay(1500);
-    Arm.PitchGo(HIGH_ROW_ANGLE);
-    Left(BASE_SPEED);
-    delay(4000);
-    Stop();
-    delay(1000);
-    
-	//	Backward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
-		Arm.PitchGo(HIGH_ROW_ANGLE);
-		Arm.GripperGo(CLOSED_POS);
-		delay(5000);
-		// while(1){
-			// Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
-		// }
-		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
+  TestCamera();
+
+//		Arm.PitchGo(LOW_ROW_ANGLE);
+//	  Arm.GripperGo(OPEN_POS);
+//	  delay(1500);
+//    Forward(BASE_SPEED);
+//    delay(7000);
+//    Stop();
+//    Arm.GripperGo(CLOSED_POS);
+//    Arm.PitchGo(MID_ROW_ANGLE);
+//    delay(1500);
+//    Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
+//    delay(6000);
+//    Stop();
+//    delay(250);
+//    Right(BASE_SPEED);
+//    delay(2500);
+//    Stop();
+//    Arm.PitchGo(LOW_ROW_ANGLE);
+//    Arm.GripperGo(OPEN_POS);
+//    delay(1500);
+//    Arm.PitchGo(HIGH_ROW_ANGLE);
+//    Left(BASE_SPEED);
+//    delay(4000);
+//    Stop();
+//    delay(1000);
+   
+//	//	Backward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
+//		Arm.PitchGo(HIGH_ROW_ANGLE);
+//		Arm.GripperGo(CLOSED_POS);
+//		delay(5000);
+//		// while(1){
+//			// Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
+//		// }
+//		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 		
 		// while(1){
 			// WDT_Restart(WDT);
