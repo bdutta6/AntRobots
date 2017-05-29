@@ -43,10 +43,18 @@ void setup(){
 	Serial.println(enable2);
 	Serial.println(phase2);
 	Arm.Attach(); //hook up servos to pwm pins
+  Arm.PitchGo(HIGH_ROW_ANGLE);
 	delay(1000);
 	pixy.init();        //Starts I2C communication with a camera
 	delay(1000);
 	Serial.println("Setting up PixyCam...done");
+	
+		/* set up PD or PID control */
+	PD.SetMode(AUTOMATIC);
+	PD.SetSampleTime(PD_SAMPLE_TIME); //sets sample time. default is 100ms
+	PD.SetOutputLimits(-PV_adjmax,PV_adjmax); //clamp limits of PD controller feedback
+	Setpoint = 160; //x coordinate of the center of the camera, 160=320/2
+	
 }
 
 void loop(){

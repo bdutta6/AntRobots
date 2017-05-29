@@ -172,11 +172,11 @@ void DriveForward(uint16_t x){
 	// Drive.LeftBackward(pwmL);
 	}
 	// else{
-	LeftForward(pwmL); 
+	LeftForward(pwmL);
 	// }
-	// Serial.print(pwmR); 
-	// Serial.print('\t');
-	// Serial.println(pwmL);
+	Serial.print(pwmR); 
+	Serial.print('\t');
+	Serial.println(pwmL);
 }
 
 // ----------------------------------------------------
@@ -225,25 +225,22 @@ void FollowLane(){
 	GetDetectedSigs(); //poll camera
 	// Serial.println(" ;-) "); //VADIM
 	if(goingIn){
-		if(COTTON){ // area7 is associated with the area of cotton seen
+		// if(COTTON){ // area7 is associated with the area of cotton seen
 			if(Area7>200){ //150
 				DriveForward(x7);
-				 Serial.print('c');
+				 Serial.print('cotton');
 				 Serial.print("\t");
 				 Serial.println(x7);
 				return;
-			}
+			// }
 		}
 	}
 
-	if(TRAIL1){
+	// if(TRAIL1){
 		if(Area1>150){
 			Serial.println("Driving forward");
 			DriveForward(x1);
-			 Serial.print('t');
-			 Serial.print("\t");
-			 Serial.println(x1);
-		}
+		// }
 		
 		if(Area1<150){
 			Serial.println("Cannot find pheromone trail");

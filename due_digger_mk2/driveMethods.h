@@ -110,6 +110,8 @@ void DriveForward(uint16_t x){
 	}
  // else{
 	Drive.RightForward(pwmR);
+	// Serial.print("Right: ");
+	// Serial.println(pwmR);
  // }
 
 	//command left wheel
@@ -139,7 +141,9 @@ void DriveForward(uint16_t x){
 	// Drive.LeftBackward(pwmL);
 	}
 	// else{
-	Drive.LeftForward(pwmL); 
+	Drive.LeftForward(pwmL);
+	// Serial.print("Left: ");
+	// Serial.println(pwmL);
 	// }
 	// Serial.print(pwmR); 
 	// Serial.print('\t');
