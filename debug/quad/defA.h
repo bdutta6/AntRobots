@@ -10,14 +10,16 @@
 #define phase1 3     // phase 1 from motor control board. Right front motor. (pwm)
 #define enable2 4     // enable  2 from motor control board. Left front motor.
 #define phase2 5     // phase 2 from motor control board. Left front motor. (pwm) //pin 4 is stuck in on
-#define enable3 6    // enable 3 from motor control board. Right back motor.
-#define phase3 7     // phase 3 from motor control board. Right back motor. (pwm)
-#define enable4 8    // enable 4 from motor control board. Left back motor.
-#define phase4 9     // phase 4 from motor control board. Left back motor. (pwm)
+
+// MB2
+#define enable3 8    // enable 3 from motor control board. Right back motor.
+#define phase3 9     // phase 3 from motor control board. Right back motor. (pwm)
+#define enable4 10    // enable 4 from motor control board. Left back motor.
+#define phase4 11     // phase 4 from motor control board. Left back motor. (pwm)
 
 // --- arm servo control
-#define PitchPin 10 //servo motor actuating arm
-#define GripPin  11 //servo motor actuating gripper 10
+#define PitchPin 12 //servo motor actuating arm
+#define GripPin  13 //servo motor actuating gripper 10
 
 // --- power switching
 //#define relay_pin1 11     //relay is turned on by this pin
@@ -70,7 +72,7 @@
 // **********  END   {PIN ASSIGNMENT ON ARDUINO FIO} ---------
 
 //--- emergency reset
-#define ResetPin 12   //digital pin which will pull reset pin LOW, restarting micro controller
+// #define ResetPin 12   //digital pin which will pull reset pin LOW, restarting micro controller
 // ********** BEGIN{CONVENIENCE MACROS} **********
 #define TRAIL1 Object[0]     //pheromone trail 1
 #define CHARGING_TRAIL Object[1]     //pheromone trail 2

@@ -27,6 +27,8 @@ bool Object[5]; //array to hold boolean variables to tell whether or not the obj
 uint16_t x1, xc, x7, xt, xCharging; //declare storage variables  x1=pheromone trail, xc= charging pheromone, x7 and xt are cotton stuff
 uint16_t Area1, Areac, Area7, Areat, AreaCharging; //declare storage variables;
 
+const int relayPin = 7;
+
 double Setpoint, Input, Output; //define vars
 double KP=Kp;
 double KI=KI;
@@ -49,6 +51,9 @@ void setup(){
 	delay(1000);
 	Serial.println("Setting up PixyCam...done");
 	
+	pinMode(relayPin, OUTPUT);
+	digitalWrite(relayPin, HIGH);
+	
 		/* set up PD or PID control */
 	PD.SetMode(AUTOMATIC);
 	PD.SetSampleTime(PD_SAMPLE_TIME); //sets sample time. default is 100ms
@@ -59,14 +64,14 @@ void setup(){
 
 void loop(){
 
-  FollowLane();
+  // FollowLane();
 //  TestCamera();
 
 
 //		Arm.PitchGo(LOW_ROW_ANGLE);
 //	  Arm.GripperGo(OPEN_POS);
 //	  delay(1500);
-//    Forward(BASE_SPEED);
+		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 //    delay(7000);
 //    Stop();
 //    Arm.GripperGo(CLOSED_POS);
