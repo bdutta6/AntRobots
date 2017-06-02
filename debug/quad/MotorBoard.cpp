@@ -13,13 +13,12 @@ MotorBoard :: MotorBoard(){
 	pinMode(enable2, OUTPUT);
   pinMode(enable3, OUTPUT);
   pinMode(enable4, OUTPUT);
-
 }
 
 void MotorBoard :: RightFrontForward(int pwm){
 	Serial.println("In RightForward");
-  digitalWrite(enable1,LOW);
-  analogWrite(phase1,pwm);
+  digitalWrite(enable4,LOW);
+  analogWrite(phase4,pwm);  
 }
 
 void MotorBoard :: LeftFrontForward(int pwm){
@@ -33,8 +32,8 @@ void MotorBoard :: RightBackForward(int pwm){
 }
 
 void MotorBoard :: LeftBackForward(int pwm){
-  digitalWrite(enable4,LOW);
-  analogWrite(phase4,pwm);  
+  digitalWrite(enable1,LOW);
+  analogWrite(phase1,pwm);
 }
 
 void MotorBoard :: RightFrontBackward(int pwm){
@@ -49,11 +48,11 @@ void MotorBoard :: LeftFrontBackward(int pwm){
 
 void MotorBoard :: RightBackBackward(int pwm){
   digitalWrite(enable3,HIGH); //must change
-  analogWrite(phase3,255-pwm);  
+  analogWrite(phase3, 255-pwm);  
 }
 
 void MotorBoard :: LeftBackBackward(int pwm){
-  digitalWrite(enable4,HIGH); //must change
+  digitalWrite(enable4, HIGH); //must change
   analogWrite(phase4,255-pwm);  
 }
 
