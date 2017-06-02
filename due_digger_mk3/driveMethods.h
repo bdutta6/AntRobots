@@ -26,7 +26,7 @@ extern void TurnHeading(float);
 // extern uint16_t DUMPING_TARGET_THRESH;
 //---used by go_docking
 // extern void bumpDelay(unsigned long delayTime);
-// extern bool isChargerDetected();
+extern bool isChargerDetected();
 // extern void handleContact();
 // extern bool handleIRcontacts();
 // extern void enable_ChargingMode();
@@ -40,7 +40,7 @@ extern void TurnHeading(float);
 // extern IRsensor IRleft;
 // extern GripperSensor HeadSensor;
 //---used by redock
-// extern PowerRelay Relay;  
+extern PowerRelay Relay;  
 //---used by get_back_on_trail
 // extern int current_target_heading;
 

@@ -4,13 +4,21 @@
 // #define PHEROMONE_TRAILS 1
 /* OUTPUT PINS */
 // --- drive motor control
-#define enable1 23     // phase  1 from motor control board. Right motor.
-#define phase1 5     // enable 1 from motor control board. Right motor. (pwm)
-#define enable2 22     // phase  2 from motor control board. Left  motor.
-#define phase2 6     // enable 2 from motor control board. Left  motor. (pwm) //pin 4 is stuck in on
+#define enable1 2     // enable  1 from motor control board. Right front motor.
+#define phase1 3     // phase 1 from motor control board. Right front motor. (pwm)
+#define enable2 4     // enable  2 from motor control board. Left front motor.
+#define phase2 5     // phase 2 from motor control board. Left front motor. (pwm) //pin 4 is stuck in on
+
+// MB2
+#define enable3 8    // enable 3 from motor control board. Right back motor.
+#define phase3 9     // phase 3 from motor control board. Right back motor. (pwm)
+#define enable4 10    // enable 4 from motor control board. Left back motor.
+#define phase4 11     // phase 4 from motor control board. Left back motor. (pwm)
+
 // --- arm servo control
-#define PitchPin 2 //servo motor actuating arm
-#define GripPin  3 //servo motor actuating gripper 10
+// --- arm servo control
+#define PitchPin 12 //servo motor actuating arm
+#define GripPin  13 //servo motor actuating gripper 10
 
 // --- power switching
 #define relay_pin1 9     //relay is turned on by this pin
