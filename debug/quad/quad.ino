@@ -49,23 +49,23 @@ void setup(){
 
 void loop(){
 
-  FollowLane();
+//  FollowLane();
 //  TestCamera();
 
 
 //		Arm.PitchGo(LOW_ROW_ANGLE);
 //	  Arm.GripperGo(OPEN_POS);
 //	  delay(1500);
-//    Forward(BASE_SPEED);
-//    delay(7000);
-//    Stop();
+    Forward(BASE_SPEED);
+    delay(7000);
+    Stop();
 //    Arm.GripperGo(CLOSED_POS);
 //    Arm.PitchGo(MID_ROW_ANGLE);
-//    delay(1500);
-//    Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
-//    delay(6000);
-//    Stop();
-//    delay(250);
+    delay(1000);
+    Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
+    delay(7000);
+    Stop();
+    delay(1000);
 //    Right(BASE_SPEED);
 //    delay(2500);
 //    Stop();
