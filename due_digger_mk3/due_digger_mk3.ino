@@ -697,7 +697,7 @@ void loop(){
 			
 			delay(1000);
 			
-			while(1){
+			while(1){ 
 				WDT_Restart(WDT);
 				Serial.println(FSensor.measure_values());
 				delay(1000);

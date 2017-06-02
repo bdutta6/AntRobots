@@ -31,8 +31,9 @@ Modified Last on 05/09/16
 
 #define MAG_ADDR  0x0E //7-bit address for the MAG3110, doesn't change
 
-#define x_calib	64580
-#define y_calib	30 //3000
+#define x_calib 0 //28980	//64580
+#define y_calib	0 //29600 //3000
+#define z_calib 0 //51700 //7300
 #define field_threshold	5000// 3000
 
 class MAG3110
