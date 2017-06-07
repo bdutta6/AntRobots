@@ -90,8 +90,6 @@ void MotorBoard :: LeftBackStop(){
   analogWrite(phase4,0); 
 }
 
-
-
 void MotorBoard :: RightForward(int pwm){
 	RightBackForward(pwm);
 	RightFrontForward(pwm);

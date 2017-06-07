@@ -58,17 +58,16 @@ int MAG3110::measure_values()
   int x = readx();
   int y = ready();
   int z = readz();
-   Serial.print("x=");
-   Serial.print(x); 
-   Serial.print(",");  
-   Serial.print("y=");    
-   Serial.print(y);
-   Serial.print(",");       
-   Serial.print("z=");    
-   Serial.println(z);
-   Serial.print("    ");
-  int field_measurement = sqrt(pow(x - x_calib, 2));// + pow(y - y_calib, 2));  // + pow(z - z_calib,2)); 
-  //only care about magnitude of perpendicular distance to sensor
+  // Serial.print("x=");
+  // Serial.print(x); 
+  // Serial.print(",");  
+  // Serial.print("y=");    
+  // Serial.print(y);
+  // Serial.print(",");       
+  // Serial.print("z=");    
+  // Serial.println(z);
+  // Serial.print("    ");
+  int field_measurement = sqrt(pow(x - x_calib, 2)); //+ pow(y - y_calib, 2));
   // Serial.print("field_measurement=");    
 
 	Serial.println(field_measurement);

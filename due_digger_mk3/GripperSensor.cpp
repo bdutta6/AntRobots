@@ -58,6 +58,7 @@ int GripperSensor :: Read(){
 
 #if ANALOG_TYPE
  int _Reading=analogRead(_sensorPin);
+ // Serial.println(_Reading);
  return _Reading;
 #endif  
 }

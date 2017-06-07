@@ -207,6 +207,7 @@ enum Test {
 	TEST_CAP_7,
 	TEST_CHARGER,
 	TEST_CURRENT,
+	TEST_HALL,
 	TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
 	TEST_DRIVE_MOTORS, 
 	TEST_SERVO_MOTORS, 
@@ -255,7 +256,7 @@ void WDT_Setup(){ // my default time is 18 seconds
   	double timeout2 =(int)( desiredTimeout * 227);  //227
   
   	timeout2 = 0x0fff2000 + timeout2; // 0xfff2000 is very inportant
-  	WDT_Enable(WDT,timeout2);  
+  	WDT_Enable(WDT, timeout2);  
   	// number of loops:
 	// 0x0fff2000 0
 	// 0x0fff200f 231
@@ -464,6 +465,7 @@ void setup(){
 
 	FSensor.setup();
 	delay(1000);
+	Serial.println("Setting up mag sensor...done");
 	printFresh("Setting up mag sensor...done");
 
 	printFresh("Setting up PixyCam...");
@@ -649,6 +651,12 @@ void loop(){
 				WDT_Restart(WDT);
 			}
 			break;
+			
+			
+		case TEST_HALL:
+			TestHallEffectSensors();
+			break;
+			
 		case TEST_IMU:
 			TestIMU();
 			break;
@@ -690,16 +698,16 @@ void loop(){
 		case TEST_MAG:
 			//for magnetometer MAG3110 sensor test and calibration
 			
-			Relay.PowerOff();
-			delay(1000);
-			Relay.PowerOn();
-			FSensor.setup();
+			// Relay.PowerOff();
+			// delay(1000);
+			// Relay.PowerOn();
+			// FSensor.setup();
 			
-			delay(1000);
+			// delay(1000);
 			
 			while(1){ 
 				WDT_Restart(WDT);
-				Serial.println(FSensor.measure_values());
+				FSensor.measure_values();
 				delay(1000);
 			}
 			break;
@@ -3791,6 +3799,27 @@ void testCap(int panel){
 	}
 }
 
+void TestHallEffectSensors(){
+	while(1){
+		WDT_Restart(WDT);
+		Serial.println("---------------------------");
+
+		Serial.print("RUGripperPin: ");
+		Serial.println(RUSensor.Read());
+		
+		Serial.print("LUGripperPin: ");
+		Serial.println(LUSensor.Read());
+		
+		Serial.print("RDGripperPin: ");
+		Serial.println(RDSensor.Read());
+		
+		Serial.print("LDGripperPin: ");
+		Serial.println(LDSensor.Read());
+		
+	delay(1000);
+	
+	}
+}
 
 // void myDelay(unsigned long delayTime){
 // /* this function is an improvement of delay() function, but non blocking

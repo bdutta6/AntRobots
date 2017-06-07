@@ -700,7 +700,7 @@ void loop(){
 			while(1){
 				WDT_Restart(WDT);
 				Serial.println(FSensor.measure_values());
-				delay(1000);
+				delay(2000);
 			}
 			break;
 			
@@ -996,6 +996,7 @@ void GoingInMode(){
 		}
 	
 		unsigned long loopTime = millis();
+		Serial.println("Not facing the correct direction");
 
 		// while(1){
 			// WDT_Restart(WDT);
