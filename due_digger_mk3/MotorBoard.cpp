@@ -16,44 +16,51 @@ MotorBoard :: MotorBoard(){
 }
 
 void MotorBoard :: RightFrontForward(int pwm){
-	Serial.println("In RightForward");
+//	Serial.println("In RightFrontForward");
   digitalWrite(enable4,LOW);
   analogWrite(phase4,pwm);  
 }
 
 void MotorBoard :: LeftFrontForward(int pwm){
+//  Serial.println("In LeftFrontForward");
   digitalWrite(enable2,LOW);
   analogWrite(phase2,pwm);  
 }
 
 void MotorBoard :: RightBackForward(int pwm){
+//  Serial.println("In RightBackForward");
   digitalWrite(enable3,LOW);
   analogWrite(phase3,pwm);  
 }
 
 void MotorBoard :: LeftBackForward(int pwm){
+//  Serial.println("In LeftBackForward");
   digitalWrite(enable1,LOW);
   analogWrite(phase1,pwm);
 }
 
 void MotorBoard :: RightFrontBackward(int pwm){
-  digitalWrite(enable1,HIGH);
-  analogWrite(phase1,255-pwm);//note 255-pwm inversion! Nevermind. changed back to pwm  
+//  Serial.println("In RightFrontBackward");
+  digitalWrite(enable4,HIGH);
+  analogWrite(phase4,255-pwm);//note 255-pwm inversion! Nevermind. changed back to pwm  
 }
 
 void MotorBoard :: LeftFrontBackward(int pwm){
+//  Serial.println("In LeftFrontBackward");
   digitalWrite(enable2,HIGH);
   analogWrite(phase2,255-pwm);  
 }
 
 void MotorBoard :: RightBackBackward(int pwm){
+//  Serial.println("In RightBackBackward");
   digitalWrite(enable3,HIGH); //must change
   analogWrite(phase3, 255-pwm);  
 }
 
 void MotorBoard :: LeftBackBackward(int pwm){
-  digitalWrite(enable4, HIGH); //must change
-  analogWrite(phase4,255-pwm);  
+//  Serial.println("In LeftBackBackward");
+  digitalWrite(enable1, HIGH); //must change
+  analogWrite(phase1,255-pwm);  
 }
 
 void MotorBoard :: RightFrontStop(){
@@ -62,14 +69,16 @@ void MotorBoard :: RightFrontStop(){
 /*   digitalWrite(_enable1,HIGH);
   // analogWrite(_phase1,255); //THIS IS BAD. produces noise
   digitalWrite(_phase1,HIGH); */
-  digitalWrite(enable1,LOW);
-  analogWrite(phase1,0); 
+//  Serial.println("In RightFrontStop");
+  digitalWrite(enable4,LOW);
+  analogWrite(phase4,0); 
 }
 
 void MotorBoard :: LeftFrontStop(){
 /*   digitalWrite(_enable2,HIGH);
   // analogWrite(_phase2,255); //THIS IS BAD. produces noise
   digitalWrite(_phase2,HIGH); */
+//  Serial.println("In LeftFrontStop");
   digitalWrite(enable2,LOW);
   analogWrite(phase2,0); 
 }
@@ -78,6 +87,7 @@ void MotorBoard :: RightBackStop(){
   /*   digitalWrite(_enable2,HIGH);
   // analogWrite(_phase2,255); //THIS IS BAD. produces noise
   digitalWrite(_phase2,HIGH); */
+//  Serial.println("In RightBackStop");
   digitalWrite(enable3,LOW);
   analogWrite(phase3,0); 
 }
@@ -86,8 +96,9 @@ void MotorBoard :: LeftBackStop(){
   /*   digitalWrite(_enable2,HIGH);
   // analogWrite(_phase2,255); //THIS IS BAD. produces noise
   digitalWrite(_phase2,HIGH); */
-  digitalWrite(enable4,LOW);
-  analogWrite(phase4,0); 
+//  Serial.println("In LeftBackStop");
+  digitalWrite(enable1,LOW);
+  analogWrite(phase1,0); 
 }
 
 void MotorBoard :: RightForward(int pwm){

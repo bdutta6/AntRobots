@@ -63,27 +63,26 @@ void setup(){
 }
 
 void loop(){
-
-<<<<<<< HEAD
+///<<<<<<< HEAD
 //  FollowLane();
-=======
+//=======
   // FollowLane();
->>>>>>> 41a944ee3fab2072ae1e2c81da774c1ecf4352f9
+//>>>>>>> 41a944ee3fab2072ae1e2c81da774c1ecf4352f9
 //  TestCamera();
 
 
 //		Arm.PitchGo(LOW_ROW_ANGLE);
 //	  Arm.GripperGo(OPEN_POS);
 //	  delay(1500);
-<<<<<<< HEAD
+//<<<<<<< HEAD
     Forward(BASE_SPEED);
     delay(7000);
     Stop();
-=======
+//=======
 		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 //    delay(7000);
 //    Stop();
->>>>>>> 41a944ee3fab2072ae1e2c81da774c1ecf4352f9
+// >>>>>>> 41a944ee3fab2072ae1e2c81da774c1ecf4352f9
 //    Arm.GripperGo(CLOSED_POS);
 //    Arm.PitchGo(MID_ROW_ANGLE);
     delay(1000);
