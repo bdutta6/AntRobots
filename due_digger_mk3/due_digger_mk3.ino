@@ -771,7 +771,23 @@ void loop(){
 			// Serial.println("Default test case. TEST_CASE not properly assigned?");
 			break;
 	}
-		
+//		while(1){     
+//    Forward(BASE_SPEED);
+//    Serial.println(" ");
+//    delay(5000);
+//    Backward(BASE_SPEED);
+//    Serial.println(" ");
+//    delay(5000);
+//    Right(BASE_SPEED);
+//    Serial.println(" ");
+//    delay(5000);
+//    Left(BASE_SPEED);
+//    Serial.println(" ");
+//    delay(5000);
+//    Stop();
+//    Serial.println(" ");
+//    delay(5000);
+//		}
 	if(goingIn){
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains -- I don't think this is necessary
 		current_target_heading = IN_DIRECTION;

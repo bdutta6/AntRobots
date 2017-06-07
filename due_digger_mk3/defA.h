@@ -4,16 +4,16 @@
 // #define PHEROMONE_TRAILS 1
 /* OUTPUT PINS */
 // --- drive motor control
-#define enable1 2     // enable  1 from motor control board. Right front motor.
-#define phase1 3     // phase 1 from motor control board. Right front motor. (pwm)
+#define enable1 2     // enable  1 from motor control board. Left back motor.
+#define phase1 3     // phase 1 from motor control board. Left back motor. (pwm)
 #define enable2 4     // enable  2 from motor control board. Left front motor.
 #define phase2 5     // phase 2 from motor control board. Left front motor. (pwm) //pin 4 is stuck in on
 
 // MB2
 #define enable3 8    // enable 3 from motor control board. Right back motor.
 #define phase3 9     // phase 3 from motor control board. Right back motor. (pwm)
-#define enable4 10    // enable 4 from motor control board. Left back motor.
-#define phase4 11     // phase 4 from motor control board. Left back motor. (pwm)
+#define enable4 10    // enable 4 from motor control board. Right front motor.
+#define phase4 11     // phase 4 from motor control board. Right front motor. (pwm)
 
 // --- arm servo control
 // --- arm servo control
@@ -21,7 +21,7 @@
 #define GripPin  13 //servo motor actuating gripper 10
 
 // --- power switching
-#define relay_pin1 9     //relay is turned on by this pin
+#define relay_pin1 7     //relay is turned on by this pin
 #define IMUpower A3 //any digital pin to control the power to IMU
 
 // #define relay_pin2 25     //relay is turned on by this pin and relay_pin1 if a two pin device is declared in PowerRelay.h file
@@ -58,7 +58,7 @@
 // #define SwitchPinG 52 // bx01000000 or 0x40
 //#define SwitchPinH 53 // bx10000000 or 0x80
 
-#define CapacitiveSensorPin 7 //CapacitiveSensorPin
+#define CapacitiveSensorPin 0 //CapacitiveSensorPin
 #define ChargeTime 0x24//0x84
 #define ChargeCurrent 0x3F//0x10 //0x0F
 

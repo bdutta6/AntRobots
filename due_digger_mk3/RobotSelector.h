@@ -43,7 +43,7 @@
 	// TEST_PICK_DIRECTION,
 	// TEST_PID_CONTROLLER,
 	// TEST_NOTHING,
-#define TEST_CASE TEST_MAG
+#define TEST_CASE TEST_NOTHING
 #define ROBOT_A
 
 // ********** BEGIN {SET BEHAVIOR} **********

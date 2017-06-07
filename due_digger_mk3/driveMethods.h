@@ -78,6 +78,7 @@ void LeftStop(){
 void Forward(int speed){
   RightForward(speed);
   LeftForward(speed);
+//  Serial.println("Forward");
   // lastDriveState=drivingForward;
 
 }
@@ -85,18 +86,21 @@ void Forward(int speed){
 void Backward(int speed){  
   RightBackward(speed);
   LeftBackward(speed);
+//  Serial.println("Backward");
   // lastDriveState=drivingBackward;
 }
 //----------------------------------------------------
 void Right(int speed){
   RightBackward(speed);
   LeftForward(speed);
+//  Serial.println("Right");
   // lastDriveState=turningRight;
 }
 //----------------------------------------------------
 void Left(int speed){
   RightForward(speed);
   LeftBackward(speed);
+//  Serial.println("Left");
   // lastDriveState=turningLeft;
 }
 //----------------------------------------------------
