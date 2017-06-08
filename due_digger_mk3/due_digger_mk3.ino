@@ -629,6 +629,8 @@ void loop(){
 				Serial.println("Analog reading is " + String(analogRead(currentSensorPin)));
 			  C=Current.ReadAvg(CURRENT_SAMPLE_SIZE);
 				Serial.println("Current reading is " + String(C));
+				delay(1000);
+
 				WDT_Restart(WDT);
 				printFresh(String(C));
 
@@ -651,6 +653,8 @@ void loop(){
 				WDT_Restart(WDT);
 			}
 			break;
+			
+			
 			
 			
 		case TEST_HALL:

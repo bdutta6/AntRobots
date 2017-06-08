@@ -48,25 +48,15 @@
 //#define EncoderPinA2 32 //encoder 2 pin output A
 //#define EncoderPinB2 33 //encoder 2 pin output B
 
-// --- switches 
-// #define SwitchPinA 46 // bx00000001 or 0x01
-// #define SwitchPinB 47 // bx00000010 or 0x02
-// #define SwitchPinC 48 // bx00000100 or 0x04
-// #define SwitchPinD 49 // bx00001000 or 0x08
-// #define SwitchPinE 50 // bx00010000 or 0x10
-// #define SwitchPinF 51 // bx00100000 or 0x20
-// #define SwitchPinG 52 // bx01000000 or 0x40
-//#define SwitchPinH 53 // bx10000000 or 0x80
 
-#define CapacitiveSensorPin 0 //CapacitiveSensorPin
+#define CapacitiveSensorPin 22 //CapacitiveSensorPin
 #define ChargeTime 0x24//0x84
 #define ChargeCurrent 0x3F//0x10 //0x0F
 
 //--- charging detector
 #define ChargingDetectorPin 33 // pin 53 may be busted
 
-
-#define CS 53            // Chip select
+#define CS 52            // Chip select
 
 // **********  END   {PIN ASSIGNMENT ON ARDUINO FIO} ---------
 

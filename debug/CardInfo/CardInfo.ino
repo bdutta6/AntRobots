@@ -32,7 +32,7 @@ SdFile root;
 // Arduino Ethernet shield: pin 4
 // Adafruit SD shields and modules: pin 10
 // Sparkfun SD shield: pin 8
-const int chipSelect = 53;
+const int chipSelect = 52;
 
 void setup()
 {
@@ -50,10 +50,11 @@ void setup()
   // or the SD library functions will not work.
   pinMode(10, OUTPUT);     // change this to 53 on a mega
 
-
+// SPI_QUARTER_SPEED
+// SPI_HALF_SPEED
   // we'll use the initialization code from the utility libraries
   // since we're just testing if the card is working!
-  if (!card.init(SPI_HALF_SPEED, chipSelect)) {
+  if (!card.init(SPI_QUARTER_SPEED, chipSelect)) {
     Serial.println("initialization failed. Things to check:");
     Serial.println("* is a card is inserted?");
     Serial.println("* Is your wiring correct?");
