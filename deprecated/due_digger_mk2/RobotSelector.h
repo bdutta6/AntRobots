@@ -43,8 +43,8 @@
 	// TEST_PICK_DIRECTION,
 	// TEST_PID_CONTROLLER,
 	// TEST_NOTHING,
-#define TEST_CASE TEST_DRIVE_MOTORS
-#define ROBOT_E
+#define TEST_CASE TEST_NOTHING
+#define ROBOT_D
 
 // ********** BEGIN {SET BEHAVIOR} **********
 //--comment things out if unwanted 

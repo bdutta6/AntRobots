@@ -44,7 +44,7 @@
 	// TEST_PID_CONTROLLER,
 	// TEST_NOTHING,
 	
-#define TEST_CASE TEST_DRIVE_MOTORS
+#define TEST_CASE TEST_CURRENT
 #define ROBOT_A
 
 // ********** BEGIN {SET BEHAVIOR} **********
