@@ -2328,25 +2328,25 @@ void TurnHeadingRoss(float desired_heading){
 				// move a tiny bit in the correct direction
 		if(turn_reversal_direction){
 			Serial.println("Turning right");
-			Drive.LeftForward(255);
-			Drive.RightForward(50);
+			LeftForward(255);
+			RightBackward(50);
 		}
 		
 		else{
 			Serial.println("Turning left");
-			Drive.RightForward(255);
-			Drive.LeftForward(50);
+			RightForward(255);
+			LeftBackward(50);
 		}
 				
 		// Checks for Contact
-		if(CONTACT){
-			// Serial.println("---------------------------------------------------------Something contacted");
-			WDT_Restart(WDT);
-			handleContact();
-				writeSDcard('M', "Turn heading", millis());
+		// if(CONTACT){
+			// // Serial.println("---------------------------------------------------------Something contacted");
+			// WDT_Restart(WDT);
+			// handleContact();
+				// writeSDcard('M', "Turn heading", millis());
 
-			// switchTurnDirection = millis();
-		}
+			// // switchTurnDirection = millis();
+		// }
 		
 		
 		if(dof.checkStatus() != 0x49D4 || millis() - time_start > 22500){
@@ -2378,8 +2378,8 @@ void TurnHeadingRoss(float desired_heading){
 			// delay(3000); 
 			Serial.println("Switching Directions");
 			
-			Drive.LeftBackward(255);
-			Drive.RightBackward(255);
+			LeftBackward(255);
+			RightBackward(255);
 			delay(1000);
 			Stop(); // I dont like the way this is being handled
 			
