@@ -12,6 +12,17 @@
 #include "driveMethods.h"  //contains locomotion drive functions
 #include "RobotSelector.h"  //contains locomotion drive functions
 #include "visionMethods.h"
+#include "Voltmeter.h"
+#include "CurrentSensor.h"
+
+#define CURRENT_SAMPLE_SIZE 100 //sets a number of samples to be used for reading current averages
+#define VOLTAGE_SAMPLE_SIZE 100
+
+#include "hardSerLCD.h"
+hardSerLCD lcd;
+
+CurrentSensor Current;
+Voltmeter Voltage;
 
 // --- Actuator setup stuff
 MotorBoard Drive; //sets up motor drive, calling class MotorBoard to create an object "Drive"
@@ -37,6 +48,13 @@ myPID PD(&Input, &Output, &Setpoint, KP,KI,KD); //PID control
 char lastDriveState=0; //used to keep track of Forward/Backward/Right/Left/Stop commands
 bool goingIn=true;
 
+void printFresh(String lcddata){
+    lcd.clear();
+    lcd.setBrightness(30);
+    lcd.print(lcddata);
+}
+
+
 void setup(){
 	Serial.begin(9600); //Establishes Serial communication at a specified baud rate. This can be moved inside of the Ant Comm clas
 	Serial.println("setup() complete");
@@ -50,6 +68,21 @@ void setup(){
 	pixy.init();        //Starts I2C communication with a camera
 	delay(1000);
 	Serial.println("Setting up PixyCam...done");
+  Serial.begin(9600); //Establishes Serial communication at a specified baud rate. This can be moved inside of the Ant Comm class
+  WDT_Restart(WDT);
+
+  // initiateSwitches();
+  delay(500); //ensure a power cycle after a watchdog reset //used to be 3s
+  WDT_Restart(WDT);
+  
+  lcd.begin(&Serial2, 9600);
+
+    printFresh("hey                     ,");
+    delay(500);
+    printFresh("I'm about to break");
+    delay(500);
+    printFresh("I work!");
+    delay(1000);
 	
 	pinMode(relayPin, OUTPUT);
 	digitalWrite(relayPin, HIGH);
@@ -59,30 +92,36 @@ void setup(){
 	PD.SetSampleTime(PD_SAMPLE_TIME); //sets sample time. default is 100ms
 	PD.SetOutputLimits(-PV_adjmax,PV_adjmax); //clamp limits of PD controller feedback
 	Setpoint = 160; //x coordinate of the center of the camera, 160=320/2
+ 
+  printFresh("Setting up power sensing...");
+  delay(500);
+  Current.setPin(currentSensorPin);
+  Voltage.setPin(voltage_pin);
+  printFresh("Setting up power sensing...done");
+  delay(500);
 	
 }
 
 void loop(){
-///<<<<<<< HEAD
-//  FollowLane();
-//=======
   // FollowLane();
-//>>>>>>> 41a944ee3fab2072ae1e2c81da774c1ecf4352f9
 //  TestCamera();
+while(1){
+  TestPower();
+}
 
 
 //		Arm.PitchGo(LOW_ROW_ANGLE);
 //	  Arm.GripperGo(OPEN_POS);
 //	  delay(1500);
-//<<<<<<< HEAD
+
     Forward(BASE_SPEED);
     delay(7000);
     Stop();
-//=======
+    
 		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 //    delay(7000);
 //    Stop();
-// >>>>>>> 41a944ee3fab2072ae1e2c81da774c1ecf4352f9
+
 //    Arm.GripperGo(CLOSED_POS);
 //    Arm.PitchGo(MID_ROW_ANGLE);
     delay(1000);
@@ -145,4 +184,21 @@ void TestCamera(){
 		delay(1000);
 
 	}
+}
+
+
+void TestPower(){
+  WDT_Restart(WDT);
+  float V=Voltage.Read();
+  float C=Current.Read();
+  float P=V*C;
+  printFresh("C =" + String(C) + "; V =" + String(V));
+  delay(1500);
+  printFresh("P =" + String(P));
+  delay(1500);
+//  Serial.print(F("Current \t"));
+//  Serial.print(C);
+//  Serial.print(F('\t'));
+//  Serial.print(F("Voltage \t"));
+//  Serial.println(V);
 }

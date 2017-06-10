@@ -247,6 +247,7 @@ void printFresh(String lcddata){
     lcd.clear();
 		lcd.setBrightness(30);
     lcd.print(lcddata);
+    delay(500);
 }
 
 void WDT_Setup(){ // my default time is 18 seconds
@@ -291,7 +292,7 @@ void setup(){
 	
 	lcd.begin(&Serial2, 9600); 
 
-	printFresh("Turning on relay...");
+	printFresh("on relay...");
 	Relay.PowerOn(); //turn the power to the robot on
 	printFresh("Turning on relay...done");
 
@@ -785,30 +786,46 @@ void loop(){
 	}
  // Daniel debug
 		while(1){     
+      
     Forward(BASE_SPEED);
-//    Serial.println(" ");
+////    Serial.println(" ");
+    TestPower();
     delay(7500);
     Stop();
-//    Serial.println(" ");
-    delay(5000);
+    TestPower();
+    delay(1000);
+////    Serial.println(" ");
+//    delay(5000);
     Backward(BASE_SPEED);
-//    Serial.println(" ");
+    TestPower();
     delay(7500);
+////    Serial.println(" ");
+//    delay(7500);
     Stop();
-//    Serial.println(" ");
-    delay(5000);
+    TestPower();
+    delay(1000);
+////    Serial.println(" ");
+//    delay(5000);
     Right(BASE_SPEED);
-//    Serial.println(" ");
+    TestPower();
     delay(7500);
+////    Serial.println(" ");
+//    delay(7500);
     Stop();
-//    Serial.println(" ");
-    delay(5000);
+    TestPower();
+    delay(1000);
+////    Serial.println(" ");
+//    delay(5000);
     Left(BASE_SPEED);
-//    Serial.println(" ");
+    TestPower();
     delay(7500);
+////    Serial.println(" ");
+//    delay(7500);
     Stop();
-//    Serial.println(" ");
-    delay(5000);
+    TestPower();
+    delay(1000);
+////    Serial.println(" ");
+//    delay(5000);
 		}
 	if(goingIn){
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains -- I don't think this is necessary
@@ -3522,7 +3539,7 @@ void TestDriveMotors(){
 		Serial.println(F("Backward"));
 		Backward(BASE_SPEED); delay(2000);
 		Stop(); delay(1000);
-                                                                                                                                                                                                                                                                                                                                                                                               
+
 		WDT_Restart(WDT);
 		Serial.println(F("Right"));
 		Right(DEFAULT_TURNING_SPEED); delay(2000);
@@ -4185,6 +4202,13 @@ void ManualControl(){
 }
 //end for capacitive sensor
 
+void TestPower(){
+  WDT_Restart(WDT);
+  float V=Voltage.Read();
+  float C=Current.Read();
+  float P=V*C;
+  printFresh("C =" + String(C) + ";V =" + String(V));
+}
 
 
 // void TestIRsensorReadings(){

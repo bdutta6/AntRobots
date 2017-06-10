@@ -22,7 +22,7 @@
 #define GripPin  13 //servo motor actuating gripper 10
 
 // --- power switching
-//#define relay_pin1 11     //relay is turned on by this pin
+#define relay_pin1 7     //relay is turned on by this pin
 #define IMUpower A3 //any digital pin to control the power to IMU
 
 // #define relay_pin2 25     //relay is turned on by this pin and relay_pin1 if a two pin device is declared in PowerRelay.h file

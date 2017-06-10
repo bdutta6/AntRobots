@@ -35,7 +35,7 @@
 	// TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
 	// TEST_DRIVE_MOTORS, 
 	// TEST_SERVO_MOTORS, 
-	// TEST_CAMERA,
+	// TEST_CAMERA,s
 	// TEST_VOLTAGE,
 	// TEST_GRIPPER_SENSOR,
 	// TEST_POWER_SENSORS, 
@@ -44,7 +44,7 @@
 	// TEST_PID_CONTROLLER,
 	// TEST_NOTHING,
 	
-#define TEST_CASE TEST_CURRENT
+#define TEST_CASE TEST_TURN_HEADING
 #define ROBOT_A
 
 // ********** BEGIN {SET BEHAVIOR} **********
