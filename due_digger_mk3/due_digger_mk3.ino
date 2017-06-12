@@ -827,6 +827,7 @@ void loop(){
 ////    Serial.println(" ");
 //    delay(5000);
 		}
+   
 	if(goingIn){
 		PD.SetTunings(Kp, Ki, Kd); // Ross' version of resetting the gains -- I don't think this is necessary
 		current_target_heading = IN_DIRECTION;
@@ -2345,25 +2346,25 @@ void TurnHeadingRoss(float desired_heading){
 				// move a tiny bit in the correct direction
 		if(turn_reversal_direction){
 			Serial.println("Turning right");
-			LeftForward(255);
-			RightBackward(50);
+			Drive.LeftForward(255);
+			Drive.RightForward(50);
 		}
 		
 		else{
 			Serial.println("Turning left");
-			RightForward(255);
-			LeftBackward(50);
+			Drive.RightForward(255);
+			Drive.LeftForward(50);
 		}
 				
 		// Checks for Contact
-		// if(CONTACT){
-			// // Serial.println("---------------------------------------------------------Something contacted");
-			// WDT_Restart(WDT);
-			// handleContact();
-				// writeSDcard('M', "Turn heading", millis());
+		if(CONTACT){
+			// Serial.println("---------------------------------------------------------Something contacted");
+			WDT_Restart(WDT);
+			handleContact();
+				writeSDcard('M', "Turn heading", millis());
 
-			// // switchTurnDirection = millis();
-		// }
+			// switchTurnDirection = millis();
+		}
 		
 		
 		if(dof.checkStatus() != 0x49D4 || millis() - time_start > 22500){
@@ -2395,8 +2396,8 @@ void TurnHeadingRoss(float desired_heading){
 			// delay(3000); 
 			Serial.println("Switching Directions");
 			
-			LeftBackward(255);
-			RightBackward(255);
+			Drive.LeftBackward(255);
+			Drive.RightBackward(255);
 			delay(1000);
 			Stop(); // I dont like the way this is being handled
 			
