@@ -784,6 +784,7 @@ void loop(){
 			// Serial.println("Default test case. TEST_CASE not properly assigned?");
 			break;
 	}
+// int loopNum = 0;
  // Daniel debug
 		while(1){     
       
@@ -799,24 +800,42 @@ void loop(){
 //    Stop();
 //    TestPower();
 //    delay(1000);
-    Right(BASE_SPEED);
+
+    Right(RIGHT_BASE_SPEED);
     TestPower();
     delay(3750);
-    Right(BASE_SPEED);
-    TestPower();
-    delay(3750);
-    Stop();
-    TestPower();
-    delay(1000);
-    Left(BASE_SPEED);
-    TestPower();
-    delay(3750);
-    Left(BASE_SPEED);
     TestPower();
     delay(3750);
     Stop();
     TestPower();
-    delay(1000);
+    delay(2000);
+    Left(LEFT_BASE_SPEED);
+    TestPower();
+    delay(3750);
+    TestPower();
+    delay(3750);
+    Stop();
+    TestPower();
+    delay(2000);
+
+//// turn right
+//    Forward(200);
+//    delay(500);
+//    Drive.RightForward(50);
+//    Drive.LeftForward(200);
+//    delay(2500);
+//    Stop();
+//    delay(1000);
+//    Backward(200);
+//    delay(500);
+//    Drive.RightBackward(200);
+//    Drive.LeftBackward(50);
+//    delay(2500);
+//    Stop();
+//    loopNum= loopNum+1;
+//    printFresh("loopNum =" + String(loopNum));
+//    delay(1000);
+
 		}
    
 	if(goingIn){

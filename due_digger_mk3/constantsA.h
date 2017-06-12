@@ -82,6 +82,8 @@
 #define Kd 0  //.2
 #define PD_SAMPLE_TIME 80
 #define BASE_SPEED 200 // Ross 11/13 160 -> 120 //worked okay with 100
+#define LEFT_BASE_SPEED 225 //pwm to give motors when making left turn
+#define RIGHT_BASE_SPEED 240 //pwm to give motors when making right turn (possible mass distribution issue to account for difference from left?)
 #define PV_adjmax 205  //155f
 #define PD_expected_limit 600 
 
