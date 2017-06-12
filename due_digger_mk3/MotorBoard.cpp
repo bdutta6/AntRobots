@@ -101,23 +101,34 @@ void MotorBoard :: LeftBackStop(){
   analogWrite(phase1,0); 
 }
 
+//-----------------------------------------------
+
 void MotorBoard :: RightForward(int pwm){
-	RightBackForward(pwm);
-	RightFrontForward(pwm);
+  RightFrontForward(pwm);
+  RightBackForward(pwm);
 }
 
 void MotorBoard :: LeftForward(int pwm){
-	LeftBackForward(pwm);
-	LeftFrontForward(pwm);
+  LeftFrontForward(pwm);
+  LeftBackForward(pwm);
 }
 
 void MotorBoard :: RightBackward(int pwm){
-	RightBackBackward(pwm);
-	RightFrontBackward(pwm);
+  RightFrontBackward(pwm);
+  RightBackBackward(pwm);
 }
 
 void MotorBoard :: LeftBackward(int pwm){
-	LeftBackBackward(pwm);
-	LeftFrontBackward(pwm);
+  LeftFrontBackward(pwm);
+  LeftBackBackward(pwm);
 }
 
+void MotorBoard :: RightStop(){
+  RightFrontStop();
+  RightBackStop();
+}
+
+void MotorBoard :: LeftStop(){
+  LeftFrontStop();
+  LeftBackStop();
+}

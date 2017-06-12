@@ -44,69 +44,41 @@ extern PowerRelay Relay;
 //---used by get_back_on_trail
 // extern int current_target_heading;
 
-void RightForward(int speed){
-  Drive.RightFrontForward(speed);
-  Drive.RightBackForward(speed);
-}
 
-void LeftForward(int speed){
-  Drive.LeftFrontForward(speed);
-  Drive.LeftBackForward(speed);
-}
-
-void RightBackward(int speed){
-  Drive.RightFrontBackward(speed);
-  Drive.RightBackBackward(speed);
-}
-
-void LeftBackward(int speed){
-  Drive.LeftFrontBackward(speed);
-  Drive.LeftBackBackward(speed);
-}
-
-void RightStop(){
-  Drive.RightFrontStop();
-  Drive.RightBackStop();
-}
-
-void LeftStop(){
-  Drive.LeftFrontStop();
-  Drive.LeftBackStop();
-}
 //----------------------------------------------------
 
 void Forward(int speed){
-  RightForward(speed);
-  LeftForward(speed);
+  Drive.RightForward(speed);
+  Drive.LeftForward(speed);
 //  Serial.println("Forward");
   // lastDriveState=drivingForward;
 
 }
 //----------------------------------------------------
 void Backward(int speed){  
-  RightBackward(speed);
-  LeftBackward(speed);
+  Drive.RightBackward(speed);
+  Drive.LeftBackward(speed);
 //  Serial.println("Backward");
   // lastDriveState=drivingBackward;
 }
 //----------------------------------------------------
 void Right(int speed){
-  RightBackward(speed);
-  LeftForward(speed);
+  Drive.RightBackward(speed);
+  Drive.LeftForward(speed);
 //  Serial.println("Right");
   // lastDriveState=turningRight;
 }
 //----------------------------------------------------
 void Left(int speed){
-  RightForward(speed);
-  LeftBackward(speed);
+  Drive.RightForward(speed);
+  Drive.LeftBackward(speed);
 //  Serial.println("Left");
   // lastDriveState=turningLeft;
 }
 //----------------------------------------------------
 void Stop(){
-  RightStop();
-  LeftStop();
+  Drive.RightStop();
+  Drive.LeftStop();
  // lastDriveState=stopped;
 }
 
@@ -146,7 +118,7 @@ void DriveForward(uint16_t x){
  // Drive.RightBackward(pwmR);
 	}
  // else{
-	RightForward(pwmR);
+	Drive.RightForward(pwmR);
  // }
 
 	//command left wheel
@@ -176,7 +148,7 @@ void DriveForward(uint16_t x){
 	// Drive.LeftBackward(pwmL);
 	}
 	// else{
-	LeftForward(pwmL);
+	Drive.LeftForward(pwmL);
 	// }
 	Serial.print(pwmR); 
 	Serial.print('\t');
@@ -199,7 +171,7 @@ void DriveBackward(uint16_t x){
 	if (pwmR < 0 ){  //guard against overflow
 		pwmR=0;
 	} 
-	RightBackward(pwmR);
+	Drive.RightBackward(pwmR);
  
 
 	//command left wheel
@@ -210,7 +182,7 @@ void DriveBackward(uint16_t x){
 	if (pwmL < 0 ){  //guard against overflow
 		pwmL=0;
 	} 
-	LeftBackward(pwmL); 
+	Drive.LeftBackward(pwmL); 
 	// Serial.print(pwmR); Serial.print('\t'); Serial.println(pwmL);
 }
 

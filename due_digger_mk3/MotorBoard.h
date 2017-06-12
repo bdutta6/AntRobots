@@ -27,17 +27,20 @@ class MotorBoard
     void LeftFrontBackward(int pwm);//drives left front wheel backward at given pwm  
     void RightBackBackward(int pwm);//drives right back wheel backward at given pwm
     void LeftBackBackward(int pwm);//drives left back wheel backward at given pwm
-		
-		void RightForward(int pwm);//drives left back wheel backward at given pwm
-		void LeftForward(int pwm);//drives left back wheel backward at given pwm
-		
-		void RightBackward(int pwm);//drives left back wheel backward at given pwm
-		void LeftBackward(int pwm);//drives left back wheel backward at given pwm
-
+    
     void RightFrontStop();//breaks right front wheel
     void LeftFrontStop();//breaks left front wheel
     void RightBackStop();//breaks right back wheel
     void LeftBackStop();//breaks left back wheel
+		
+		void RightForward(int pwm);//drives right wheels forward at given pwm
+		void LeftForward(int pwm);//drives left wheels forward at given pwm
+		
+		void RightBackward(int pwm);//drives right wheels backward at given pwm
+		void LeftBackward(int pwm);//drives left wheels backward at given pwm
+
+    void RightStop();//stops both right wheels
+    void LeftStop();//stops both left wheels
   
   // private:
   // int _enable1;  int _phase1;  int _enable2;  int _phase2; //defining private variables

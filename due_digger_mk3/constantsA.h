@@ -18,7 +18,7 @@
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
 
 ////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
-#define CLOSED_POS 80 //110//179, JSP  //grip servo fully closed angle
+#define CLOSED_POS 80 //85//110//179, JSP  //grip servo fully closed angle
 #define OPEN_POS 55//90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
 

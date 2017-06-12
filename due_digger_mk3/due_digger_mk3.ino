@@ -787,45 +787,36 @@ void loop(){
  // Daniel debug
 		while(1){     
       
-    Forward(BASE_SPEED);
-////    Serial.println(" ");
-    TestPower();
-    delay(7500);
-    Stop();
-    TestPower();
-    delay(1000);
-////    Serial.println(" ");
-//    delay(5000);
-    Backward(BASE_SPEED);
-    TestPower();
-    delay(7500);
-////    Serial.println(" ");
+//    Forward(BASE_SPEED);
+//    TestPower();
+//    delay(4000);
+//    Stop();
+//    TestPower();
+//    delay(1000);
+//    Backward(BASE_SPEED);
+//    TestPower();
 //    delay(7500);
-    Stop();
-    TestPower();
-    delay(1000);
-////    Serial.println(" ");
-//    delay(5000);
+//    Stop();
+//    TestPower();
+//    delay(1000);
     Right(BASE_SPEED);
     TestPower();
-    delay(7500);
-////    Serial.println(" ");
-//    delay(7500);
+    delay(3750);
+    Right(BASE_SPEED);
+    TestPower();
+    delay(3750);
     Stop();
     TestPower();
     delay(1000);
-////    Serial.println(" ");
-//    delay(5000);
     Left(BASE_SPEED);
     TestPower();
-    delay(7500);
-////    Serial.println(" ");
-//    delay(7500);
+    delay(3750);
+    Left(BASE_SPEED);
+    TestPower();
+    delay(3750);
     Stop();
     TestPower();
     delay(1000);
-////    Serial.println(" ");
-//    delay(5000);
 		}
    
 	if(goingIn){
@@ -4208,7 +4199,8 @@ void TestPower(){
   float V=Voltage.Read();
   float C=Current.Read();
   float P=V*C;
-  printFresh("C =" + String(C) + ";V =" + String(V));
+  printFresh("C =" + String(C) + ";V =" + String(V) + ";P =" + String(P));
+  
 }
 
 
