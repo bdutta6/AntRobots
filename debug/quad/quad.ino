@@ -105,9 +105,9 @@ void setup(){
 void loop(){
   // FollowLane();
 //  TestCamera();
-while(1){
-  TestPower();
-}
+//while(1){
+//  TestPower();
+//}
 
 
 //		Arm.PitchGo(LOW_ROW_ANGLE);
@@ -115,20 +115,20 @@ while(1){
 //	  delay(1500);
 
     Forward(BASE_SPEED);
-    delay(7000);
-    Stop();
-    
-		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
 //    delay(7000);
 //    Stop();
-
-//    Arm.GripperGo(CLOSED_POS);
-//    Arm.PitchGo(MID_ROW_ANGLE);
-    delay(1000);
-    Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
-    delay(7000);
-    Stop();
-    delay(1000);
+//    
+//		Forward(BASE_SPEED); // Drive forward for the duration of the heading-check statement
+////    delay(7000);
+////    Stop();
+//
+////    Arm.GripperGo(CLOSED_POS);
+////    Arm.PitchGo(MID_ROW_ANGLE);
+//    delay(1000);
+//    Backward(BASE_SPEED); // Drive backward for the duration of the heading-check statement
+//    delay(7000);
+//    Stop();
+//    delay(1000);
 //    Right(BASE_SPEED);
 //    delay(2500);
 //    Stop();
