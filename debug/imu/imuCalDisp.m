@@ -6,60 +6,20 @@ c = csvread('charlieIMU.csv', 1);
 d = csvread('deltaIMU.csv', 1);
 e = csvread('echoIMU.csv', 1);
 
-%% Get the mins and maxes for a
-xMinA = min(a(:,1));
-yMinA = min(a(:,2));
+%% Map to the unit circle
+[xNewA, yNewA] = map2unit(a);
+[xNewB, yNewB] = map2unit(b);
+[xNewC, yNewC] = map2unit(c);
+[xNewD, yNewD] = map2unit(d);
+[xNewE, yNewE] = map2unit(e);
 
-xMaxA = max(a(:,1));
-yMaxA = max(a(:,2));
+%% Scale to the unit circle, but do not shift
+[xNewSA, yNewSA] = scale2unit(a);
+[xNewSB, yNewSB] = scale2unit(b);
+[xNewSC, yNewSC] = scale2unit(c);
+[xNewSD, yNewSD] = scale2unit(d);
+[xNewSE, yNewSE] = scale2unit(e);
 
-% Compute the mapping
-xNewA = (a(:,1)-xMinA)*(2/(xMaxA-xMinA))-1;
-yNewA = (a(:,2)-yMinA)*(2/(yMaxA-yMinA))-1;
-
-%% Get the mins and maxes for b
-xMinB = min(b(:,1));
-yMinB = min(b(:,2));
-
-xMaxB = max(b(:,1));
-yMaxB = max(b(:,2));
-
-% Compute the mapping
-xNewB = (b(:,1)-xMinB)*(2/(xMaxB-xMinB))-1;
-yNewB = (b(:,2)-yMinB)*(2/(yMaxB-yMinB))-1;
-
-%% Get the mins and maxes for c
-xMinC = min(c(:,1));
-yMinC = min(c(:,2));
-
-xMaxC = max(c(:,1));
-yMaxC = max(c(:,2));
-
-% Compute the mapping
-xNewC = (c(:,1)-xMinC)*(2/(xMaxC-xMinC))-1;
-yNewC = (c(:,2)-yMinC)*(2/(yMaxC-yMinC))-1;
-
-%% Get the mins and maxes for d
-xMinD = min(d(:,1));
-yMinD = min(d(:,2));
-
-xMaxD = max(d(:,1));
-yMaxD = max(d(:,2));
-
-% Compute the mapping
-xNewD = (d(:,1)-xMinD)*(2/(xMaxD-xMinD))-1;
-yNewD = (d(:,2)-yMinD)*(2/(yMaxD-yMinD))-1;
-
-%% Get the mins and maxes for e
-xMinE = min(e(:,1));
-yMinE = min(e(:,2));
-
-xMaxE = max(e(:,1));
-yMaxE = max(e(:,2));
-
-% Compute the mapping
-xNewE = (e(:,1)-xMinE)*(2/(xMaxE-xMinE))-1;
-yNewE = (e(:,2)-yMinE)*(2/(yMaxE-yMinE))-1;
 
 %% Compute the unit circle points
 x = 0;
@@ -80,6 +40,7 @@ ylabel('hy')
 grid on
 legend('Unit Circle', 'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
 hold off
+print -dpng rawIMUOutput
 
 figure
 hold on
@@ -90,6 +51,7 @@ ylabel('hy')
 legend('Unit Circle', 'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
 grid on
 hold off
+% print -dpng calibratedIMUOutput
 
 %% Compute Headings stuff
 
@@ -121,6 +83,8 @@ for i = 1:length(a)
 
     headingsA(i) = getHeading(a(i,1), a(i,2));
     headingsAnew(i) = getHeading(xNewA(i), yNewA(i));
+    A(i,:) = [a(i,1), a(i,2), headingsA(i)];
+    Anew(i,:) = [xNewA(i), yNewA(i), headingsAnew(i)];
 
 end
 
@@ -128,26 +92,32 @@ for i = 1:length(b)
     
     headingsB(i) = getHeading(b(i,1), b(i,2));
     headingsBnew(i) = getHeading(xNewB(i), yNewB(i));
-
+    B(i,:) = [b(i,1), b(i,2), headingsB(i)];
+    Bnew(i,:) = [xNewB(i), yNewB(i), headingsBnew(i)];
 end
 
 for i = 1:length(c)
     
     headingsC(i) = getHeading(c(i,1), c(i,2));
     headingsCnew(i) = getHeading(xNewC(i), yNewC(i));
-
+    C(i,:) = [c(i,1), c(i,2), headingsC(i)];
+    Cnew(i,:) = [xNewC(i), yNewC(i), headingsCnew(i)];
 end
 
 for i = 1:length(d)
     
     headingsD(i) = getHeading(d(i,1), d(i,2));
     headingsDnew(i) = getHeading(xNewD(i), yNewD(i));
-
+    D(i,:) = [d(i,1), d(i,2), headingsD(i)];
+    Dnew(i,:) = [xNewD(i), yNewD(i), headingsDnew(i)];
 end
 
 for i = 1:length(e)
     headingsE(i) = getHeading(e(i,1), e(i,2));
-    headingsEnew(i) = getHeading(xNewE(i), yNewE(i));
+    headingsEnew(i) = getHeading(xNewE(i), yNewE(i));    
+    E(i,:) = [e(i,1), e(i,2), headingsE(i)];
+    Enew(i,:) = [xNewE(i), yNewE(i), headingsEnew(i)];
+    
 end
 
 
@@ -165,6 +135,7 @@ xlabel('hx')
 ylabel('Heading')
 legend('Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
 hold off
+% print -dpng rawHeadingOutput
 
 
 figure
@@ -174,6 +145,19 @@ title('Raw IMU Output + Calibration Mapping')
 xlabel('hx')
 ylabel('Heading')
 legend('Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Unit Circle')
+% print -dpng calibratedHeadingOutput
 
 
+figa = plotCorrections( A, Anew, xNewSA, yNewSA, 'IMU A');
+print -dpng figa
+figb = plotCorrections( B, Bnew, xNewSB, yNewSB, 'IMU B');
+print -dpng figb
 
+figc = plotCorrections( C, Cnew, xNewSC, yNewSC, 'IMU C');
+print -dpng figc
+
+figd = plotCorrections( D, Dnew, xNewSD, yNewSD, 'IMU D');
+print -dpng figd
+
+fige = plotCorrections( E, Enew, xNewSE, yNewSE, 'IMU E');
+print -dpng fige
