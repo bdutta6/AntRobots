@@ -54,7 +54,7 @@
 #define lorenzProb 21.61    
 
 //useless run stuff turn back if it did not reach the face
-#define ALLOW_USELESS_RUNS 0// 1 is allow
+#define ALLOW_USELESS_RUNS 1// 1 is allow
 #define USELESS_RUN_THRESH 75000 //used to be 75000 
 
 
