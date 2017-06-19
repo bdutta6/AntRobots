@@ -788,7 +788,7 @@ void loop(){
  // Daniel debug
 		while(1){     
       
-    Forward(BASE_SPEED);
+//    Forward(BASE_SPEED);
 //    TestPower();
 //    delay(4000);
 //    Stop();
@@ -801,7 +801,7 @@ void loop(){
 //    TestPower();
 //    delay(1000);
 
-//    Right(RIGHT_BASE_SPEED);
+    Right(RIGHT_BASE_SPEED);
 //    TestPower();
 //    delay(3750);
 //    TestPower();
