@@ -1,9 +1,9 @@
 
 
 //---- motor drive control
-#define enable1 9
+#define enable1 9 //right motor
 #define phase1 8
-#define enable2 12
+#define enable2 12 //left motor
 #define phase2 11
 
 //---- phototransistors
