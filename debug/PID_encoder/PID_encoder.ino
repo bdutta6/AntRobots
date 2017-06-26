@@ -10,7 +10,7 @@
 //#define CURRENT_LIMIT   1000                     // high current warning
 //#define LOW_BAT         10000                   // low bat warning
 #define LOOPTIME        100                     // PID loop time
-#define NUMREADINGS     10                      // samples for Amp average
+//#define NUMREADINGS     10                      // samples for Amp average
 
 //#define motorB1 55 //black wire
 //#define motorB2 57 //brown
@@ -18,7 +18,7 @@
 //#define encoder2PinA 6 
 //#define encoder2PinB 7
 
-volatile int encoder1Pos = 0;
+volatile long encoder1Pos = 0;                  //rev counter
 //volatile int encoder2Pos = 0;
 
 boolean A1_set = false;
@@ -26,15 +26,14 @@ boolean B1_set = false;
 //boolean A2_set = false;
 //boolean B2_set = false;
 
-int readings[NUMREADINGS];
+//int readings[NUMREADINGS];
 unsigned long lastMilli = 0;                    // loop timing 
 unsigned long lastMilliPrint = 0;               // loop timing
-int speed_req = 150;                            // speed (Set Point)
+int speed_req = 300;                            // speed (Set Point)
 int speed_act = 0;                              // speed (actual value)
 int PWM_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 int voltage = 0;                                // in mV
 int current = 0;                                // in mA
-volatile long count = 0;                        // rev counter
 float Kp =   .4;                                // PID proportional control Gain
 float Kd =    1;                                // PID Derivitave control gain
 
@@ -57,7 +56,7 @@ void setup() {
   // encoder pin on interrupt 1 (pin 3)
   attachInterrupt(digitalPinToInterrupt(3), doEncoder1B, CHANGE);
   
-  for(int i=0; i<NUMREADINGS; i++)   readings[i] = 0;  // initialize readings to 0
+//  for(int i=0; i<NUMREADINGS; i++)   readings[i] = 0;  // initialize readings to 0
 
   digitalWrite(motorA1,LOW);
   digitalWrite(motorA2,HIGH);
@@ -100,7 +99,7 @@ void loop() {
 void doEncoder1A(){
   // Test transition
   A1_set = digitalRead(encoder1PinA) == HIGH;
-  // and adjust counter + if A leads B
+  // and adjust encoder1Poser + if A leads B
   encoder1Pos += (A1_set != B1_set) ? +1 : -1;
 }
 
@@ -113,9 +112,9 @@ void doEncoder1B(){
 }
 
 void getMotorData()  {                                                        // calculate speed, volts and Amps
-  static long countAnt = 0;                                                   // last count
-  speed_act = ((count - countAnt)*(60*(1000/LOOPTIME)))/(16*29);          // 16 pulses X 29 gear ratio = 464 counts per output shaft rev
-  countAnt = count;                  
+  static long encoder1Pos_Old = 0;                                                   // last count
+  speed_act = ((encoder1Pos - encoder1Pos_Old)*(60*(1000/LOOPTIME)))/(48*74.83);          // 16 pulses X 29 gear ratio = 464 counts per output shaft rev
+  encoder1Pos_Old = encoder1Pos;                  
 //  voltage = int(analogRead(Vpin) * 3.22 * 12.2/2.2);                          // battery voltage: mV=ADC*3300/1024, voltage divider 10K+2K
 //  current = int(analogRead(Apin) * 3.22 * .77 *(1000.0/132.0));               // motor current - output: 130mV per Amp
 //  current = digital_smooth(current, readings);                                // remove signal noise
@@ -186,7 +185,7 @@ int getParam()  {
 
 //int digital_smooth(int value, int *data_array)  {    // remove signal noise
 //  static int ndx=0;                                                         
-//  static int count=0;                          
+//  static int count=0;               // count means encoder1Pos           
 //  static int total=0;                          
 //  total -= data_array[ndx];               
 //  data_array[ndx] = value;                
