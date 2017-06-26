@@ -25,7 +25,7 @@ boolean B1_set = false;
 //boolean A2_set = false;
 //boolean B2_set = false;
 
-float pos_set = 0;                               // position (Set Point) (in revolution)
+float pos_set = 15;                               // position (Set Point) (in revolution)
 float pos_act = 0;                                // position (actual value) (in revolution)
 int PWM_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 float Kp =    16; //60;                                // PID proportional control Gain
@@ -86,20 +86,13 @@ void loop() {
 //    analogWrite(motorA_PWM, PWM_val);                                              // send PWM to motor
 //  }
 
-
-//  pos_act = (encoder1Pos)/(48*74.83); // outputs current position in terms of revolution
-//  Serial.print(pos_act); Serial.print(" ");
-  cur_time = millis(); 
-  Serial.print(cur_time); Serial.print(" ");
-  pos_set = cur_time/1000.0;
-  Serial.print(pos_set); Serial.print(" ");
+  cur_time = millis();
+  Serial.print(cur_time); Serial.print(" "); Serial.print(pos_set); Serial.print(" ");
   pos_act = (encoder1Pos)/(48*74.83); // outputs current position in terms of revolution
   Serial.println(pos_act);
-  
-//  Serial.print(pos_set); Serial.print(" ");
+//  Serial.print(pos_act); Serial.print(" ");
   PWM_val= updatePid(PWM_val, pos_set, pos_act);
 //  Serial.println(PWM_val);
-
 
   if (PWM_val >= 0){
     digitalWrite(motorA1,LOW);
@@ -144,7 +137,6 @@ int updatePid(int command, float targetValue, float currentValue)   {           
     lastTime = now;
     return constrain(command + int(pidTerm), -255, 255);          
   }
-
 
 
 //void doEncoder2A(){
