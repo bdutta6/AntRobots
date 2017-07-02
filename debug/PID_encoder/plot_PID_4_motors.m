@@ -45,13 +45,13 @@ for x = 1:5
                 marker = '-';
         end
         data2 = caStep4{x}{y};
-        time = data2(:,1);
+        time = data2(:,1)./1000;
         set_pos = data2(:,2);
         act_pos = data2(:,3);
         plot(time,set_pos,[color marker '-'],time,act_pos,[color marker]);
     end     
 end
-xlabel('time (ms)')
+xlabel('time (sec)')
 ylabel('position (rev)')
 hold off
 
@@ -101,12 +101,12 @@ for x = 1:5
                 marker = '-';
         end
         data2 = caRamp4{x}{y};
-        time = data2(:,1);
+        time = data2(:,1)./1000;
         set_pos = data2(:,2);
         act_pos = data2(:,3);
         plot(time,set_pos,[color marker '-'],time,act_pos,[color marker]);
     end     
 end
-xlabel('time (ms)')
+xlabel('time (sec)')
 ylabel('position (rev)')
 hold off
