@@ -4,8 +4,6 @@
 #define encoder1PinA 2
 #define encoder1PinB 3
 
-#define LOOPTIME        100                     // PID loop time in milliseconds (unit check worked out)
-
 #define motorB1 49 //A
 #define motorB2 47 //B
 #define motorB_PWM 7 
@@ -41,7 +39,7 @@ boolean B3_set = false;
 boolean A4_set = false;
 boolean B4_set = false;
 
-float posA_set = 10;                               // position (Set Point) (in revolution)
+float posA_set = 0;                               // position (Set Point) (in revolution)
 float posA_act = 0;                                // position (actual value) (in revolution)
 int PWM_A_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
@@ -93,6 +91,22 @@ unsigned long cur_time_A;
 unsigned long cur_time_B;
 unsigned long cur_time_C;
 unsigned long cur_time_D;
+
+float output = 0.0;
+float fast_val = 1.5;
+float slow_val = 0.5;
+
+float slope_A = 1.0;
+float old_slope_A = 0;
+float old_posA_set = 0;
+float intercept_A = 0;
+
+float slope_B = 1.0;
+float old_slope_B = 0;
+float old_posB_set = 0;
+float intercept_B = 0;
+
+float out = 0;
 
 
 void setup() {
@@ -164,49 +178,65 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-//  getParam();                                                                 // check keyboard
-//  if((millis()-lastMilli) >= LOOPTIME)   {                                    // enter tmed loop
-//    lastMilli = millis();
-//    getMotorData();                                                           // calculate speed, volts and Amps
-//    PWM_val= updatePid(PWM_val, speed_req, speed_act);                        // compute PWM value
-//    analogWrite(motorA_PWM, PWM_val);                                              // send PWM to motor
-//  }
-
+  
   cur_time_A = millis();
   Serial.print(cur_time_A); Serial.print(",");
-  posA_set = 0.5*(cur_time_A/1000.0);
-  Serial.print(posA_set); Serial.print(",");
+
   posA_act = (encoder1Pos)/(4480.0); // outputs current position in terms of revolution
-  
+
+//  slope_A = find_slope(posA_act);
+  slope_A = slope_mod_time(cur_time_A);
+  if (slope_A != old_slope_A){
+    intercept_A = old_posA_set - (slope_A/1000)*cur_time_A;
+  }
+
+  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
+  Serial.print(posA_set); Serial.print(",");
+
+//  oldTime_A = cur_time_A;
+  old_posA_set = posA_set;
+  old_slope_A = slope_A;
+
 //  Serial.println(posA_act);
-  Serial.print(posA_act); Serial.print(",");
-  PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
+  Serial.print(posA_act); Serial.print("   ");
+    PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
 //  Serial.println(PWM_A_val);
 
-  cur_time_B = millis();
-  Serial.print(cur_time_B); Serial.print(","); 
-  posB_set = 1.0*(cur_time_B/1000.0);
-  Serial.print(posB_set); Serial.print(",");
-  posB_act = (encoder2Pos)/(4480.0);
-  Serial.print(posB_act); Serial.print(",");
-  PWM_B_val= updatePid_B(PWM_B_val, posB_set, posB_act);
 
-  cur_time_C = millis();
-  Serial.print(cur_time_C); Serial.print(","); 
-  posC_set = 1.5*(cur_time_C/1000.0);
-  Serial.print(posC_set); Serial.print(",");
-  posC_act = (encoder3Pos)/(4480.0);
-  Serial.print(posC_act); Serial.print(",");
-  PWM_C_val= updatePid_C(PWM_C_val, posC_set, posC_act);
+//  cur_time_B = millis();
+//  Serial.print(cur_time_B); Serial.print(" "); 
+//
+//  posB_act = (encoder2Pos)/(4480.0);
+//  slope_B = find_slope(posB_act);
+//  if (slope_B != old_slope_B){
+//    intercept_B = old_posB_set - (slope_B/1000)*cur_time_B;
+//  }
+//  
+//  posB_set = (cur_time_B)* (slope_B/1000.0) + intercept_B;
+//  Serial.print(posB_set); Serial.print(" ");
+//
+//  old_posB_set = posB_set;
+//  old_slope_B = slope_B;
+//  
+//  Serial.print(posB_act); Serial.print("   ");
+//  PWM_B_val= updatePid_B(PWM_B_val, posB_set, posB_act);
 
-  cur_time_D = millis();
-  Serial.print(cur_time_D); Serial.print(","); 
-  posD_set = 2.0*(cur_time_D/1000.0);
-  Serial.print(posD_set); Serial.print(",");
-  posD_act = (encoder4Pos)/(4480.0);
-  Serial.println(posD_act);
-  PWM_D_val= updatePid_D(PWM_D_val, posD_set, posD_act);
+//  cur_time_C = millis();
+//  Serial.print(cur_time_C); Serial.print(" "); 
+////  posC_set = 1.5*(cur_time_C/1000.0);
+//  Serial.print(posC_set); Serial.print(" ");
+//  posC_act = (encoder3Pos)/(4480.0);
+//  Serial.print(posC_act); Serial.print("   ");
+//  PWM_C_val= updatePid_C(PWM_C_val, posC_set, posC_act);
+//
+//  cur_time_D = millis();
+//  Serial.print(cur_time_D); Serial.print(" "); 
+////  posD_set = 2.0*(cur_time_D/1000.0);
+//  Serial.print(posD_set); Serial.print(" ");
+//  posD_act = (encoder4Pos)/(4480.0);
+//  Serial.println(posD_act);
+//  PWM_D_val= updatePid_D(PWM_D_val, posD_set, posD_act);
+//  
   
 
   if (PWM_A_val >= 0){
@@ -254,6 +284,47 @@ void loop() {
   }
 }
 
+float slope_mod_time(unsigned long cur_time){
+  if (cur_time < 5000){
+    out = 1.5;
+  }
+  else {
+    out = 0.5;
+  }
+  return(out);
+}
+
+float find_slope(float current_pos){ // this will only output positive numbers
+//current_pos is in revolutions but it needs to be converted to radians
+  float current_pos_rad = abs(current_pos*6.28);
+//  Serial.print(current_pos_rad); Serial.print(" ");
+
+  float pos_rad = current_pos_rad - 6.28*floor(current_pos_rad/6.28); // this brings it down to the basic unit circle
+
+//  Serial.print(pos_rad); Serial.print(" ");
+
+  if (pos_rad >= 0 && pos_rad < 3.14){
+    output = fast_val;
+//    Serial.print("first ");Serial.print(" ");
+    }
+  else if (pos_rad >= 3.14 && pos_rad < 6.28){
+    output = slow_val;
+//    Serial.print("second ");Serial.print(" ");
+    }
+//  else if(pos_rad>=4.71 && pos_rad < 6.28){
+//    float m = 2*(fast_val-slow_val)/3.14;
+//    float n = 4*slow_val - 3*fast_val;
+//    output = (m*pos_rad + n)/6.28;
+////    Serial.print("third ");Serial.print(" ");
+//  }
+  else {
+    output = 1;
+//    Serial.print("fourth ");
+  }
+//  Serial.println(output);
+
+  return (output);
+}
 
 int updatePid_A(int command_A, float targetValue_A, float currentValue_A)   {             // compute PWM value
   unsigned long now_A = millis();
