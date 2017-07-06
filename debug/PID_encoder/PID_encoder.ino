@@ -39,7 +39,7 @@ boolean B3_set = false;
 boolean A4_set = false;
 boolean B4_set = false;
 
-float posA_set = 0;                               // position (Set Point) (in revolution)
+float posA_set = 10;                               // position (Set Point) (in revolution)
 float posA_act = 0;                                // position (actual value) (in revolution)
 int PWM_A_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
@@ -55,10 +55,11 @@ float posD_set = 25;                               // position (Set Point) (in r
 float posD_act = 0;                                // position (actual value) (in revolution)
 int PWM_D_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-float Kp =    16; //60;                                // PID proportional control Gain
-float Kd =    400; //1200;                                // PID Derivitave control gain
+float Kp =    13; //16 //60;                                // PID proportional control Gain
+float Kd =    435; //400 //1200;                                // PID Derivitave control gain
 float Ki =    0; //0.0001;
-// values can be tuned farther
+// values can be tuned farther (dependent on supplied voltage and current which may explain issues with running 4 at once)
+// read the article on integral windup and solutions for it in order to tune Ki properly
 unsigned long lastTime_A;
 float pidTerm_A = 0;                                                            // PID correction
 float error_A=0;                                   
@@ -185,20 +186,21 @@ void loop() {
   posA_act = (encoder1Pos)/(4480.0); // outputs current position in terms of revolution
 
 //  slope_A = find_slope(posA_act);
-  slope_A = slope_mod_time(cur_time_A);
-  if (slope_A != old_slope_A){
-    intercept_A = old_posA_set - (slope_A/1000)*cur_time_A;
-  }
-
-  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
+////  slope_A = slope_mod_time(cur_time_A);
+//  if (slope_A != old_slope_A){
+//    intercept_A = old_posA_set - (slope_A/1000)*cur_time_A;
+//  }
+//
+//  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
   Serial.print(posA_set); Serial.print(",");
 
 //  oldTime_A = cur_time_A;
-  old_posA_set = posA_set;
-  old_slope_A = slope_A;
+//  old_posA_set = posA_set;
+//  old_slope_A = slope_A;
 
-//  Serial.println(posA_act);
-  Serial.print(posA_act); Serial.print("   ");
+  Serial.println(posA_act);
+//  Serial.print(posA_act); Serial.print("   ");
+
     PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
 //  Serial.println(PWM_A_val);
 
@@ -285,7 +287,7 @@ void loop() {
 }
 
 float slope_mod_time(unsigned long cur_time){
-  if (cur_time < 5000){
+  if (cur_time < 7500){
     out = 1.5;
   }
   else {
