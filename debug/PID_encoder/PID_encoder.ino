@@ -55,11 +55,12 @@ float posD_set = 25;                               // position (Set Point) (in r
 float posD_act = 0;                                // position (actual value) (in revolution)
 int PWM_D_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-float Kp =    13; //16 //60;                                // PID proportional control Gain
-float Kd =    435; //400 //1200;                                // PID Derivitave control gain
+float Kp =    16; //13 //60;                                // PID proportional control Gain
+float Kd =    400; //435 //1200;                                // PID Derivitave control gain
 float Ki =    0; //0.0001;
 // values can be tuned farther (dependent on supplied voltage and current which may explain issues with running 4 at once)
 // read the article on integral windup and solutions for it in order to tune Ki properly
+
 unsigned long lastTime_A;
 float pidTerm_A = 0;                                                            // PID correction
 float error_A=0;                                   
@@ -192,53 +193,56 @@ void loop() {
 //  }
 //
 //  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
+  posA_set = cur_time_A/1000.0;
   Serial.print(posA_set); Serial.print(",");
 
 //  oldTime_A = cur_time_A;
 //  old_posA_set = posA_set;
 //  old_slope_A = slope_A;
 
-  Serial.println(posA_act);
-//  Serial.print(posA_act); Serial.print("   ");
+//  Serial.println(posA_act);
+  Serial.print(posA_act); Serial.print(",");
 
     PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
 //  Serial.println(PWM_A_val);
 
 
-//  cur_time_B = millis();
-//  Serial.print(cur_time_B); Serial.print(" "); 
-//
-//  posB_act = (encoder2Pos)/(4480.0);
+  cur_time_B = millis();
+  Serial.print(cur_time_B); Serial.print(","); 
+
+  posB_act = (encoder2Pos)/(4480.0);
+  
 //  slope_B = find_slope(posB_act);
 //  if (slope_B != old_slope_B){
 //    intercept_B = old_posB_set - (slope_B/1000)*cur_time_B;
 //  }
 //  
 //  posB_set = (cur_time_B)* (slope_B/1000.0) + intercept_B;
-//  Serial.print(posB_set); Serial.print(" ");
-//
+  posB_set = cur_time_B/1000.0;
+  Serial.print(posB_set); Serial.print(",");
+
 //  old_posB_set = posB_set;
 //  old_slope_B = slope_B;
 //  
-//  Serial.print(posB_act); Serial.print("   ");
-//  PWM_B_val= updatePid_B(PWM_B_val, posB_set, posB_act);
+  Serial.print(posB_act); Serial.print(",");
+  PWM_B_val= updatePid_B(PWM_B_val, posB_set, posB_act);
 
-//  cur_time_C = millis();
-//  Serial.print(cur_time_C); Serial.print(" "); 
-////  posC_set = 1.5*(cur_time_C/1000.0);
-//  Serial.print(posC_set); Serial.print(" ");
-//  posC_act = (encoder3Pos)/(4480.0);
-//  Serial.print(posC_act); Serial.print("   ");
-//  PWM_C_val= updatePid_C(PWM_C_val, posC_set, posC_act);
-//
-//  cur_time_D = millis();
-//  Serial.print(cur_time_D); Serial.print(" "); 
-////  posD_set = 2.0*(cur_time_D/1000.0);
-//  Serial.print(posD_set); Serial.print(" ");
-//  posD_act = (encoder4Pos)/(4480.0);
-//  Serial.println(posD_act);
-//  PWM_D_val= updatePid_D(PWM_D_val, posD_set, posD_act);
-//  
+  cur_time_C = millis();
+  Serial.print(cur_time_C); Serial.print(","); 
+  posC_set = 1.0*(cur_time_C/1000.0);
+  Serial.print(posC_set); Serial.print(",");
+  posC_act = (encoder3Pos)/(4480.0);
+  Serial.print(posC_act); Serial.print(",");
+  PWM_C_val= updatePid_C(PWM_C_val, posC_set, posC_act);
+
+  cur_time_D = millis();
+  Serial.print(cur_time_D); Serial.print(","); 
+  posD_set = 1.0*(cur_time_D/1000.0);
+  Serial.print(posD_set); Serial.print(",");
+  posD_act = (encoder4Pos)/(4480.0);
+  Serial.println(posD_act);
+  PWM_D_val= updatePid_D(PWM_D_val, posD_set, posD_act);
+  
   
 
   if (PWM_A_val >= 0){
@@ -264,24 +268,24 @@ void loop() {
   }
 
   if (PWM_C_val >= 0){
-    digitalWrite(motorC1,LOW);
-    digitalWrite(motorC2,HIGH);
+    digitalWrite(motorC1,HIGH); //LOW
+    digitalWrite(motorC2,LOW); //HIGH
     analogWrite(motorC_PWM,abs(PWM_C_val));
   }
   else {
-    digitalWrite(motorC1,HIGH);
-    digitalWrite(motorC2,LOW);
+    digitalWrite(motorC1,LOW); //HIGH
+    digitalWrite(motorC2,HIGH); //LOW
     analogWrite(motorC_PWM,abs(PWM_C_val));
   }
  
   if (PWM_D_val >= 0){
-    digitalWrite(motorD1,LOW);
-    digitalWrite(motorD2,HIGH);
+    digitalWrite(motorD1,HIGH); // LOW
+    digitalWrite(motorD2,LOW); //HIGH
     analogWrite(motorD_PWM,abs(PWM_D_val));
   }
   else {
-    digitalWrite(motorD1,HIGH);
-    digitalWrite(motorD2,LOW);
+    digitalWrite(motorD1,LOW); //HIGH
+    digitalWrite(motorD2,HIGH); //LOW
     analogWrite(motorD_PWM,abs(PWM_D_val));
   }
 }
@@ -429,7 +433,7 @@ void doEncoder3A(){
 // Interrupt on B changing state
 void doEncoder3B(){
   // Test transition
-  B3_set = digitalRead(encoder3PinB) == HIGH;
+  B3_set = digitalRead(encoder3PinB) == LOW; //HIGH
   // and adjust counter + if B follows A
   encoder3Pos += (A3_set == B3_set) ? +1 : -1;
 }
@@ -444,7 +448,7 @@ void doEncoder4A(){
 // Interrupt on B changing state
 void doEncoder4B(){
   // Test transition
-  B4_set = digitalRead(encoder4PinB) == HIGH;
+  B4_set = digitalRead(encoder4PinB) == LOW; //HIGH
   // and adjust counter + if B follows A
   encoder4Pos += (A4_set == B4_set) ? +1 : -1;
 }
