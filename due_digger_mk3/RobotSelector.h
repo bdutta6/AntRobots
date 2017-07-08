@@ -35,7 +35,7 @@
 	// TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
 	// TEST_DRIVE_MOTORS, 
 	// TEST_SERVO_MOTORS, 
-	// TEST_CAMERA,s
+	// TEST_CAMERA,
 	// TEST_VOLTAGE,
 	// TEST_GRIPPER_SENSOR,
 	// TEST_POWER_SENSORS, 

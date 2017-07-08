@@ -13,13 +13,13 @@
 
 ////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
 #define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
-#define HIGH_ROW_ANGLE  120 //120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
+#define HIGH_ROW_ANGLE  115 //120 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
 #define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
 #define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
 
 ////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
-#define CLOSED_POS 85 //110//179, JSP  //grip servo fully closed angle
-#define OPEN_POS 55//90, JSP     //grip servo fully open angle
+#define CLOSED_POS 80 //110//179, JSP  //grip servo fully closed angle
+#define OPEN_POS 55 //90, JSP     //grip servo fully open angle
 #define MID_POS 70 //JSP //grip servo half-open angle
 
 #define ForceSensorThresh 100 // JSP
@@ -59,7 +59,6 @@
 #define HY_MAX 0.0900
 
 #define PHD 0 // Positive Heading Direction: 0 for CW and 1 for CCW
-
 
 #define DIGGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while digging
 #define GOINGCHARGING_INTERRUPT_DELAY 500 //used to pause robot if its bumped into while going charging

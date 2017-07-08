@@ -207,7 +207,6 @@ enum Test {
 	TEST_CAP_7,
 	TEST_CHARGER,
 	TEST_CURRENT,
-	TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
 	TEST_DRIVE_MOTORS, 
 	TEST_SERVO_MOTORS, 
 	TEST_CAMERA,
