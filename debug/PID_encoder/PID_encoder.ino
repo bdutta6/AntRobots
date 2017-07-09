@@ -40,11 +40,11 @@ boolean A4_set = false;
 boolean B4_set = false;
 
 float posA_set = 10;                               // position (Set Point) (in revolution)
-float posA_act = 0;                                // position (actual value) (in revolution)
+float posA_act = 0.0;                                // position (actual value) (in revolution)
 int PWM_A_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-float posB_set = 15;                               // position (Set Point) (in revolution)
-float posB_act = 0;                                // position (actual value) (in revolution)
+float posB_set = 10;                               // position (Set Point) (in revolution)
+float posB_act = 0.0;                                // position (actual value) (in revolution)
 int PWM_B_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
 float posC_set = 20;                               // position (Set Point) (in revolution)
@@ -55,39 +55,46 @@ float posD_set = 25;                               // position (Set Point) (in r
 float posD_act = 0;                                // position (actual value) (in revolution)
 int PWM_D_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-float Kp =    16; //13 //60;                                // PID proportional control Gain
-float Kd =    400; //435 //1200;                                // PID Derivitave control gain
-float Ki =    0; //0.0001;
-// values can be tuned farther (dependent on supplied voltage and current which may explain issues with running 4 at once)
-// read the article on integral windup and solutions for it in order to tune Ki properly
+int Kp =    21; //13 //60;                                // PID proportional control Gain
+int Kd =    925; //435 //1200;                                // PID Derivitave control gain
+float Ki =   1.5;
+// these are incredibly close to perfect but there can still be some work done using kd and ki
 
 unsigned long lastTime_A;
-float pidTerm_A = 0;                                                            // PID correction
+int pidTerm_A = 0;                                                            // PID correction
 float error_A=0;                                   
 float last_error_A=0;   
 float dErr_A = 0;      
-double errSum_A = 0;
+double iTerm_A = 0;
+double outMaxI_A = 0;
+double outMinI_A = 0;
 
 unsigned long lastTime_B;
-float pidTerm_B = 0;                                                            // PID correction
+int pidTerm_B = 0;                                                            // PID correction
 float error_B=0;                                   
 float last_error_B=0;   
 float dErr_B = 0;      
-double errSum_B = 0;
+double iTerm_B = 0;
+double outMaxI_B = 0;
+double outMinI_B = 0;
 
 unsigned long lastTime_C;
-float pidTerm_C = 0;                                                            // PID correction
+int pidTerm_C = 0;                                                            // PID correction
 float error_C=0;                                   
 float last_error_C=0;   
 float dErr_C = 0;      
-double errSum_C = 0;
+double iTerm_C = 0;
+double outMaxI_C = 0;
+double outMinI_C = 0;
 
 unsigned long lastTime_D;
-float pidTerm_D = 0;                                                            // PID correction
+int  pidTerm_D = 0;                                                            // PID correction
 float error_D=0;                                   
 float last_error_D=0;   
-float dErr_D = 0;      
-double errSum_D = 0;
+float dErr_D = 0.0;      
+double iTerm_D = 0;
+double outMaxI_D = 0;
+double outMinI_D = 0;
 
 unsigned long cur_time_A;
 unsigned long cur_time_B;
@@ -99,14 +106,14 @@ float fast_val = 1.5;
 float slow_val = 0.5;
 
 float slope_A = 1.0;
-float old_slope_A = 0;
-float old_posA_set = 0;
-float intercept_A = 0;
+float old_slope_A = 0.0;
+float old_posA_set = 0.0;
+float intercept_A = 0.0;
 
 float slope_B = 1.0;
-float old_slope_B = 0;
-float old_posB_set = 0;
-float intercept_B = 0;
+float old_slope_B = 0.0;
+float old_posB_set = 0.0;
+float intercept_B = 0.0;
 
 float out = 0;
 
@@ -181,29 +188,29 @@ void setup() {
 
 void loop() {
   
-  cur_time_A = millis();
-  Serial.print(cur_time_A); Serial.print(",");
-
-  posA_act = (encoder1Pos)/(4480.0); // outputs current position in terms of revolution
-
-//  slope_A = find_slope(posA_act);
-////  slope_A = slope_mod_time(cur_time_A);
-//  if (slope_A != old_slope_A){
-//    intercept_A = old_posA_set - (slope_A/1000)*cur_time_A;
-//  }
+//  cur_time_A = millis();
+//  Serial.print(cur_time_A); Serial.print(",");
 //
-//  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
-  posA_set = cur_time_A/1000.0;
-  Serial.print(posA_set); Serial.print(",");
-
-//  oldTime_A = cur_time_A;
-//  old_posA_set = posA_set;
-//  old_slope_A = slope_A;
-
+//  posA_act = (encoder1Pos)/(4480.0); // outputs current position in terms of revolution
+//
+////  slope_A = find_slope(posA_act);
+//////  slope_A = slope_mod_time(cur_time_A);
+////  if (slope_A != old_slope_A){
+////    intercept_A = old_posA_set - (slope_A/1000)*cur_time_A;
+////  }
+////
+////  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
+//  posA_set = cur_time_A/1000.0;
+//  Serial.print(posA_set); Serial.print(",");
+//
+////  oldTime_A = cur_time_A;
+////  old_posA_set = posA_set;
+////  old_slope_A = slope_A;
+//
 //  Serial.println(posA_act);
-  Serial.print(posA_act); Serial.print(",");
+//  Serial.print(posA_act); Serial.print(",");
 
-    PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
+//    PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
 //  Serial.println(PWM_A_val);
 
 
@@ -218,31 +225,32 @@ void loop() {
 //  }
 //  
 //  posB_set = (cur_time_B)* (slope_B/1000.0) + intercept_B;
-  posB_set = cur_time_B/1000.0;
+//  posB_set = cur_time_B/1000.0;
   Serial.print(posB_set); Serial.print(",");
 
 //  old_posB_set = posB_set;
 //  old_slope_B = slope_B;
 //  
-  Serial.print(posB_act); Serial.print(",");
+//  Serial.print(posB_act); Serial.print(",");
+  Serial.println(posB_act);
   PWM_B_val= updatePid_B(PWM_B_val, posB_set, posB_act);
 
-  cur_time_C = millis();
-  Serial.print(cur_time_C); Serial.print(","); 
-  posC_set = 1.0*(cur_time_C/1000.0);
-  Serial.print(posC_set); Serial.print(",");
-  posC_act = (encoder3Pos)/(4480.0);
-  Serial.print(posC_act); Serial.print(",");
-  PWM_C_val= updatePid_C(PWM_C_val, posC_set, posC_act);
-
-  cur_time_D = millis();
-  Serial.print(cur_time_D); Serial.print(","); 
-  posD_set = 1.0*(cur_time_D/1000.0);
-  Serial.print(posD_set); Serial.print(",");
-  posD_act = (encoder4Pos)/(4480.0);
-  Serial.println(posD_act);
-  PWM_D_val= updatePid_D(PWM_D_val, posD_set, posD_act);
-  
+//  cur_time_C = millis();
+//  Serial.print(cur_time_C); Serial.print(","); 
+//  posC_set = 1.0*(cur_time_C/1000.0);
+//  Serial.print(posC_set); Serial.print(",");
+//  posC_act = (encoder3Pos)/(4480.0);
+//  Serial.print(posC_act); Serial.print(",");
+//  PWM_C_val= updatePid_C(PWM_C_val, posC_set, posC_act);
+//
+//  cur_time_D = millis();
+//  Serial.print(cur_time_D); Serial.print(","); 
+//  posD_set = 1.0*(cur_time_D/1000.0);
+//  Serial.print(posD_set); Serial.print(",");
+//  posD_act = (encoder4Pos)/(4480.0);
+//  Serial.println(posD_act);
+//  PWM_D_val= updatePid_D(PWM_D_val, posD_set, posD_act);
+//  
   
 
   if (PWM_A_val >= 0){
@@ -336,14 +344,26 @@ int updatePid_A(int command_A, float targetValue_A, float currentValue_A)   {   
   unsigned long now_A = millis();
   double timeChange_A = (double)(now_A - lastTime_A);     
     error_A = targetValue_A - currentValue_A; 
-    errSum_A += (error_A * timeChange_A);
-    dErr_A = (error_A-last_error_A);// / timeChange;
-    pidTerm_A = (Kp * error_A) + (Kd * dErr_A) + Ki * errSum_A;    
+    dErr_A = (error_A-last_error_A);
+    outMaxI_A = abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
+    outMinI_A = -abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
+    iTerm_A += Ki*(error_A * timeChange_A);
+    if (iTerm_A > outMaxI_A) iTerm_A = outMaxI_A;
+    else if (iTerm_A < outMinI_A) iTerm_A = outMinI_A;
+    pidTerm_A = (Kp * error_A) + (Kd * dErr_A) + iTerm_A;    
 //    Serial.print(error); Serial.print(" "); Serial.print(dErr); Serial.print(" ");
 //    Serial.print(Kp*error_A); Serial.print(" "); Serial.print(Kd*dErr_A); Serial.print(" "); Serial.println(Ki*errSum_A);//Serial.print(" ");
 //    Serial.print(error_A); Serial.print(" "); Serial.print(last_error_A);Serial.print(" "); Serial.print(dErr_A); Serial.print(" ");
     last_error_A = error_A;
     lastTime_A = now_A;
+    if (command_A + pidTerm_A > 255){
+      iTerm_A -= pidTerm_A - 255;
+      pidTerm_A = 255 - command_A;
+    }
+    else if (command_A + pidTerm_A < -255){
+      iTerm_A += -255 - pidTerm_A;
+      pidTerm_A = -255 - command_A;
+    }
     return constrain(command_A + int(pidTerm_A), -255, 255);          
   }
 
@@ -351,29 +371,54 @@ int updatePid_B(int command_B, float targetValue_B, float currentValue_B)   {   
   unsigned long now_B = millis();
   double timeChange_B = (double)(now_B - lastTime_B);     
     error_B = targetValue_B - currentValue_B; 
-    errSum_B += (error_B * timeChange_B);
     dErr_B = (error_B-last_error_B);// / timeChange;
-    pidTerm_B = (Kp * error_B) + (Kd * dErr_B) + Ki * errSum_B;    
+    outMaxI_B = abs(pidTerm_B) - (Kp * error_B) - (Kd * dErr_B) - iTerm_B; //Serial.print(outMaxI_B); Serial.print(",");
+    outMinI_B = -abs(pidTerm_B) - (Kp * error_B) - (Kd * dErr_B) - iTerm_B; //Serial.print(outMinI_B); Serial.print(",");
+    iTerm_B += Ki*error_B; //Serial.print(iTerm_B); Serial.print(",");
+    if (iTerm_B > outMaxI_B) iTerm_B = outMaxI_B;
+    else if (iTerm_B < outMinI_B) iTerm_B = outMinI_B;
+    pidTerm_B = (Kp * error_B) + (Kd * dErr_B) + iTerm_B;   
+    // Serial.print(iTerm_B); Serial.print(",");
 //    Serial.print(error); Serial.print(" "); Serial.print(dErr); Serial.print(" ");
 //    Serial.print(Kp*error); Serial.print(" "); Serial.print(Kd*dErr); Serial.print(" "); Serial.print(Ki*errSum);Serial.print(" ");
 //    Serial.print(error); Serial.print(" "); Serial.print(last_error);Serial.print(" "); Serial.print(dErr); Serial.print(" ");
     last_error_B = error_B;
     lastTime_B = now_B;
-    return constrain(command_B + int(pidTerm_B), -255, 255);          
+    if (command_B + pidTerm_B > 255){
+      iTerm_B -= pidTerm_B - 255;
+//      pidTerm_B = 255;
+      pidTerm_B = 255 - command_B;
+    }
+    else if (command_B + pidTerm_B < -255){
+      iTerm_B += -255 - pidTerm_B;
+//      pidTerm_B = -255;
+      pidTerm_B = -255 - command_B;
+    }
+//    Serial.println(iTerm_B);
+    return constrain(command_B + int(pidTerm_B),-255,255);          
   }
 
 int updatePid_C(int command_C, float targetValue_C, float currentValue_C)   {             // compute PWM value
   unsigned long now_C = millis();
   double timeChange_C = (double)(now_C - lastTime_C);     
     error_C = targetValue_C - currentValue_C; 
-    errSum_C += (error_C * timeChange_C);
-    dErr_C = (error_C-last_error_C);// / timeChange;
-    pidTerm_C = (Kp * error_C) + (Kd * dErr_C) + Ki * errSum_C;    
-//    Serial.print(error); Serial.print(" "); Serial.print(dErr); Serial.print(" ");
-//    Serial.print(Kp*error); Serial.print(" "); Serial.print(Kd*dErr); Serial.print(" "); Serial.print(Ki*errSum);Serial.print(" ");
-//    Serial.print(error); Serial.print(" "); Serial.print(last_error);Serial.print(" "); Serial.print(dErr); Serial.print(" ");
+    dErr_C = (error_C-last_error_C);
+    outMaxI_C = abs(pidTerm_C) - (Kp * error_C) - (Kd * dErr_C) - iTerm_C;
+    outMinI_C = -abs(pidTerm_C) - (Kp * error_C) - (Kd * dErr_C) - iTerm_C;
+    iTerm_C += Ki*(error_C * timeChange_C);
+    if (iTerm_C > outMaxI_C) iTerm_C = outMaxI_C;
+    else if (iTerm_C < outMinI_C) iTerm_C = outMinI_C;
+    pidTerm_C = (Kp * error_C) + (Kd * dErr_C) + iTerm_C;    
     last_error_C = error_C;
     lastTime_C = now_C;
+    if (command_C + pidTerm_C > 255){
+      iTerm_C -= pidTerm_C - 255;
+      pidTerm_C = 255 - command_C;
+    }
+    else if (command_C + pidTerm_C < -255){
+      iTerm_C += -255 - pidTerm_C;
+      pidTerm_C = -255 - command_C;
+    }
     return constrain(command_C + int(pidTerm_C), -255, 255);          
   }
 
@@ -381,14 +426,23 @@ int updatePid_D(int command_D, float targetValue_D, float currentValue_D)   {   
   unsigned long now_D = millis();
   double timeChange_D = (double)(now_D - lastTime_D);     
     error_D = targetValue_D - currentValue_D; 
-    errSum_D += (error_D * timeChange_D);
-    dErr_D = (error_D-last_error_D);// / timeChange;
-    pidTerm_D = (Kp * error_D) + (Kd * dErr_D) + Ki * errSum_D;    
-//    Serial.print(error); Serial.print(" "); Serial.print(dErr); Serial.print(" ");
-//    Serial.print(Kp*error); Serial.print(" "); Serial.print(Kd*dErr); Serial.print(" "); Serial.print(Ki*errSum);Serial.print(" ");
-//    Serial.print(error); Serial.print(" "); Serial.print(last_error);Serial.print(" "); Serial.print(dErr); Serial.print(" ");
+    dErr_D = (error_D-last_error_D);
+    outMaxI_D = abs(pidTerm_D) - (Kp * error_D) - (Kd * dErr_D) - iTerm_D;
+    outMinI_D = -abs(pidTerm_D) - (Kp * error_D) - (Kd * dErr_D) - iTerm_D;
+    iTerm_D += Ki*(error_D * timeChange_D);
+    if (iTerm_D > outMaxI_D) iTerm_D = outMaxI_D;
+    else if (iTerm_D < outMinI_D) iTerm_D = outMinI_D;
+    pidTerm_D = (Kp * error_D) + (Kd * dErr_D) + iTerm_D;    
     last_error_D = error_D;
     lastTime_D = now_D;
+    if (command_D + pidTerm_D > 255){
+      iTerm_D -= pidTerm_D - 255;
+      pidTerm_D = 255 - command_D;
+    }
+    else if (command_D + pidTerm_D < -255){
+      iTerm_D += -255 - pidTerm_D;
+      pidTerm_D = -255 - command_D;
+    }
     return constrain(command_D + int(pidTerm_D), -255, 255);          
   }
 
