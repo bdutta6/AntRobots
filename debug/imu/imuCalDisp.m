@@ -32,23 +32,46 @@ yunit = r * sin(th) + y;
 
 %% Plot unit circle mapping
 figure
-plot(xunit, yunit, a(:,1), a(:,2), '+', b(:,1), b(:,2), 'o', c(:,1), c(:,2), '*', d(:,1), d(:,2), '.', e(:,1), e(:,2), 'x')
+% plot(xunit, yunit)
 hold on
+ax = gca
+plot(a(:,1), a(:,2), '+', b(:,1), b(:,2), 'o', c(:,1), c(:,2), '*', d(:,1), d(:,2), '.', e(:,1), e(:,2), 'x')
 title('Raw IMU Output')
-xlabel('hx')
-ylabel('hy')
+xlabel('H_x')
+ylabel('H_y')
 grid on
-legend('Unit Circle', 'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
+ax = gca
+legend('IMU 1', 'IMU 2', 'IMU 3', 'IMU 4', 'IMU 5')
+xlim([-1 1])
+ax.XTick = [-1:0.25:1]
+ax.YTick = [-1:0.25:1]
+
+
+
+
+ylim([-1 1])
+deltax=xlim; y=ylim;
+plot(deltax,[0,0],'r');
+plot([0,0],y,'r');
+
 hold off
 print -dpng rawIMUOutput
 
 figure
 hold on
 title('Raw IMU Output + Calibration Mapping')
-plot(xunit, yunit, xNewA, yNewA, '+', xNewB, yNewB, 'o', xNewC, yNewC, '*', xNewD, yNewD, '.', xNewE, yNewE, 'x')
+plot(xNewA, yNewA, '+', xNewB, yNewB, 'o', xNewC, yNewC, '*', xNewD, yNewD, '.', xNewE, yNewE, 'x')
 xlabel('hx')
 ylabel('hy')
-legend('Unit Circle', 'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo')
+xlim([-1 1])
+ylim([-1 1])
+legend('IMU 1', 'IMU 2', 'IMU 3', 'IMU 4', 'IMU 5')
+deltax=xlim; y=ylim;
+plot(deltax,[0,0],'r');
+plot([0,0],y,'r');
+
+ax.XTick = [-1:0.25:1]
+ax.YTick = [-1:0.25:1]
 grid on
 hold off
 % print -dpng calibratedIMUOutput
@@ -148,16 +171,24 @@ legend('Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Unit Circle')
 % print -dpng calibratedHeadingOutput
 
 
-figa = plotCorrections( A, Anew, xNewSA, yNewSA, 'IMU A');
+figa = plotCorrections( A, Anew, xNewSA, yNewSA, 'IMU 1');
+figText(gcf,14)
 print -dpng figa
-figb = plotCorrections( B, Bnew, xNewSB, yNewSB, 'IMU B');
+
+figb = plotCorrections( B, Bnew, xNewSB, yNewSB, 'IMU 2');
+figText(gcf,14)
 print -dpng figb
 
-figc = plotCorrections( C, Cnew, xNewSC, yNewSC, 'IMU C');
+figc = plotCorrections( C, Cnew, xNewSC, yNewSC, 'IMU 3');
+figText(gcf,14)
 print -dpng figc
 
-figd = plotCorrections( D, Dnew, xNewSD, yNewSD, 'IMU D');
+figd = plotCorrections( D, Dnew, xNewSD, yNewSD, 'IMU 4');
+figText(gcf,14)
+
 print -dpng figd
 
-fige = plotCorrections( E, Enew, xNewSE, yNewSE, 'IMU E');
+fige = plotCorrections( E, Enew, xNewSE, yNewSE, 'IMU 5');
+figText(gcf,14)
+
 print -dpng fige

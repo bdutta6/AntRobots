@@ -2,48 +2,48 @@
 //this will enable to program each robot individually 
 #define RobotSelector_h
 
-// TESTING VARIABLES DEFINED HERE
-// #define TEST_MODE 1
+//* / testing variables defined here
+// #define test_mode 1
 
-// All TEST_CASE options are given below. The enumeration is defined in the the {GLOBAL VARIABLE DECLARATION} section of due_digger_mk2.ino
-// TEST_IMU, 
-// TEST_FORCE,
-// TEST_MAG,
+// all test_case options are given below. the enumeration is defined in the the {global variable declaration} section of due_digger_mk2.ino
+// test_imu, 
+// test_force,
+// test_mag,
 
 // remember that the thresholds might be different when the robot is plugged in.
-// This will make it harder to debug issues asso	ciated with the capacitive sensors.
-// Also remember that there is a parameter in the Fio software that needs to be changed in
+// this will make it harder to debug issues asso	ciated with the capacitive sensors.
+// also remember that there is a parameter in the fio software that needs to be changed in
 // order to test the capacitive sensors
-// TEST_CAP, 					
+// test_cap, 					
 
-// TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
-// This enumeration is used in the switch-case statements in loop() to conduct any necessary tests
-	// TEST_IMU,
-	// TEST_IMU_CAL,
-	// TEST_FORCE,
-	// TEST_MAG,
-	// TEST_CAP_0, 					// remember that the thresholds might be different when the robot is plugged in. This will make it harder to debug issues associated with the capacitive sensors
-	// TEST_CAP_1,
-	// TEST_CAP_2,
-	// TEST_CAP_3,
-	// TEST_CAP_4,
-	// TEST_CAP_5,
-	// TEST_CAP_6,
-	// TEST_CAP_7,
-	// TEST_CHARGER,
-	// TEST_CURRENT,
-	// TEST_SWITCHES, 			// Ross: I think this testing approach is deprecated. Use TEST_CAP instead
-	// TEST_DRIVE_MOTORS, 
-	// TEST_SERVO_MOTORS, 
-	// TEST_CAMERA,
-	// TEST_VOLTAGE,
-	// TEST_GRIPPER_SENSOR,
-	// TEST_POWER_SENSORS, 
-	// TEST_TURN_HEADING,
-	// TEST_PICK_DIRECTION,
-	// TEST_PID_CONTROLLER,
-	// TEST_NOTHING,
-#define TEST_CASE TEST_MAG
+// test_switches, 			// ross: i think this testing approach is deprecated. use test_cap instead
+// this enumeration is used in the switch-case statements in loop() to conduct any necessary tests
+	// test_imu,
+	// test_imu_cal,
+	// test_force,
+	// test_mag,
+	// test_cap_0, 					// remember that the thresholds might be different when the robot is plugged in. this will make it harder to debug issues associated with the capacitive sensors
+	// test_cap_1,
+	// test_cap_2,
+	// test_cap_3,
+	// test_cap_4,
+	// test_cap_5,
+	// test_cap_6,
+	// test_cap_7,
+	// test_charger,
+	// test_current,
+	// test_switches, 			// ross: i think this testing approach is deprecated. use test_cap instead
+	// test_drive_motors, 
+	// test_servo_motors, 
+	// test_camera,
+	// test_voltage,
+	// test_gripper_sensor,
+	// test_power_sensors, 
+	// test_turn_heading,
+	// test_pick_direction,
+	// test_pid_controller,
+	// test_nothing, */
+#define TEST_CASE TEST_SERVO_MOTORS
 #define ROBOT_A
 
 // ********** BEGIN {SET BEHAVIOR} **********
