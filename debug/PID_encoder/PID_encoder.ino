@@ -55,9 +55,9 @@ float posD_set = 25;                               // position (Set Point) (in r
 float posD_act = 0;                                // position (actual value) (in revolution)
 int PWM_D_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-int Kp =    21; //13 //60;                                // PID proportional control Gain
-int Kd =    925; //435 //1200;                                // PID Derivitave control gain
-float Ki =   1.5;
+int Kp =    10; //10 //13 //60;                                // PID proportional control Gain
+int Kd =    400; //925 //435 //1200;                                // PID Derivitave control gain
+float Ki =   0;//1.5;
 // these are incredibly close to perfect but there can still be some work done using kd and ki
 
 unsigned long lastTime_A;
@@ -171,7 +171,7 @@ void setup() {
 //    digitalWrite(motorA1,LOW);
 //    digitalWrite(motorA2,HIGH);
 //    analogWrite(motorA_PWM,255);
-//    
+    
 //    digitalWrite(motorB1,LOW);
 //    digitalWrite(motorB2,HIGH);
 //    analogWrite(motorB_PWM,255);
@@ -188,52 +188,53 @@ void setup() {
 
 void loop() {
   
-//  cur_time_A = millis();
-//  Serial.print(cur_time_A); Serial.print(",");
-//
-//  posA_act = (encoder1Pos)/(4480.0); // outputs current position in terms of revolution
-//
+  cur_time_A = millis();
+  Serial.print(cur_time_A); Serial.print(",");
+
+  posA_act = (encoder1Pos)/(4480.0); // outputs current position in terms of revolution
+
 ////  slope_A = find_slope(posA_act);
 //////  slope_A = slope_mod_time(cur_time_A);
 ////  if (slope_A != old_slope_A){
 ////    intercept_A = old_posA_set - (slope_A/1000)*cur_time_A;
 ////  }
 ////
-////  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
-//  posA_set = cur_time_A/1000.0;
-//  Serial.print(posA_set); Serial.print(",");
+//  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
+  posA_set = 1.0*cur_time_A/1000.0;
+  Serial.print(posA_set); Serial.print(",");
 //
 ////  oldTime_A = cur_time_A;
 ////  old_posA_set = posA_set;
 ////  old_slope_A = slope_A;
 //
 //  Serial.println(posA_act);
-//  Serial.print(posA_act); Serial.print(",");
+  Serial.print(posA_act); Serial.print(",");
+  Serial.println(posA_set-posA_act);
 
-//    PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
+    PWM_A_val= updatePid_A(PWM_A_val);// posA_set, posA_act);
 //  Serial.println(PWM_A_val);
 
 
-  cur_time_B = millis();
-  Serial.print(cur_time_B); Serial.print(","); 
-
-  posB_act = (encoder2Pos)/(4480.0);
-  
-//  slope_B = find_slope(posB_act);
-//  if (slope_B != old_slope_B){
-//    intercept_B = old_posB_set - (slope_B/1000)*cur_time_B;
-//  }
+//  cur_time_B = millis();
+//  Serial.print(cur_time_B); Serial.print(","); 
+//
+//  posB_act = (encoder2Pos)/(4480.0);
 //  
-//  posB_set = (cur_time_B)* (slope_B/1000.0) + intercept_B;
-//  posB_set = cur_time_B/1000.0;
-  Serial.print(posB_set); Serial.print(",");
-
-//  old_posB_set = posB_set;
-//  old_slope_B = slope_B;
-//  
-//  Serial.print(posB_act); Serial.print(",");
-  Serial.println(posB_act);
-  PWM_B_val= updatePid_B(PWM_B_val, posB_set, posB_act);
+////  slope_B = find_slope(posB_act);
+////  if (slope_B != old_slope_B){
+////    intercept_B = old_posB_set - (slope_B/1000)*cur_time_B;
+////  }
+////  
+////  posB_set = (cur_time_B)* (slope_B/1000.0) + intercept_B;
+////  posB_set = cur_time_B/1000.0;
+//  Serial.print(posB_set); Serial.print(",");
+//
+////  old_posB_set = posB_set;
+////  old_slope_B = slope_B;
+////  
+////  Serial.print(posB_act); Serial.print(",");
+//  Serial.println(posB_act);
+//  PWM_B_val= updatePid_B(PWM_B_val, posB_set, posB_act);
 
 //  cur_time_C = millis();
 //  Serial.print(cur_time_C); Serial.print(","); 
@@ -340,10 +341,10 @@ float find_slope(float current_pos){ // this will only output positive numbers
   return (output);
 }
 
-int updatePid_A(int command_A, float targetValue_A, float currentValue_A)   {             // compute PWM value
+int updatePid_A(int command_A){ //,float targetValue_A, float currentValue_A)   {             // compute PWM value
   unsigned long now_A = millis();
   double timeChange_A = (double)(now_A - lastTime_A);     
-    error_A = targetValue_A - currentValue_A; 
+    error_A = posA_set - posA_act; 
     dErr_A = (error_A-last_error_A);
     outMaxI_A = abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
     outMinI_A = -abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
