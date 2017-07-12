@@ -3,28 +3,28 @@
 #define motorA_PWM 2
 #define encoder1PinA 52
 #define encoder1PinB 50
-#define hallEffect_A 
+#define hallEffect_A 25
 
 #define motorB1 49 //A
 #define motorB2 47 //B
 #define motorB_PWM 3
 #define encoder2PinA 48 
 #define encoder2PinB 46
-#define hallEffect_B 
+#define hallEffect_B 23
 
 #define motorC1 45 //A
 #define motorC2 43 //B
 #define motorC_PWM 4
 #define encoder3PinA 44 
 #define encoder3PinB 42
-#define hallEffect_C
+#define hallEffect_C 24
 
 #define motorD1 41 //A
 #define motorD2 39 //B
 #define motorD_PWM 5
 #define encoder4PinA 40 
 #define encoder4PinB 38
-#define hallEffect_D
+#define hallEffect_D 22
 
 volatile long encoder1Pos = 0;                  //rev counter
 volatile long encoder2Pos = 0;
@@ -43,20 +43,20 @@ boolean B3_set = false;
 boolean A4_set = false;
 boolean B4_set = false;
 
-float posA_set = 10;                               // position (Set Point) (in revolution)
-float posA_act = 0.0;                                // position (actual value) (in revolution)
-int PWM_A_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
+double posA_set = 10;                               // position (Set Point) (in revolution)
+double posA_act = 0.0;                                // position (actual value) (in revolution)
+int PWM_A_val = 255;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-float posB_set = 10;                               // position (Set Point) (in revolution)
-float posB_act = 0.0;                                // position (actual value) (in revolution)
+double posB_set = 10;                               // position (Set Point) (in revolution)
+double posB_act = 0.0;                                // position (actual value) (in revolution)
 int PWM_B_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-float posC_set = 20;                               // position (Set Point) (in revolution)
-float posC_act = 0;                                // position (actual value) (in revolution)
+double posC_set = 20;                               // position (Set Point) (in revolution)
+double posC_act = 0;                                // position (actual value) (in revolution)
 int PWM_C_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-float posD_set = 25;                               // position (Set Point) (in revolution)
-float posD_act = 0;                                // position (actual value) (in revolution)
+double posD_set = 25;                               // position (Set Point) (in revolution)
+double posD_act = 0;                                // position (actual value) (in revolution)
 int PWM_D_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
 int Kp =    10; //10 //13 //60;                                // PID proportional control Gain
@@ -66,36 +66,36 @@ float Ki =   0;//1.5;
 
 unsigned long lastTime_A;
 int pidTerm_A = 0;                                                            // PID correction
-float error_A=0;                                   
-float last_error_A=0;   
-float dErr_A = 0;      
+double error_A=0;                                   
+double last_error_A=0;   
+double dErr_A = 0;      
 double iTerm_A = 0;
 double outMaxI_A = 0;
 double outMinI_A = 0;
 
 unsigned long lastTime_B;
 int pidTerm_B = 0;                                                            // PID correction
-float error_B=0;                                   
-float last_error_B=0;   
-float dErr_B = 0;      
+double error_B=0;                                   
+double last_error_B=0;   
+double dErr_B = 0;      
 double iTerm_B = 0;
 double outMaxI_B = 0;
 double outMinI_B = 0;
 
 unsigned long lastTime_C;
 int pidTerm_C = 0;                                                            // PID correction
-float error_C=0;                                   
-float last_error_C=0;   
-float dErr_C = 0;      
+double error_C=0;                                   
+double last_error_C=0;   
+double dErr_C = 0;      
 double iTerm_C = 0;
 double outMaxI_C = 0;
 double outMinI_C = 0;
 
 unsigned long lastTime_D;
 int  pidTerm_D = 0;                                                            // PID correction
-float error_D=0;                                   
-float last_error_D=0;   
-float dErr_D = 0.0;      
+double error_D=0;                                   
+double last_error_D=0;   
+double dErr_D = 0.0;      
 double iTerm_D = 0;
 double outMaxI_D = 0;
 double outMinI_D = 0;
@@ -120,6 +120,7 @@ float old_posB_set = 0.0;
 float intercept_B = 0.0;
 
 float out = 0;
+double pi = 3.14159;
 
 
 void setup() {
@@ -129,14 +130,16 @@ void setup() {
   pinMode(motorA_PWM, OUTPUT);
   pinMode(encoder1PinA, INPUT); 
   pinMode(encoder1PinB, INPUT);
+  pinMode(hallEffect_A, INPUT);
   digitalWrite(encoder1PinA, HIGH);                      // turn on pullup resistor
-  digitalWrite(encoder1PinB, HIGH);                      
-
+  digitalWrite(encoder1PinB, HIGH);
+                        
   pinMode(motorB1, OUTPUT);
   pinMode(motorB2, OUTPUT);
   pinMode(motorB_PWM, OUTPUT);
   pinMode(encoder2PinA, INPUT); 
   pinMode(encoder2PinB, INPUT);
+  pinMode(hallEffect_B, INPUT);
   digitalWrite(encoder2PinA, HIGH);                      
   digitalWrite(encoder2PinB, HIGH);     
 
@@ -145,6 +148,7 @@ void setup() {
   pinMode(motorC_PWM, OUTPUT);
   pinMode(encoder3PinA, INPUT); 
   pinMode(encoder3PinB, INPUT);
+  pinMode(hallEffect_C, INPUT);
   digitalWrite(encoder3PinA, HIGH);                      
   digitalWrite(encoder3PinB, HIGH);     
 
@@ -153,49 +157,56 @@ void setup() {
   pinMode(motorD_PWM, OUTPUT);
   pinMode(encoder4PinA, INPUT); 
   pinMode(encoder4PinB, INPUT);
+  pinMode(hallEffect_D, INPUT);
   digitalWrite(encoder4PinA, HIGH);                      
   digitalWrite(encoder4PinB, HIGH);     
 
+  attachInterrupt(digitalPinToInterrupt(52), doEncoder1A, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(50), doEncoder1B, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(25), checkHall_A, FALLING);
 
-  attachInterrupt(digitalPinToInterrupt(2), doEncoder1A, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(3), doEncoder1B, CHANGE);
-  
-  attachInterrupt(digitalPinToInterrupt(4), doEncoder2A, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(5), doEncoder2B, CHANGE);
-  
-  attachInterrupt(digitalPinToInterrupt(8), doEncoder3A, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(9), doEncoder3B, CHANGE);
-  
-  attachInterrupt(digitalPinToInterrupt(10), doEncoder4A, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(11), doEncoder4B, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(48), doEncoder2A, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(46), doEncoder2B, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(23), checkHall_B, FALLING);
+
+  attachInterrupt(digitalPinToInterrupt(44), doEncoder3A, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(42), doEncoder3B, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(24), checkHall_C, FALLING);
+
+  attachInterrupt(digitalPinToInterrupt(40), doEncoder4A, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(38), doEncoder4B, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(22), checkHall_D, FALLING);
 
   
   Serial.begin (9600);
-while(1){
+//while(1){
 //    digitalWrite(motorA1,LOW);
 //    digitalWrite(motorA2,HIGH);
 //    analogWrite(motorA_PWM,255);
-//    
+    
 //    digitalWrite(motorB1,LOW);
 //    digitalWrite(motorB2,HIGH);
 //    analogWrite(motorB_PWM,255);
-    
-    digitalWrite(motorC1,HIGH);
-    digitalWrite(motorC2,LOW);
-    analogWrite(motorC_PWM,255);
-
-    digitalWrite(motorD1,HIGH);
-    digitalWrite(motorD2,LOW);
-    analogWrite(motorD_PWM,255);
+//    
+//    digitalWrite(motorC1,HIGH);
+//    digitalWrite(motorC2,LOW);
+//    analogWrite(motorC_PWM,255);
+//
+//    digitalWrite(motorD1,HIGH);
+//    digitalWrite(motorD2,LOW);
+//    analogWrite(motorD_PWM,255);
+//}
 }
-}
 
+String magRead = "OFF";
 void loop() {
   
   cur_time_A = millis();
   Serial.print(cur_time_A); Serial.print(",");
 
-  posA_act = (encoder1Pos)/(4480.0); // outputs current position in terms of revolution
+  posA_act = pi*((encoder1Pos)/(4480.0)); // outputs current position in terms of revolution
+  if (digitalRead(25) == LOW) magRead = "ON";
+  else magRead = "OFF";
 
 ////  slope_A = find_slope(posA_act);
 //////  slope_A = slope_mod_time(cur_time_A);
@@ -204,7 +215,11 @@ void loop() {
 ////  }
 ////
 //  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
-  posA_set = 1.0*cur_time_A/1000.0;
+
+//  posA_set = 2.0*(pi*cur_time_A/1000.0);
+//  posA_set = posA_set - 2*pi*floor(posA_set/(2*pi)); // this is equivalent to mod(posA_set,2*pi) but mod() doesnt work on double values
+
+  
 //  Serial.print(posA_set); Serial.print(",");
 //
 ////  oldTime_A = cur_time_A;
@@ -212,10 +227,11 @@ void loop() {
 ////  old_slope_A = slope_A;
 //
 //  Serial.println(posA_act);
-//  Serial.print(posA_act); Serial.print(",");
-  Serial.println(posA_set-posA_act);
+  Serial.print(posA_act); Serial.print(",");
+  Serial.println(magRead);
+//  Serial.println(posA_set-posA_act); //prints the error
 
-    PWM_A_val= updatePid_A(PWM_A_val);// posA_set, posA_act);
+//    PWM_A_val= updatePid_A(PWM_A_val);// posA_set, posA_act);
 //  Serial.println(PWM_A_val);
 
 
@@ -314,7 +330,7 @@ float slope_mod_time(unsigned long cur_time){
 }
 
 float find_slope(float current_pos){ // this will only output positive numbers
-//current_pos is in revolutions but it needs to be converted to radians
+//current_pos is in revolutions but it needs to be converted to radians (this needs to be changed now)
   float current_pos_rad = abs(current_pos*6.28);
 //  Serial.print(current_pos_rad); Serial.print(" ");
 
@@ -349,6 +365,9 @@ int updatePid_A(int command_A){ //,float targetValue_A, float currentValue_A)   
   unsigned long now_A = millis();
   double timeChange_A = (double)(now_A - lastTime_A);     
     error_A = posA_set - posA_act; 
+    double error_A2 = 2*pi - abs(error_A);
+    if (error_A >= 0) error_A2 = -error_A2;
+    if (abs(error_A2) < abs(error_A)) error_A = error_A2;
     dErr_A = (error_A-last_error_A);
     outMaxI_A = abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
     outMinI_A = -abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
@@ -460,6 +479,7 @@ void doEncoder1A(){
   A1_set = digitalRead(encoder1PinA) == HIGH;
   // and adjust encoder1Poser + if A leads B
   encoder1Pos += (A1_set != B1_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_A) == HIGH) encoder1Pos = 0;
 }
 
 // Interrupt on B changing state
@@ -468,6 +488,7 @@ void doEncoder1B(){
   B1_set = digitalRead(encoder1PinB) == HIGH;
   // and adjust counter + if B follows A
   encoder1Pos += (A1_set == B1_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_A) == HIGH) encoder1Pos = 0;
 }
 
 void doEncoder2A(){
@@ -475,6 +496,7 @@ void doEncoder2A(){
   A2_set = digitalRead(encoder2PinA) == HIGH;
   // and adjust counter + if A leads B
   encoder2Pos += (A2_set != B2_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_B) == HIGH) encoder2Pos = 0;
 }
 
 // Interrupt on B changing state
@@ -483,13 +505,15 @@ void doEncoder2B(){
   B2_set = digitalRead(encoder2PinB) == HIGH;
   // and adjust counter + if B follows A
   encoder2Pos += (A2_set == B2_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_B) == HIGH) encoder2Pos = 0;
 }
 
 void doEncoder3A(){
   // Test transition
-  A3_set = digitalRead(encoder3PinA) == HIGH;
+  A3_set = digitalRead(encoder3PinA) == HIGH; //if both encoders read the same thing, its moving CCW and if they read different values, the motor is moving CW
   // and adjust counter + if A leads B
   encoder3Pos += (A3_set != B3_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_C) == HIGH) encoder3Pos = 0;
 }
 
 // Interrupt on B changing state
@@ -498,6 +522,7 @@ void doEncoder3B(){
   B3_set = digitalRead(encoder3PinB) == LOW; //HIGH
   // and adjust counter + if B follows A
   encoder3Pos += (A3_set == B3_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_C) == HIGH) encoder3Pos = 0; 
 }
 
 void doEncoder4A(){
@@ -505,6 +530,7 @@ void doEncoder4A(){
   A4_set = digitalRead(encoder4PinA) == HIGH;
   // and adjust counter + if A leads B
   encoder4Pos += (A4_set != B4_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_D) == HIGH) encoder4Pos = 0;
 }
 
 // Interrupt on B changing state
@@ -513,4 +539,22 @@ void doEncoder4B(){
   B4_set = digitalRead(encoder4PinB) == LOW; //HIGH
   // and adjust counter + if B follows A
   encoder4Pos += (A4_set == B4_set) ? +1 : -1;
+//  if (digitalRead(hallEffect_D) == HIGH) encoder4Pos = 0;
 }
+
+void checkHall_A(){
+  encoder1Pos = 0;
+}
+
+void checkHall_B(){
+  encoder2Pos = 0;
+}
+
+void checkHall_C(){
+  encoder3Pos = 0;
+}
+
+void checkHall_D(){
+  encoder4Pos = 0;
+}
+
