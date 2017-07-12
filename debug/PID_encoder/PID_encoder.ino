@@ -167,23 +167,23 @@ void setup() {
 
   
   Serial.begin (9600);
-//while(1){
-//    digitalWrite(motorA1,LOW);
-//    digitalWrite(motorA2,HIGH);
-//    analogWrite(motorA_PWM,255);
+while(1){
+    digitalWrite(motorA1,LOW);
+    digitalWrite(motorA2,HIGH);
+    analogWrite(motorA_PWM,255);
     
-//    digitalWrite(motorB1,LOW);
-//    digitalWrite(motorB2,HIGH);
-//    analogWrite(motorB_PWM,255);
-//    
-//    digitalWrite(motorC1,LOW);
-//    digitalWrite(motorC2,HIGH);
-//    analogWrite(motorC_PWM,255);
-//
-//    digitalWrite(motorD1,LOW);
-//    digitalWrite(motorD2,HIGH);
-//    analogWrite(motorD_PWM,255);
-//}
+    digitalWrite(motorB1,LOW);
+    digitalWrite(motorB2,HIGH);
+    analogWrite(motorB_PWM,255);
+    
+    digitalWrite(motorC1,HIGH);
+    digitalWrite(motorC2,LOW);
+    analogWrite(motorC_PWM,255);
+
+    digitalWrite(motorD1,HIGH);
+    digitalWrite(motorD2,LOW);
+    analogWrite(motorD_PWM,255);
+}
 }
 
 void loop() {
