@@ -1,26 +1,30 @@
 #define motorA1 53 //A
 #define motorA2 51 //B
-#define motorA_PWM 6
-#define encoder1PinA 2
-#define encoder1PinB 3
+#define motorA_PWM 2
+#define encoder1PinA 52
+#define encoder1PinB 50
+#define hallEffect_A 
 
 #define motorB1 49 //A
 #define motorB2 47 //B
-#define motorB_PWM 7 
-#define encoder2PinA 4 
-#define encoder2PinB 5
+#define motorB_PWM 3
+#define encoder2PinA 48 
+#define encoder2PinB 46
+#define hallEffect_B 
 
-#define motorC1 29 //A
-#define motorC2 27 //B
-#define motorC_PWM 12
-#define encoder3PinA 8 
-#define encoder3PinB 9
+#define motorC1 45 //A
+#define motorC2 43 //B
+#define motorC_PWM 4
+#define encoder3PinA 44 
+#define encoder3PinB 42
+#define hallEffect_C
 
-#define motorD1 23 //A
-#define motorD2 25 //B
-#define motorD_PWM 13
-#define encoder4PinA 10 
-#define encoder4PinB 11
+#define motorD1 41 //A
+#define motorD2 39 //B
+#define motorD_PWM 5
+#define encoder4PinA 40 
+#define encoder4PinB 38
+#define hallEffect_D
 
 volatile long encoder1Pos = 0;                  //rev counter
 volatile long encoder2Pos = 0;
@@ -168,13 +172,13 @@ void setup() {
   
   Serial.begin (9600);
 while(1){
-    digitalWrite(motorA1,LOW);
-    digitalWrite(motorA2,HIGH);
-    analogWrite(motorA_PWM,255);
-    
-    digitalWrite(motorB1,LOW);
-    digitalWrite(motorB2,HIGH);
-    analogWrite(motorB_PWM,255);
+//    digitalWrite(motorA1,LOW);
+//    digitalWrite(motorA2,HIGH);
+//    analogWrite(motorA_PWM,255);
+//    
+//    digitalWrite(motorB1,LOW);
+//    digitalWrite(motorB2,HIGH);
+//    analogWrite(motorB_PWM,255);
     
     digitalWrite(motorC1,HIGH);
     digitalWrite(motorC2,LOW);
@@ -201,14 +205,14 @@ void loop() {
 ////
 //  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
   posA_set = 1.0*cur_time_A/1000.0;
-  Serial.print(posA_set); Serial.print(",");
+//  Serial.print(posA_set); Serial.print(",");
 //
 ////  oldTime_A = cur_time_A;
 ////  old_posA_set = posA_set;
 ////  old_slope_A = slope_A;
 //
 //  Serial.println(posA_act);
-  Serial.print(posA_act); Serial.print(",");
+//  Serial.print(posA_act); Serial.print(",");
   Serial.println(posA_set-posA_act);
 
     PWM_A_val= updatePid_A(PWM_A_val);// posA_set, posA_act);
@@ -446,6 +450,9 @@ int updatePid_D(int command_D, float targetValue_D, float currentValue_D)   {   
     }
     return constrain(command_D + int(pidTerm_D), -255, 255);          
   }
+
+
+
 
 // Interrupt on A changing state
 void doEncoder1A(){
