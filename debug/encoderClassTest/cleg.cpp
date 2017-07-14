@@ -61,3 +61,11 @@ void cleg::rotCW(int pwm){
 	analogWrite(motorPWM, pwm);
 	return;
 }
+
+void cleg::rotCCW(int pwm){
+  digitalWrite(motor1, HIGH);
+  digitalWrite(motor2, LOW);
+  analogWrite(motorPWM, pwm);
+  return;
+}
+

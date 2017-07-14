@@ -1,26 +1,26 @@
-#define motorA1 53 //A
-#define motorA2 51 //B
+#define motorA1 14 //A
+#define motorA2 15 //B
 #define motorA_PWM 2
 #define encoder1PinA 52
 #define encoder1PinB 50
 #define hallEffect_A 25
 
-#define motorB1 49 //A
-#define motorB2 47 //B
+#define motorB1 16 //A
+#define motorB2 17 //B
 #define motorB_PWM 3
 #define encoder2PinA 48 
 #define encoder2PinB 46
 #define hallEffect_B 23
 
-#define motorC1 45 //A
-#define motorC2 43 //B
+#define motorC1 18 //A
+#define motorC2 19 //B
 #define motorC_PWM 4
 #define encoder3PinA 44 
 #define encoder3PinB 42
 #define hallEffect_C 24
 
-#define motorD1 41 //A
-#define motorD2 39 //B
+#define motorD1 20 //A
+#define motorD2 21 //B
 #define motorD_PWM 5
 #define encoder4PinA 40 
 #define encoder4PinB 38
@@ -179,11 +179,11 @@ void setup() {
 
   
   Serial.begin (9600);
-//while(1){
-//    digitalWrite(motorA1,LOW);
-//    digitalWrite(motorA2,HIGH);
-//    analogWrite(motorA_PWM,255);
-    
+while(1){
+    digitalWrite(motorA1,LOW);
+    digitalWrite(motorA2,HIGH);
+    analogWrite(motorA_PWM,255);
+//    
 //    digitalWrite(motorB1,LOW);
 //    digitalWrite(motorB2,HIGH);
 //    analogWrite(motorB_PWM,255);
@@ -195,7 +195,7 @@ void setup() {
 //    digitalWrite(motorD1,HIGH);
 //    digitalWrite(motorD2,LOW);
 //    analogWrite(motorD_PWM,255);
-//}
+}
 }
 
 String magRead = "OFF";
