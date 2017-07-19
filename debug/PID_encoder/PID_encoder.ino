@@ -45,7 +45,7 @@ boolean B4_set = false;
 
 double posA_set = 10;                               // position (Set Point) (in revolution)
 double posA_act = 0.0;                                // position (actual value) (in revolution)
-int PWM_A_val = 255;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
+int PWM_A_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
 double posB_set = 10;                               // position (Set Point) (in revolution)
 double posB_act = 0.0;                                // position (actual value) (in revolution)
@@ -59,9 +59,9 @@ double posD_set = 25;                               // position (Set Point) (in 
 double posD_act = 0;                                // position (actual value) (in revolution)
 int PWM_D_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-int Kp =    10; //10 //13 //60;                                // PID proportional control Gain
-int Kd =    400; //925 //435 //1200;                                // PID Derivitave control gain
-float Ki =   0;//1.5;
+int Kp =    21; //10 //13 //60;                                // PID proportional control Gain
+int Kd =    925; //925 //435 //1200;                                // PID Derivitave control gain
+float Ki =   1.5;//0.00000000000000001;//1.5;
 // these are incredibly close to perfect but there can still be some work done using kd and ki
 
 unsigned long lastTime_A;
@@ -179,10 +179,13 @@ void setup() {
 
   
   Serial.begin (9600);
-while(1){
-    digitalWrite(motorA1,LOW);
-    digitalWrite(motorA2,HIGH);
-    analogWrite(motorA_PWM,255);
+  homeMethod();
+
+  
+//while(1){
+//    digitalWrite(motorA1,LOW);
+//    digitalWrite(motorA2,HIGH);
+//    analogWrite(motorA_PWM,255);
 //    
 //    digitalWrite(motorB1,LOW);
 //    digitalWrite(motorB2,HIGH);
@@ -195,16 +198,16 @@ while(1){
 //    digitalWrite(motorD1,HIGH);
 //    digitalWrite(motorD2,LOW);
 //    analogWrite(motorD_PWM,255);
-}
+//}
 }
 
 String magRead = "OFF";
 void loop() {
   
   cur_time_A = millis();
-  Serial.print(cur_time_A); Serial.print(",");
+  Serial.print(cur_time_A); Serial.print(",   ");
 
-  posA_act = pi*((encoder1Pos)/(4480.0)); // outputs current position in terms of revolution
+  posA_act = 2*pi*((encoder1Pos)/(4480.0)); // outputs current position in terms of revolution
   if (digitalRead(25) == LOW) magRead = "ON";
   else magRead = "OFF";
 
@@ -216,23 +219,24 @@ void loop() {
 ////
 //  posA_set = (cur_time_A)*(slope_A/1000.0) + intercept_A;
 
-//  posA_set = 2.0*(pi*cur_time_A/1000.0);
-//  posA_set = posA_set - 2*pi*floor(posA_set/(2*pi)); // this is equivalent to mod(posA_set,2*pi) but mod() doesnt work on double values
+  posA_set = 1.0*(pi*cur_time_A/1000.0);
+  posA_set = posA_set - 2*pi*floor(posA_set/(2*pi)); // this is equivalent to mod(posA_set,2*pi) but mod() doesnt work on double values
 
   
-//  Serial.print(posA_set); Serial.print(",");
+  Serial.print(posA_set); Serial.print(",   ");
 //
 ////  oldTime_A = cur_time_A;
 ////  old_posA_set = posA_set;
 ////  old_slope_A = slope_A;
 //
 //  Serial.println(posA_act);
-  Serial.print(posA_act); Serial.print(",");
-  Serial.println(magRead);
+  Serial.print(posA_act); Serial.print(",   ");
+//  Serial.println(magRead);
 //  Serial.println(posA_set-posA_act); //prints the error
 
-//    PWM_A_val= updatePid_A(PWM_A_val);// posA_set, posA_act);
-//  Serial.println(PWM_A_val);
+    PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
+    Serial.print(error_A);Serial.print(",   ");
+  Serial.println(PWM_A_val);
 
 
 //  cur_time_B = millis();
@@ -361,17 +365,18 @@ float find_slope(float current_pos){ // this will only output positive numbers
   return (output);
 }
 
-int updatePid_A(int command_A){ //,float targetValue_A, float currentValue_A)   {             // compute PWM value
+int updatePid_A(int command_A,float targetValue_A, float currentValue_A)   {             // compute PWM value
   unsigned long now_A = millis();
   double timeChange_A = (double)(now_A - lastTime_A);     
     error_A = posA_set - posA_act; 
     double error_A2 = 2*pi - abs(error_A);
     if (error_A >= 0) error_A2 = -error_A2;
     if (abs(error_A2) < abs(error_A)) error_A = error_A2;
+    
     dErr_A = (error_A-last_error_A);
     outMaxI_A = abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
     outMinI_A = -abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
-    iTerm_A += Ki*(error_A * timeChange_A);
+    iTerm_A += Ki*error_A;
     if (iTerm_A > outMaxI_A) iTerm_A = outMaxI_A;
     else if (iTerm_A < outMinI_A) iTerm_A = outMinI_A;
     pidTerm_A = (Kp * error_A) + (Kd * dErr_A) + iTerm_A;    
@@ -556,5 +561,40 @@ void checkHall_C(){
 
 void checkHall_D(){
   encoder4Pos = 0;
+}
+
+void homeMethod(){
+  Serial.println("hey im in the homing method");
+  posA_act = 2*pi*((encoder1Pos)/(4480.0));
+  float posA_actOld = posA_act;
+  bool flag = false;
+  while(posA_act != 2*pi){
+    posA_act = 2*pi*((encoder1Pos)/(4480.0));
+    Serial.println(posA_act);
+    PWM_A_val= updatePid_A(PWM_A_val,2*pi,posA_act) - 100;
+    
+    digitalWrite(motorA1,LOW);
+    digitalWrite(motorA2,HIGH);
+    analogWrite(motorA_PWM,PWM_A_val);
+    if ( abs(posA_act) > pi / 2 ){
+      flag = true;
+    }
+    if (posA_act < posA_actOld && flag){
+      break;
+    }
+    posA_actOld = posA_act;
+  }
+  digitalWrite(motorA1,LOW);
+    digitalWrite(motorA2,HIGH);
+    analogWrite(motorA_PWM,0);
+    delay(10000);
+  unsigned long now_A = millis();
+  while (millis() - now_A < 10000){
+    posA_act = 2*pi*((encoder1Pos)/(4480.0));
+     PWM_A_val= updatePid_A(PWM_A_val, 0,posA_act) -100;
+     digitalWrite(motorA1,LOW);
+    digitalWrite(motorA2,HIGH);
+    analogWrite(motorA_PWM,PWM_A_val);
+  }
 }
 
