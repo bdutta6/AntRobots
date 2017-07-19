@@ -3528,23 +3528,37 @@ void TestServoMotors(){
 
  Forward(BASE_SPEED);	
 	while(1){
+	
+				
+
+	
 		WDT_Restart(WDT);
 		Serial.println(F("Opening gripper"));
+		printFresh(String(Current.ReadAvg(CURRENT_SAMPLE_SIZE)));
+
 		Arm.GripperGo(OPEN_POS);
 		delay(1000);
+		
 		Serial.println(F("Closing gripper"));
+				printFresh(String(Current.ReadAvg(CURRENT_SAMPLE_SIZE)));
+
 		Arm.GripperGo(MID_POS);
 		delay(1000);
 		Arm.GripperGo(CLOSED_POS);
 		delay(1000);
 		Serial.println(F("Raising arm"));
+				printFresh(String(Current.ReadAvg(CURRENT_SAMPLE_SIZE)));
+
 		WDT_Restart(WDT);
 		Arm.PitchGo(HIGH_ROW_ANGLE);
 		delay(1500);
 		Serial.println(F("Lowering arm"));
+				printFresh(String(Current.ReadAvg(CURRENT_SAMPLE_SIZE)));
+
 		Arm.PitchGo(LOW_ROW_ANGLE);
 		delay(1500); //Arm.PitchGo(100); //JSP Delete
-	}
+		printFresh(String(Current.ReadAvg(CURRENT_SAMPLE_SIZE)));
+		}
 }
 
 

@@ -21,8 +21,8 @@ view([0 0]);
 hold on
 scatter3(xNewSE, yNewSE, E(:,3), 10, E(:,3), 'filled')
 scatter3(xunit, yunit, hVals, '.', 'k')
-xlabel('H_x')
-ylabel('H_y')
+xlabel('H_x (ADC Ticks)')
+ylabel('H_y (ADC Ticks)')
 zlabel('Heading (deg)')
 title('Uncalibrated')
 ax = gca;
@@ -38,8 +38,8 @@ view([0 0]);
 
 scatter3(Enew(:,1), Enew(:,2), Enew(:,3), 10, Enew(:,3), 'filled')
 scatter3(xunit, yunit, hVals, '.', 'k')
-xlabel('H_x')
-ylabel('H_y')
+xlabel('H_x (ADC Ticks)')
+ylabel('H_y (ADC Ticks)')
 zlabel('Heading (deg)')
 title('Calibrated')
 
@@ -55,8 +55,8 @@ hold on
 view([90 0]);
 scatter3(xNewSE, yNewSE, E(:,3), 5, E(:,3))
 scatter3(xunit, yunit, hVals, '.', 'k')
-xlabel('H_x')
-ylabel('H_y')
+xlabel('H_x (ADC Ticks)')
+ylabel('H_y (ADC Ticks)')
 zlabel('Heading (deg)')
 zlim([0 360])
 ax = gca;
@@ -72,8 +72,8 @@ view([90 0]);
 
 scatter3(Enew(:,1), Enew(:,2), Enew(:,3), 5, Enew(:,3))
 scatter3(xunit, yunit, hVals, '.', 'k')
-xlabel('H_x')
-ylabel('H_y')
+xlabel('H_x (ADC Ticks)')
+ylabel('H_y (ADC Ticks)')
 zlabel('Heading (deg)')
 zlim([0 360])
 ax = gca;

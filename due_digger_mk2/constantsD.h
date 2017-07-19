@@ -11,15 +11,15 @@
 
 
 ////////////////////////////////////////////// Pitch Servo Parameters //////////////////////////////////////////////
-#define LOW_ROW_ANGLE   60 //45, JSP  //pitch servo is commanded to point toward ground
-#define HIGH_ROW_ANGLE  115 //100, JSP //pitch servo is commanded to point toward the ceiling without blocking camera 
-#define MID_ROW_ANGLE   60//85, JSP//pitch servo is commanded to be parallel to ground
-#define TRAVEL_ANGLE    60//90, JSP     //pitch servo will be maintained around this setpoint while the robot is driving 
+#define LOW_ROW_ANGLE   60  //pitch servo is commanded to point toward ground
+#define HIGH_ROW_ANGLE  115  //pitch servo is commanded to point toward the ceiling without blocking camera 
+#define MID_ROW_ANGLE   60 //pitch servo is commanded to be parallel to ground
+#define TRAVEL_ANGLE    60 //pitch servo will be maintained around this setpoint while the robot is driving 
 
 ////////////////////////////////////////////// Gripper Servo Parameters //////////////////////////////////////////////
-#define CLOSED_POS 95//179, JSP  //grip servo fully closed angle
-#define OPEN_POS 60//90, JSP     //grip servo fully open angle
-#define MID_POS 70 //JSP //grip servo half-open angle
+#define CLOSED_POS 95 //grip servo fully closed angle
+#define OPEN_POS 65 //grip servo fully open angle
+#define MID_POS 70 //grip servo half-open angle
 
 #define ForceSensorThresh 50 // JSP
 
@@ -74,6 +74,7 @@
 //IR tresholds: 700, Blind zone 8 seconds, min=320, max=699
 #define COTTON_IR_SUPRESS 30000 //pixels squared. measured the area by printing what it is close 
 #define COTTON_START_DIGGING 49000 //pixels squared measured the area by printing what it is super close
+
 // --- PID control stuff
 #define Kp 2 //2 //1.5 worked fine
 #define Ki 0 //0

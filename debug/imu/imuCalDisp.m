@@ -37,14 +37,14 @@ hold on
 ax = gca
 plot(a(:,1), a(:,2), '+', b(:,1), b(:,2), 'o', c(:,1), c(:,2), '*', d(:,1), d(:,2), '.', e(:,1), e(:,2), 'x')
 title('Raw IMU Output')
-xlabel('H_x')
-ylabel('H_y')
-grid on
+xlabel('H_x (ADC Ticks)')
+ylabel('H_y (ADC Ticks)')
+% grid on
 ax = gca
 legend('IMU 1', 'IMU 2', 'IMU 3', 'IMU 4', 'IMU 5')
 xlim([-1 1])
-ax.XTick = [-1:0.25:1]
-ax.YTick = [-1:0.25:1]
+ax.XTick = [-1:0.5:1]
+ax.YTick = [-1:0.5:1]
 
 
 
@@ -70,8 +70,8 @@ deltax=xlim; y=ylim;
 plot(deltax,[0,0],'r');
 plot([0,0],y,'r');
 
-ax.XTick = [-1:0.25:1]
-ax.YTick = [-1:0.25:1]
+ax.XTick = [-1:0.5:1]
+ax.YTick = [-1:0.5:1]
 grid on
 hold off
 % print -dpng calibratedIMUOutput
