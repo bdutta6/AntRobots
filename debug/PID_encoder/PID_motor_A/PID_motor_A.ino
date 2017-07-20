@@ -4,6 +4,7 @@
 #define encoder1PinA 52
 #define encoder1PinB 50
 #define hallEffect_A 25
+#define LEDPin 53
 
 double pi = 3.14159;
 
@@ -12,13 +13,14 @@ volatile long encoder1Pos = 0;
 boolean A1_set = false;
 boolean B1_set = false;
 
-double posA_set = 5*pi;                               // position (Set Point) (in revolution)
+double posA_set = 10;                               // position (Set Point) (in revolution)
 double posA_act = 0.0;                                // position (actual value) (in revolution)
 int PWM_A_val = 0;  
 
-float Kp =   .1; //10 //13 //60;                                // PID proportional control Gain
-int Kd =    0; //925 //435 //1200;                                // PID Derivitave control gain
-float Ki =   0;//0.00000000000000001;//1.5;
+double Kp =   0.6375; //10 //13 //60;       //critical Kp = 1.0625                         // PID proportional control Gain
+double Kd =   0.9371; //925 //435 //1200;                                // PID Derivitave control gain
+double Ki =   0.1084;//0.00000000000000001;//1.5;
+double Ka =   0.075;     // integral feedback gain to prevent reset windup
 
 unsigned long lastTime_A;
 int pidTerm_A = 0;                                                            // PID correction
@@ -26,8 +28,9 @@ double error_A=0;
 double last_error_A=0;   
 double dErr_A = 0;      
 double iTerm_A = 0;
-double outMaxI_A = 0;
-double outMinI_A = 0;
+//double outMaxI_A = 0;
+//double outMinI_A = 0;
+double I_feedback_A = 0.0;
 
 unsigned long cur_time_A;
 
@@ -38,8 +41,10 @@ void setup() {
   pinMode(encoder1PinA, INPUT); 
   pinMode(encoder1PinB, INPUT);
   pinMode(hallEffect_A, INPUT);
+  pinMode(LEDPin, OUTPUT);
   digitalWrite(encoder1PinA, HIGH);                      // turn on pullup resistor
   digitalWrite(encoder1PinB, HIGH);
+  digitalWrite(LEDPin,LOW);
 
   attachInterrupt(digitalPinToInterrupt(52), doEncoder1A, CHANGE);
   attachInterrupt(digitalPinToInterrupt(50), doEncoder1B, CHANGE);
@@ -55,21 +60,25 @@ void loop() {
 
   cur_time_A = millis();
   Serial.print(cur_time_A); Serial.print(",   ");
-  posA_set = 6*pi;
+//  posA_set = 6*pi;
 
-  posA_act = 2*pi*((encoder1Pos)/(4480.0)); // outputs current position in terms of revolution
-//  if (digitalRead(25) == LOW) magRead = "ON";
-//  else magRead = "OFF";
+  posA_act = ((encoder1Pos)/(4480.0)); // outputs current position in terms of revolution
+//  if (digitalRead(hallEffect_A) == LOW){
+//    digitalWrite(LEDPin,HIGH);
+//  }
+//  else {
+//    digitalWrite(LEDPin,LOW);
+//  }
 
 //  posA_set = 1.0*(pi*cur_time_A/1000.0);
 //  posA_set = posA_set - 2*pi*floor(posA_set/(2*pi));
 
   Serial.print(posA_set); Serial.print(",   ");
   Serial.print(posA_act); Serial.print(",   ");
-  
+//  
   PWM_A_val= updatePid_A(PWM_A_val, posA_set, posA_act);
   Serial.println(error_A);//Serial.print(",   ");
-//  Serial.println(PWM_A_val);
+////  Serial.println(PWM_A_val);
 
   if (PWM_A_val >= 0){
     digitalWrite(motorA1,LOW);
@@ -81,9 +90,13 @@ void loop() {
     digitalWrite(motorA2,LOW);
     analogWrite(motorA_PWM,abs(PWM_A_val));
   }      
-  if (posA_act > 0){
-    posA_set = 0;
-  }
+//  digitalWrite(motorA1,LOW);
+//  digitalWrite(motorA2,HIGH);
+//  analogWrite(motorA_PWM,75);
+  
+//  if (posA_act > 0){
+//    posA_set = 0;
+//  }
 }
 
 int updatePid_A(int command_A,float targetValue_A, float currentValue_A)   {             // compute PWM value
@@ -99,24 +112,23 @@ int updatePid_A(int command_A,float targetValue_A, float currentValue_A)   {    
 //      error_A = error_A;
 //    }
     
-    dErr_A = (error_A-last_error_A);
-    outMaxI_A = abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
-    outMinI_A = -abs(pidTerm_A) - (Kp * error_A) - (Kd * dErr_A) - iTerm_A;
-    iTerm_A += Ki*error_A;
-    if (iTerm_A > outMaxI_A) iTerm_A = outMaxI_A;
-    else if (iTerm_A < outMinI_A) iTerm_A = outMinI_A;
+    dErr_A = (error_A-last_error_A)*timeChange_A;
+
+    iTerm_A += Ki*(error_A - Ka*I_feedback_A);
+
+    
     pidTerm_A = (Kp * error_A) + (Kd * dErr_A) + iTerm_A;    
-//    Serial.print(error); Serial.print(" "); Serial.print(dErr); Serial.print(" ");
-//    Serial.print(Kp*error_A); Serial.print(" "); Serial.print(Kd*dErr_A); Serial.print(" "); Serial.println(Ki*errSum_A);//Serial.print(" ");
-//    Serial.print(error_A); Serial.print(" "); Serial.print(last_error_A);Serial.print(" "); Serial.print(dErr_A); Serial.print(" ");
+    Serial.print(Kd*dErr_A); Serial.print(" ");
+    Serial.print(iTerm_A); Serial.print(" "); //Serial.print(" ");
+    Serial.print(Kp*error_A); Serial.print(" "); Serial.print(pidTerm_A);Serial.print("        "); 
     last_error_A = error_A;
     lastTime_A = now_A;
     if (command_A + pidTerm_A > 255){
-      iTerm_A -= pidTerm_A - 255;
+      I_feedback_A = pidTerm_A - (255 - command_A); 
       pidTerm_A = 255 - command_A;
     }
     else if (command_A + pidTerm_A < -255){
-      iTerm_A += -255 - pidTerm_A;
+      I_feedback_A = pidTerm_A - (-255 - command_A);
       pidTerm_A = -255 - command_A;
     }
     return constrain(command_A + int(pidTerm_A), -255, 255);          
