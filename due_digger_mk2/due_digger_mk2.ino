@@ -673,9 +673,12 @@ void loop(){
 			
 				if(CHARGER){
 					Serial.println("Charger detected");
+					printFresh("Charger detected");
+
 				}
 				else{
 					Serial.println("Charger not detected");
+					printFresh("Charger not detected");
 				}
 				
 				delay(1000);

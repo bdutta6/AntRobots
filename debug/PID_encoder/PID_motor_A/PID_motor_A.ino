@@ -139,6 +139,17 @@ void doEncoder1B(){
 //  if (digitalRead(hallEffect_A) == HIGH) encoder1Pos = 0;
 }
 
+void zero(){
+	// attach the interrupt pins to the Hall effect sensors
+	
+	// Begin rotating forward
+	
+	// On falling interrupt:
+	//	detach interrupt pins	to Hall effect sensors
+	// 	set encoder position to 0
+
+}
+
 void checkHall_A(){
   encoder1Pos = 0;
 }
