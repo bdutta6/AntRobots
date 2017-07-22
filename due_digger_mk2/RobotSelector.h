@@ -17,7 +17,6 @@
 	// TEST_CAP_7,
 	// TEST_CHARGER,
 	// TEST_CURRENT,
-	// TEST_SWITCHES, 			// ROSS: I THINK THIS TESTING APPROACH IS DEPRECATED. USE TEST_CAP INSTEAD
 	// TEST_DRIVE_MOTORS, 
 	// TEST_SERVO_MOTORS, 
 	// TEST_CAMERA,
@@ -29,7 +28,7 @@
 	// TEST_PID_CONTROLLER,
 	// TEST_NOTHING, */
 #define TEST_CASE TEST_NOTHING
-#define ROBOT_A
+#define ROBOT_D
 
 // ********** BEGIN {SET BEHAVIOR} **********
 //--comment things out if unwanted 
