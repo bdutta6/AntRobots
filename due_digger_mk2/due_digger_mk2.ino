@@ -9,7 +9,7 @@ Last Modified Date: 05/26/2016
 
 Modified by : Ross Warkentin
 email: ross.warkentin@gmail.com
-Last Modified Date: 07/10/2017
+Last Modified Date: 07/22/2017
 
 Property of CRABLAB, Georgia Institute of Technology, School of Physics
 [2013]-[2014]
@@ -100,8 +100,7 @@ File myFile;
 #define VOLTAGE_SAMPLE_SIZE 100
 
 #include "hardSerLCD.h"
-hardSerLCD lcd;
-
+hardSerLCD lcd; // library written by Ross to allow the Due to communicate with the LSC screen via hardware serial
 
 // #include <wdt.h>
 // **********  END   {LIBRARY IMPORT} ---------
@@ -130,12 +129,11 @@ CapacitiveSensor CapSensor(CapacitiveSensorPin);
 #define LSM9DS0_G   0x6B // Would be 0x6A if SDO_G is LOW
 LSM9DS0 dof(MODE_I2C, LSM9DS0_G, LSM9DS0_XM); //sets up IMU (gyrsocope, magnetometer, accelerometer)
 
-
 // --- camera sensor setup
 /* vision stuff */
-// PixyI2C pixy;       //sets up pixy camera sensors, calling class PixyI2c to create an object "pixy"
 PixyUART pixy;       //sets up pixy camera sensors, calling class PixyUART to create an object "pixy"
 uint16_t blocks;    //store number of blocks detected when frames are sampled
+
 //RIGHT NOW, THERE ARE ONLY 3 VISION ITEMS
 bool Object[5]; //array to hold boolean variables to tell whether or not the object of interest has been detected
 uint16_t x1, xc, x7, xt, xCharging; //declare storage variables  x1=pheromone trail, xc= charging pheromone, x7 and xt are cotton stuff
@@ -256,9 +254,6 @@ void WDT_Setup(){ // my default time is 18 seconds
   	timeout2 = 0x0fff2000 + timeout2; // 0xfff2000 is very inportant
   	WDT_Enable(WDT,timeout2);  
   	// number of loops:
-	// 0x0fff2000 0
-	// 0x0fff200f 231
-	// 0x0fff2fff 2981
 	// WDT_Restart(WDT); //USE THIS TO RESET WATCHDOG EVERYWHERE
 
 }    
@@ -277,17 +272,14 @@ void setup(){
 		randomSeed(someRandValue); //set up random generator seed ///input can be changed to analogRead(int unused analog pin);
 	#endif
 	
-	// pullResetPinHigh(); //set reset pin to 3.3v
-	// analogReadResolution(10); // Later, change argument to 12 for 12 bit resolution, recalibrate thresholds
 	/* establish serial communication */
 	Serial.begin(9600); //Establishes Serial communication at a specified baud rate. This can be moved inside of the Ant Comm class
 	WDT_Restart(WDT);
 
-	// initiateSwitches();
-	delay(500); //ensure a power cycle after a watchdog reset //used to be 3s
+	delay(500); //ensure a power cycle after a watchdog reset -- used to be 3s
 	WDT_Restart(WDT);
 	
-	lcd.begin(&Serial2, 9600); 
+	lcd.begin(&Serial2, 9600); // lcd hardware serial on Serial2
 
 	printFresh("Turning on relay...");
 	Relay.PowerOn(); //turn the power to the robot on
@@ -306,12 +298,7 @@ void setup(){
 	
 	Arm.PitchGo(HIGH_ROW_ANGLE);
 	delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
-	//Arm.GripperGo(MID_POS); delay(500);
-	//Arm.GripperGo(OPEN_POS); delay(200);
 
-	// Arm.PitchGo(HIGH_ROW_ANGLE-5);    //lower the arm slightly; this shows that the robot has been reset.
-	// delay(500);
-	// Arm.PitchGo(HIGH_ROW_ANGLE);
 	printFresh("Turning on servos...done");
 
 	
@@ -427,28 +414,6 @@ void setup(){
 	printFresh("Setting up charing detector...done");
 
 	
-	
-	//Wire.begin(); //for capacitive sensor
-	//mpr121_setup(); //for capacitive sensor
-
-	// /* initiate servos and move them to test  */
-	// Arm.Attach(); //hook up servos to pwm pins
-		// Arm.GripperGo(CLOSED_POS);
-
-	// delay(500);        //myDelay between servo movements
-	
-	// Arm.PitchGo(HIGH_ROW_ANGLE);
-	// delay(500);  //puts an arm in a default configuration. Arm is extended and parallel to ground
-	// //Arm.GripperGo(MID_POS); delay(500);
-	// //Arm.GripperGo(OPEN_POS); delay(200);
-
-	// Arm.PitchGo(HIGH_ROW_ANGLE-5);    //lower the arm slightly; this shows that the robot has been reset.
-	// delay(500);
-	// Arm.PitchGo(HIGH_ROW_ANGLE);
-	/* initiate various boolean state variables */
-	// initiateSwitches(); //sets up pins for contact switches
-		
-
 	//start i2c bus stuff. CALL dof.begin() LAST, because it starts actually sending data
 	// initiateMaster(); //start i2c bus , probably redundant 
 	WDT_Restart(WDT);
@@ -457,7 +422,6 @@ void setup(){
 	CapSensor.setup();
 	delay(1000);
 	printFresh("Setting up cap sensor...done");
-
 
 	printFresh("Setting up mag sensor...");
 
@@ -470,8 +434,6 @@ void setup(){
 	pixy.init();        //Starts I2C communication with a camera
 	delay(1000);
 	printFresh("Setting up PixyCam...done");
-
-
 
 	WDT_Restart(WDT);
 	
@@ -511,18 +473,6 @@ void setup(){
 	reading, accelerometer need to be exposed to at least 2g's 
 	 */
 
-	/* ISR INTERUPT DECLARATIONS */
-	// encoder1.Initialize();
-	// attachInterrupt(EncoderPinA1, updateEncoder1, CHANGE);  
-	// attachInterrupt(EncoderPinB1, updateEncoder1, CHANGE);
-
-	// encoder2.Initialize();
-	// attachInterrupt(EncoderPinA2, updateEncoder2, CHANGE);  
-	// attachInterrupt(EncoderPinB2, updateEncoder2, CHANGE);
-
-	// attachInterrupt(ChargingDetectorPin, ForceCharging, CHANGE); //doesnt quite work
-
-
 	// %%
 	dirCheckFlag=false;
 	dirCheckTimer=millis();
@@ -531,9 +481,6 @@ void setup(){
 
 	determineState();
 	printFresh("Determining state...done");
-
-	
-	// enable_GoingInMode();
 	
 	// Ross: This is just an output that I added to see when the robot has reset
 	#ifdef FIO_LINK
@@ -544,6 +491,17 @@ void setup(){
 	
 }
 
+/**
+
+determineState() was a method that Ross wrote while the robots were still suffering from regular resets due to the Arduino Fio
+I think it is still useful for allowing the robots to continue to operate normally, and can usually assess the proper state, though
+it is not gauranteed to.
+
+The purpose of the method was, upon a robot reset, to take in observations from the various sensors to assess what the last robot state was prior to resetting.
+
+Ultimately, it is likely not necessary anymore, but may be useful in handling edge cases or odd power issues
+
+**/
 void determineState(){
 	
 	// default guess is goingInMode ie active
@@ -826,8 +784,6 @@ void loop(){
 // ********** END   {MAIN SCRIPT} ----------
 
 // ********** BEGIN (MODE DEFINITION} **********
-
-
 
 //----------------------------------------------------
 void goingOutModeRoss(){
@@ -3578,50 +3534,8 @@ void TestCamera(){
 		Serial.print("COTTON: "); Serial.println(COTTON);
 		delay(1000);
 
+		WDT_Restart(WDT);
 
-
-	// Serial.println("In while-loop");
-
-		// WDT_Restart(WDT);
-		// Serial.println("Right before getDetectedSigs()"); // debug
-
-		
-		// GetDetectedSigs();
-		// Serial.println("Right after getDetectedSigs()"); // debug
-
-		// static int i = 0;
-		// int j;
-		// uint16_t blocks;
-		// char buf[32]; 
-		
-		// Serial.println("Right before pixy.getBlocks()"); // debug
-
-		// blocks = pixy.getBlocks();
-		
-		// for(int j=0; j<blocks; j++){	//cycle trough the blocks
-			// signature=pixy.blocks[j].signature; //read color signature
-			// Serial.println(signature); // debug
-			
-			
-		// }
-		
-		// delay(1000);		
-
-	// Serial.print("Blocks is: ");
-		// Serial.println(blocks); // debug
-		// if (blocks){
-			// i++;
-			
-			// if (i%50 == 0){
-				// sprintf(buf, "Detected %d:\n", blocks);
-				// Serial.print(buf);
-				// for (j=0; j<blocks; j++){
-					// sprintf(buf, "  block %d: ", j);
-					// Serial.print(buf); 
-					// pixy.blocks[j].print();
-				// }
-			// }
-		// }  
 	}
 }
 
@@ -3756,9 +3670,7 @@ void TestPowerRelay(){
 void TestGripperSensor(){
 	while(1){
 		WDT_Restart(WDT);
-		//int val=HeadSensor.Read(); //JSP
-		// int val=analogRead(GripperSensorPin);
-		Serial.println(analogRead(ForceSensor)); //JSP
+		Serial.println(analogRead(ForceSensor));
 		delay(1000);
 	}
 }
