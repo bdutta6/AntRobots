@@ -1,9 +1,9 @@
 #define motorA1 14 //A
 #define motorA2 15 //B
 #define motorA_PWM 2
-#define encoder1PinA 52
-#define encoder1PinB 50
-#define hallEffect_A 25
+#define encoder1PinA 40
+#define encoder1PinB 38
+#define hallEffect_A 10
 #define LEDPin 53
 
 double pi = 3.14159;
