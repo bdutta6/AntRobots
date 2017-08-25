@@ -82,6 +82,7 @@ int output_A = 0;
 double lastInput_A = 0;
 double dInput_A = 0;
 bool magAtHall_A = false;
+double timeChange_A = 0.0;
 
 unsigned long lastTime_B;
 int pidTerm_B = 0;                                                            // PID correction
@@ -128,9 +129,10 @@ float output = 0.0;
 float fast_val = 1.5;
 float slow_val = 0.5;
 
-float speed_A = 1.0;
-float old_speed_A = 0.0;
+float set_speed_A = 1.0;
+float old_set_speed_A = 0.0;
 float old_posA_set = 0.0;
+float act_speed_A = 0.0;
 
 float speed_B = 1.0;
 float old_speed_B = 0.0;
@@ -177,10 +179,9 @@ int pwm = 0;
 
 float min_stance = 0.5;//0.5 // this is just an estimate that could be improved through some form of contact sensor on the cleg
 float max_stance = 0.7;
-float gait_period = 2.0;
-float stance_duration = 0.70; // 70% stance duration (taken from the hildebrand graph)
-float phase_lag = 0.35; // 35% phase lag (taken from hildebrand graph)
-float pair_lag = 0.175; // half the phase lag (arbitrary decision, can be changed)
+float gait_period = 0.5;
+float stance_duration = 0.75; // 75% stance duration (taken from the hildebrand graph)
+float phase_lag = 0.25; // 25% phase lag (taken from hildebrand graph)
 
 // modify the above variables to model different types of gaits
 
@@ -192,6 +193,13 @@ float swing_cycle = gait_period - stance_cycle;
 
 float st_f = stance_phase / stance_cycle; // the speed of the cleg during the stance period
 float sw_f = swing_phase / swing_cycle; // the speed of the cleg during the swing period 
+
+float x = 0;
+float m = (st_f-sw_f)/(swing_phase/2);//peak at sw_f    //(st_f - sw_f)*(4/swing_phase);(same integral as square)
+float b = sw_f;     //2*sw_f - st_f;
+float a = (st_f-sw_f)/(pow(swing_phase/2,2));     //(st_f - sw_f)* (6/(pow(swing_phase,2.0)));          //(st_f - sw_f)* (6/(swing_phase^2));     // '^' does not mean to the power in c++
+float c = sw_f;     //0.5*(3*sw_f - st_f);                    //st_f - (swing_phase^2)*(a/4);
+float d = (st_f-sw_f)/swing_phase;//line from swing to stance
 
 
 cleg m1(motorA1, motorA2, motorA_PWM, encoder1PinA, encoder1PinB);
@@ -240,146 +248,139 @@ void setup() {
 
   Serial.begin (9600);
   unsigned long t1 = millis();
-  // zeroPosition_A();
-  // zeroPosition_B();
-  // zeroPosition_C();
-  // zeroPosition_D();
-  
-//  zeroPosition_all();
-//  dt = millis() - t1;
-//  // stand();
-//  prep_for_gait();
-//  set_offset_lateral_diagonal_couplets_gait();
-//  dt = millis() - t1;
+  zeroPosition_all();
+  dt = millis() - t1;
+  // stand();
+  // prep_for_gait();
+  // set_offset_lateral_gait();
+  // dt = millis() - t1;
 
-  while(1){
-    m1.rotCW(255);
-//    m2.rotCW(20);
+//  while(1){
+//    m1.rotCW(255);
+//    m2.rotCW(255);
 //    m3.rotCCW(255);
 //    m4.rotCCW(255);
-  }
+//  }
 }
 
 
 void loop() {
   
-  if (t4 == 0) cur_time_B = millis() - dt;
-  else cur_time_B = millis() - t4;
-  Serial.print(cur_time_B); Serial.print(",");
-//  posB_set = 0.0;
-
-  posB_act = (encoder2Pos) / (4480.0);
-
-   speed_B = find_speed(posB_act);
-   if (speed_B != old_speed_B){
-     intercept_B = old_posB_set - (speed_B)*(cur_time_B/1000.0);
-   }
-  
-   posB_set = (speed_B)*(cur_time_B/1000.0) + intercept_B;
-  
-  // posB_set = f*(cur_time_B/1000.0);
-
-   old_posB_set = posB_set;
-   old_speed_B = speed_B;
-   
-   PWM_B_val = updatePid_B(PWM_B_val);
-  if (PWM_B_val == 0) PWM_B_val = pwm;
-   Serial.print(error_B);Serial.print(",");
-  
-//    Serial.print(PWM_B_val);Serial.print(",   ");
-
-
-  if (t5 == 0) cur_time_D = millis()-dt;
-  else cur_time_D = millis() - t5;
-//  Serial.print(cur_time_D); Serial.print(",");
-//  posD_set = 0.0;
-
-    // posD_set = f*(cur_time_D/1000.0);
-  
-//  Serial.print(posD_set); Serial.print(",");
-  posD_act = (encoder4Pos) / (4480.0);
-//  Serial.print(posD_act);Serial.print(",");
-  
-  speed_D = find_speed(posD_act);
-   if (speed_D != old_speed_D){
-     intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
-   }  
-  posD_set = (cur_time_D)* (speed_D/1000.0) + intercept_D;
-
-  old_posD_set = posD_set;
-  old_speed_D = speed_D;
-  PWM_D_val = updatePid_D(PWM_D_val);
-  if (PWM_D_val == 0) PWM_D_val = pwm;
-//  Serial.println(PWM_D_val);
-
-  Serial.print(error_D);Serial.print(",");
-  
-  
-
-
-
-  if (t6 == 0) cur_time_C = millis()-dt;
-  else cur_time_C = millis() - t6;
-//  Serial.print(cur_time_C); Serial.print(",");
-//  posC_set = 0.0;
-
-    // posC_set = f*(cur_time_C/1000.0);
-//  Serial.print(posC_set); Serial.print(",");
-
-  posC_act = (encoder3Pos) / (4480.0);
-  
-  speed_C = find_speed(posC_act);
-   if (speed_C != old_speed_C){
-     intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
-   }
-  
-   posC_set = (cur_time_C)* (speed_C/1000.0) + intercept_C;
-//  Serial.print(posC_act); Serial.print(",");
-   old_posC_set = posC_set;
-   old_speed_C = speed_C;
-  PWM_C_val = updatePid_C(PWM_C_val);
-  if (PWM_C_val == 0) PWM_C_val = pwm;
-  Serial.print(error_C);Serial.print(",");
-
-//    Serial.print(PWM_C_val);Serial.print(",   ");
-
-
-  
-  if (t7 == 0) cur_time_A = millis() - dt;
-  else cur_time_A = millis() - t7;
-  // Serial.print(cur_time_A); Serial.print(",");
+    if (t4 == 0) cur_time_A = millis() - dt;
+  else cur_time_A = millis() - t4;
+  Serial.print(cur_time_A); Serial.print(",");
 
 //  posA_set = 0.0;
 
   posA_act = ((encoder1Pos) / (4480.0)); // outputs current position in terms of revolution
 
 
-   speed_A = find_speed(posA_act); // changes the rotational speed modifier based on the position of the cleg
-   if (speed_A != old_speed_A){
-     intercept_A = old_posA_set - (speed_A/1000.0)*cur_time_A; // works according to the equation of a line and it is necessary for a smooth change in speed
-   }
+   // set_speed_A = calculate_set_speed(posA_act); // changes the rotational speed modifier based on the position of the cleg
+   // if (set_speed_A != old_set_speed_A){
+     // intercept_A = old_posA_set - (set_speed_A/1000.0)*cur_time_A; // works according to the equation of a line and it is necessary for a smooth change in speed
+   // }
   
-   posA_set = (cur_time_A)*(speed_A/1000.0) + intercept_A;
-
-    // posA_set = f*(cur_time_A/1000.0);
-  
-  //  posA_set = posA_set - 2*pi*floor(posA_set/(2*pi)); // this is equivalent to mod(posA_set,2*pi) but mod() doesnt work on double values
+   posA_set = (cur_time_A)*(set_speed_A/1000.0) + intercept_A;
 
   ////  oldTime_A = cur_time_A;
    old_posA_set = posA_set;
-   old_speed_A = speed_A;
-  //  Serial.println(posA_act);
-
-//  Serial.print(posA_act); Serial.print(",");
-  //  Serial.println(magRead);
+   old_set_speed_A = set_speed_A;
 
   PWM_A_val = updatePid_A(PWM_A_val);
-  if (PWM_A_val == 0) PWM_A_val = pwm;
-      Serial.println(error_A);
+  // act_speed_A = dInput_A / (timeChange_A/1000.0);  // needs to be revolutions per second
+  // if (PWM_A_val == 0) PWM_A_val = pwm;
+  
+      Serial.print(error_A);Serial.print(",");
+      Serial.print(posA_set);Serial.print(",");
+      Serial.println(posA_act);//Serial.print(",");
+      // Serial.print(set_speed_A);Serial.print(",");
+      // Serial.println(act_speed_A);
 
 //      Serial.println(PWM_A_val);//Serial.print(",   ");
 
   
+  // if (t5 == 0) cur_time_B = millis() - dt;
+  // else cur_time_B = millis() - t5;
+  // // Serial.print(cur_time_B); Serial.print(",");
+// //  posB_set = 0.0;
+
+  // posB_act = (encoder2Pos) / (4480.0);
+
+   // speed_B = calculate_set_speed(posB_act);
+   // if (speed_B != old_speed_B){
+     // intercept_B = old_posB_set - (speed_B)*(cur_time_B/1000.0);
+   // }
+  
+   // posB_set = (speed_B)*(cur_time_B/1000.0) + intercept_B;
+  
+  // // posB_set = f*(cur_time_B/1000.0);
+
+   // old_posB_set = posB_set;
+   // old_speed_B = speed_B;
+   
+   // PWM_B_val = updatePid_B(PWM_B_val);
+  // if (PWM_B_val == 0) PWM_B_val = pwm;
+   // Serial.print(error_B);Serial.print(",");
+  
+// //    Serial.print(PWM_B_val);Serial.print(",   ");
+
+
+
+
+  // if (t6 == 0) cur_time_C = millis()-dt;
+  // else cur_time_C = millis() - t6;
+// //  Serial.print(cur_time_C); Serial.print(",");
+// //  posC_set = 0.0;
+
+    // // posC_set = f*(cur_time_C/1000.0);
+// //  Serial.print(posC_set); Serial.print(",");
+
+  // posC_act = (encoder3Pos) / (4480.0);
+  
+  // speed_C = calculate_set_speed(posC_act);
+   // if (speed_C != old_speed_C){
+     // intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
+   // }
+  
+   // posC_set = (cur_time_C)* (speed_C/1000.0) + intercept_C;
+// //  Serial.print(posC_act); Serial.print(",");
+   // old_posC_set = posC_set;
+   // old_speed_C = speed_C;
+  // PWM_C_val = updatePid_C(PWM_C_val);
+  // if (PWM_C_val == 0) PWM_C_val = pwm;
+  // Serial.print(error_C);Serial.print(",");
+
+// //    Serial.print(PWM_C_val);Serial.print(",   ");
+
+
+
+  // if (t7 == 0) cur_time_D = millis()-dt;
+  // else cur_time_D = millis() - t7;
+// //  Serial.print(cur_time_D); Serial.print(",");
+// //  posD_set = 0.0;
+
+    // // posD_set = f*(cur_time_D/1000.0);
+  
+// //  Serial.print(posD_set); Serial.print(",");
+  // posD_act = (encoder4Pos) / (4480.0);
+// //  Serial.print(posD_act);Serial.print(",");
+  
+  // speed_D = calculate_set_speed(posD_act);
+   // if (speed_D != old_speed_D){
+     // intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
+   // }  
+  // posD_set = (cur_time_D)* (speed_D/1000.0) + intercept_D;
+
+  // old_posD_set = posD_set;
+  // old_speed_D = speed_D;
+  // PWM_D_val = updatePid_D(PWM_D_val);
+  // if (PWM_D_val == 0) PWM_D_val = pwm;
+// //  Serial.println(PWM_D_val);
+
+  // Serial.println(error_D);  
+
+  
+
   if (PWM_A_val >= 0) {
     m1.rotCW(abs(PWM_A_val));
   }
@@ -411,34 +412,27 @@ void loop() {
 
 
 
-float slope_mod_time(unsigned long cur_time) {
-  if (cur_time < 7500) {
-    out = 1.5;
-  }
-  else {
-    out = 0.5;
-  }
-  return (out);
-}
 
-float find_speed(float current_pos) { // this will only output positive numbers
+float calculate_set_speed(float current_pos) { // this will only output positive numbers
   //current_pos is in revolutions but it needs to be converted to degrees (this needs to be changed now)
-  float current_pos_deg = current_pos * 360;
-
-  float pos_deg = current_pos_deg - 360 * floor(current_pos_deg / 360); // this brings it down to the basic unit circle (1 rev = 0)
-
-  if (pos_deg >= min_stance*360 && pos_deg < max_stance*360) {
+  // float current_pos_deg = current_pos * 360;
+  float pos = current_pos - floor(current_pos); // this brings it down to the basic unit circle (1 rev = 0)
+  
+  if (pos >= min_stance && pos < max_stance  || current_pos < max_stance) {
     // signifies that it is in the stance phase
     output = st_f;
   }
-  //  else if(pos_rad>=4.71 && pos_rad < 6.28){
-  //    float m = 2*(fast_val-slow_val)/3.14;
-  //    float n = 4*slow_val - 3*fast_val;
-  //    output = (m*pos_rad + n)/6.28;
-  //  }
   else {
     // if it is not in the stance phase, it must be in the swing phase
-      output = sw_f;
+  if (pos >= max_stance){
+    x = pos - max_stance;
+  }
+  else if (pos < min_stance){
+    x = pos + (1-max_stance);
+  }
+  // output = m*abs(x-swing_phase/2) + b; // triangular change in speed
+  // output = a*(pow((x-swing_phase/2),2.0)) + c;     //a*(x-swing_phase/2)^2 + c; // parabolic change in speed
+  output = d*x + sw_f; //line from swing to stance
   }
   return (output);
 }
@@ -447,7 +441,7 @@ float find_speed(float current_pos) { // this will only output positive numbers
 
 int updatePid_A(int command_A)   {            // compute PWM value
   unsigned long now_A = millis();
-  double timeChange_A = (double)(now_A - lastTime_A);
+  timeChange_A = (double)(now_A - lastTime_A);
   error_A = posA_set - posA_act;
   //    double error_A2 = 2*pi - abs(error_A);
   //    if (error_A >= 0) error_A2 = -error_A2;
@@ -580,128 +574,16 @@ void doEncoder4B(){
   encoder4Pos += (A4_set == B4_set) ? +1 : -1;
 }
 
-// the checkHalls didn't work because the boolean values were not declared as being volatile
-void checkHall_A() {
-  encoder1Pos = 0;
-  magAtHall_A = true;
-  detachInterrupt(digitalPinToInterrupt(hallEffect_A));
-}
-
-void checkHall_B() {
-  encoder2Pos = 0;
-  magAtHall_B = true;
-  detachInterrupt(digitalPinToInterrupt(hallEffect_B));
-}
-
-void checkHall_C() {
-  encoder3Pos = 0;
-  magAtHall_C = true;
-  detachInterrupt(digitalPinToInterrupt(hallEffect_C));
-}
-
-void checkHall_D() {
-  encoder4Pos = 0;
-  magAtHall_D = true;
-  detachInterrupt(digitalPinToInterrupt(hallEffect_D));
-}
-
-
-void zeroPosition_A() {
-//  attachInterrupt(digitalPinToInterrupt(hallEffect_A), checkHall_A, FALLING);
-  magAtHall_A = false;
-  while (!magAtHall_A) {
-    m1.rotCW(25);
-
-    if (digitalRead(hallEffect_A) == LOW){
-      magAtHall_A = true;
-      encoder1Pos = 0;
-    }
-//    magRead_A = (digitalRead(hallEffect_A) == LOW) ? "ON" : "OFF"; 
-//    
-//    Serial.print("magRead_A (Hall) = "); Serial.print(magRead_A); Serial.print(",  ");
-//
-//    
-//    magRead_A = (magAtHall_A) ? "ON" : "OFF"; 
-//    Serial.print("magRead_A (bool) = "); Serial.println(magRead_A);
-  }
-  m1.rotCW(0);
-}
-
-void zeroPosition_B() {
-//  attachInterrupt(digitalPinToInterrupt(hallEffect_B), checkHall_B, FALLING);
-  magAtHall_B = false;
-  while (!magAtHall_B) {
-    m2.rotCW(25);
-    
-    if (digitalRead(hallEffect_B) == LOW){
-      magAtHall_B = true;
-      encoder2Pos = 0;
-    }
-
-//    
-//    magRead_B = (digitalRead(hallEffect_B) == LOW) ? "ON" : "OFF"; 
-//    
-//    Serial.print("magRead_B (Hall) = "); Serial.print(magRead_B); Serial.print(",  ");
-//
-//    
-//    magRead_B = (magAtHall_B) ? "ON" : "OFF"; 
-//    Serial.print("magRead_B (bool) = "); Serial.println(magRead_B);
-  }
-  m2.rotCW(0);
-}
-
-void zeroPosition_C() {
-//  attachInterrupt(digitalPinToInterrupt(hallEffect_C), checkHall_C, FALLING);
-  magAtHall_C = false;
-  while (!magAtHall_C) {
-    m3.rotCCW(25);
-    
-    if (digitalRead(hallEffect_C) == LOW){
-      magAtHall_C = true;
-      encoder3Pos = 0;
-    }
-//    magRead_C = (digitalRead(hallEffect_C) == LOW) ? "ON" : "OFF"; 
-//    
-//    Serial.print("magRead_C (Hall) = "); Serial.print(magRead_C); Serial.print(",  ");
-//
-//    
-//    magRead_B = (magAtHall_C) ? "ON" : "OFF"; 
-//    Serial.print("magRead_C (bool) = "); Serial.println(magRead_C);
-  }
-  m3.rotCW(0);
-}
-
-void zeroPosition_D() {
-//  attachInterrupt(digitalPinToInterrupt(hallEffect_D), checkHall_D, FALLING);
-  magAtHall_D = false;
-  while (!magAtHall_D) {
-    m4.rotCCW(25);
-    
-    if (digitalRead(hallEffect_D) == LOW){
-      magAtHall_D = true;
-      encoder4Pos = 0;
-    }
-
-//    magRead_C = (digitalRead(hallEffect_C) == LOW) ? "ON" : "OFF"; 
-//    
-//    Serial.print("magRead_C (Hall) = "); Serial.print(magRead_C); Serial.print(",  ");
-//
-//    
-//    magRead_B = (magAtHall_C) ? "ON" : "OFF"; 
-//    Serial.print("magRead_C (bool) = "); Serial.println(magRead_C);
-  }
-  m4.rotCW(0);
-}
 
 void zeroPosition_all(){
   magAtHall_A = false;
   magAtHall_B = false;
   magAtHall_C = false;
   magAtHall_D = false;
-  m1.rotCW(24);
+  m1.rotCW(25);
   m2.rotCW(25);
   m3.rotCCW(23);
-  m4.rotCCW(25);
+  m4.rotCCW(24);
   while (!magAtHall_A || !magAtHall_B || !magAtHall_C || !magAtHall_D) {
   if (digitalRead(hallEffect_A) == LOW){
       magAtHall_A = true;
@@ -1004,86 +886,85 @@ void prep_for_gait(){
   }
   return;
 }
-  
 
-void set_offset_lateral_diagonal_couplets_gait(){
-  //the sequence for this is B,C - D,A   but in serial print it will be B,D,C,A
+
+void set_offset_lateral_gait(){
   t4 = millis();
-  bool B_past_min = false;
+  bool A_past_min = false;
   bool t5_flag = false;
   bool t6_flag = false;
   bool t7_flag = false;
-  PWM_B_val = 0;
-  PWM_D_val = 0;
-  PWM_C_val = 0;
   PWM_A_val = 0;
+  PWM_B_val = 0;
+  PWM_C_val = 0;
+  PWM_D_val = 0;
   // include a portion where the starting leg rotates and enters the very beginning of the stance phase because rn it starts off in the swing phase
-  while(millis() - t4 <= gait_period*1000.0 || !B_past_min){ 
-  // B portion
-    cur_time_B = millis() - t4;
-    Serial.print(cur_time_B); Serial.print(",");
-    posB_act = (encoder2Pos) / (4480.0);
-    if (posB_act >= min_stance && !B_past_min){
-      B_past_min = true;
+  while(millis() - t4 <= gait_period*1000.0 || A_past_min){ 
+  // A portion
+    cur_time_A = millis() - t4;
+    Serial.print(cur_time_A); Serial.print(",");
+    posA_act = (encoder1Pos) / (4480.0);
+    if (posA_act >= min_stance && !A_past_min){
+      A_past_min = true;
       t4 = millis();
-    old_posB_set = (encoder2Pos) / (4480.0);
+    old_posA_set = (encoder1Pos) / (4480.0);
     }
   
-    if (B_past_min){
-      speed_B = find_speed(posB_act);
-      if (speed_B != old_speed_B || old_posB_set == posB_act){
-        intercept_B = old_posB_set - (speed_B)*(cur_time_B/1000.0);
+    if (A_past_min){
+      set_speed_A = calculate_set_speed(posA_act);
+      if (set_speed_A != old_set_speed_A || old_posA_set == posA_act){
+        intercept_A = old_posA_set - (set_speed_A)*(cur_time_A/1000.0);
       }
   
-      posB_set = (speed_B)*(cur_time_B/1000.0) + intercept_B;
+      posA_set = (set_speed_A)*(cur_time_A/1000.0) + intercept_A;
 
-      old_posB_set = posB_set;
-      old_speed_B = speed_B;
+      old_posA_set = posA_set;
+      old_set_speed_A = set_speed_A;
    
-      PWM_B_val = updatePid_B(PWM_B_val);
+      PWM_A_val = updatePid_A(PWM_A_val);
     }
     else{
-      PWM_B_val = 50; //35 when not on ground
+      PWM_A_val = 50; //35 when not on ground
     }
-  if (PWM_B_val == 0) PWM_B_val = pwm;
+  if (PWM_A_val == 0) PWM_A_val = pwm;
   
-    if (millis() - t4 >= gait_period*pair_lag*1000.0 && B_past_min){
-      Serial.print(error_B);Serial.print(",");
+    if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
+      Serial.print(error_A);Serial.print(",");
     }
     else{
-      Serial.print(error_B);Serial.println(",0,0,0");
+      Serial.print(error_A);Serial.println(",0,0,0");
     }
 
 
-    if (millis() - t4 >= gait_period*pair_lag*1000.0 && !t5_flag && B_past_min){
+    if (millis() - t4 >= gait_period*phase_lag*1000.0 && !t5_flag && A_past_min){
     t5 = millis();
       t5_flag = true;
-    old_posD_set = (encoder4Pos) / (4480.0);
+    old_posB_set = (encoder2Pos) / (4480.0);
     }
     
     
-    // D portion
-    if (millis() - t4 >= gait_period*pair_lag*1000.0 && B_past_min){
-      cur_time_D = millis() - t5;
-      posD_act = ((encoder4Pos) / (4480.0));
-      speed_D = find_speed(posD_act);
-      if (speed_D != old_speed_D || old_posD_set == posD_act){
-        intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
+    // B portion
+    if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
+      cur_time_B = millis() - t5;
+      posB_act = ((encoder2Pos) / (4480.0));
+      speed_B = calculate_set_speed(posB_act);
+      if (speed_B != old_speed_B || old_posB_set == posB_act){
+        intercept_B = old_posB_set - (speed_B/1000.0)*cur_time_B;
       }
-      posD_set = (cur_time_D)*(speed_D/1000.0) + intercept_D;
-      old_posD_set = posD_set;
-      old_speed_D = speed_D;
-      PWM_D_val = updatePid_D(PWM_D_val);
-    if (PWM_D_val == 0) PWM_D_val = pwm;
+      posB_set = (cur_time_B)*(speed_B/1000.0) + intercept_B;
+      old_posB_set = posB_set;
+      old_speed_B = speed_B;
+      PWM_B_val = updatePid_B(PWM_B_val);
+    if (PWM_B_val == 0) PWM_B_val = pwm;
     
-      if (millis() - t4 >= gait_period*phase_lag*1000.0){
-        Serial.print(error_D);Serial.print(",");
+      if (millis() - t4 >= gait_period*2*phase_lag*1000.0){
+        Serial.print(error_B);Serial.print(",");
       }
       else{
-        Serial.print(error_D);Serial.println(",0,0");
+        Serial.print(error_B);Serial.println(",0,0");
       }
       
-      if (millis() - t4 >= gait_period*phase_lag*1000.0 && !t6_flag){
+      if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && !t6_flag){
         t6 = millis();
         t6_flag  = true;
       old_posC_set = (encoder3Pos) / (4480.0);
@@ -1092,10 +973,10 @@ void set_offset_lateral_diagonal_couplets_gait(){
 
 
     // C portion
-    if (millis() - t4 >= gait_period*phase_lag*1000.0 && B_past_min){
+    if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && A_past_min){
       cur_time_C = millis() - t6;
       posC_act = ((encoder3Pos) / (4480.0));
-      speed_C = find_speed(posC_act);
+      speed_C = calculate_set_speed(posC_act);
       if (speed_C != old_speed_C || old_posC_set == posC_act){
         intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
       }
@@ -1105,35 +986,35 @@ void set_offset_lateral_diagonal_couplets_gait(){
       PWM_C_val = updatePid_C(PWM_C_val);
     if (PWM_C_val == 0) PWM_C_val = pwm;
   
-      if (millis() - t4 >= gait_period*(pair_lag+phase_lag)*1000.0){
+      if (millis() - t4 >= gait_period*3*phase_lag*1000.0){
         Serial.print(error_C);Serial.print(",");
       }
       else{
         Serial.print(error_C);Serial.println(",0");
       }
-      if (millis() - t4 >= gait_period*(pair_lag+phase_lag)*1000.0 && !t7_flag){
+      if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && !t7_flag){
         t7 = millis();
         t7_flag  = true;  
-      old_posA_set = (encoder1Pos) / (4480.0);      
+      old_posD_set = (encoder4Pos) / (4480.0);      
       }
     }
 
 
 
-    // A portion
-    if (millis() - t4 >= gait_period*(pair_lag+phase_lag)*1000.0 && B_past_min){
-      cur_time_A = millis() - t7;
-      posA_act = ((encoder1Pos) / (4480.0));
-      speed_A = find_speed(posA_act);
-      if (speed_A != old_speed_A || old_posA_set == posA_act){
-        intercept_A = old_posA_set - (speed_A/1000.0)*cur_time_A;
+    // D portion
+    if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && A_past_min){
+      cur_time_D = millis() - t7;
+      posD_act = ((encoder4Pos) / (4480.0));
+      speed_D = calculate_set_speed(posD_act);
+      if (speed_D != old_speed_D || old_posD_set == posD_act){
+        intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
       }
-      posA_set = (cur_time_A)*(speed_A/1000.0) + intercept_A;
-      old_posA_set = posA_set;
-      old_speed_A = speed_A;
-      PWM_A_val = updatePid_A(PWM_A_val);
-    if (PWM_A_val == 0) PWM_A_val = pwm;
-      Serial.println(error_A);
+      posD_set = (cur_time_D)*(speed_D/1000.0) + intercept_D;
+      old_posD_set = posD_set;
+      old_speed_D = speed_D;
+      PWM_D_val = updatePid_D(PWM_D_val);
+    if (PWM_D_val == 0) PWM_D_val = pwm;
+      Serial.println(error_D);
     }
   
    
@@ -1166,6 +1047,8 @@ void set_offset_lateral_diagonal_couplets_gait(){
   }
   }
   return;
+  
+  
 }
 
 void check_Positions(){
@@ -1184,3 +1067,4 @@ void check_Positions(){
     Serial.println(posD_act);
   }
 }
+
