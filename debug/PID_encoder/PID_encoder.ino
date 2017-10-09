@@ -62,20 +62,25 @@ double posD_set = 0.0;                               // position (Set Point) (in
 double posD_act = 0;                                // position (actual value) (in revolution)
 int PWM_D_val = 0;                                // (25% = 64; 50% = 127; 75% = 191; 100% = 255)
 
-double Kp =   1168.8;//0.6375*2.5;//0.6375*2.85;//10.0//5.3  //0.85*5//2.125;//0.6375; //10 //13 //60;       //critical Kp = 1.0625                         // PID proportional control Gain
-double Kd =   6574.63;//0.9371*9.5;//0.9371*9000;//0.9371*10;//9.6 //6.4  //1.8742*3//1.2495;//0.9371; //925 //435 //1200;                                // PID Derivitave control gain
-double Ki =   51.948;//0.1084*.075;//0.1084*.0001;//0.1084*.0085;//0.1626 //0.0813 // 0.0271 //0.00000000000000001;//1.5;
+double Kp =   620.9375; //1390.9; //620.9375; //397.4; //655.71; //1168.8;                      // PID proportional control Gain
+double Kd =   44353; //93886; //44353; //59610; //98357; //65746.3;                              // PID Derivitave control gain
+double Ki =   0.6272;; //7.7272; //0.6272; //1.7662; //2.9143; //5.1948;
 double Ka =   0;//0.26;// * 5;   // integral feedback gain to prevent reset windup
+double b = 1.0;//0.35;//0.3;
+double c = 1.0; // this inadvertently fixes the derivative kick too
 
 
 unsigned long lastTime_A;
 int pidTerm_A = 0;                                                            // PID correction
 double error_A = 0;
-double last_error_A = 0;
+double errP_A = 0;
+double errD_A = 0;
+double last_errD_A = 0;
 double iTerm_A = 0;
 double PID_feedback_A = 0.0;
 double lastInput_A = 0;
 double dInput_A = 0;
+double dTerm_A = 0;
 bool magAtHall_A = false;
 double timeChange_A = 0.0;
 
@@ -118,22 +123,25 @@ double output = 0.0;
 float fast_val = 1.5;
 float slow_val = 0.5;
 
-// float set_speed_A = 1.0;
-// float old_set_speed_A = 0.0;
-// float old_posA_set = 0.0;
-// float act_speed_A = 0.0;
+double set_speed_A = 1.0;
+double old_set_speed_A = 0.0;
+double old_posA_set = 0.0;
+double act_speed_A = 0.0;
 
-float speed_B = 1.0;
-float old_speed_B = 0.0;
-float old_posB_set = 0.0;
+double set_speed_B = 1.0;
+double old_set_speed_B = 0.0;
+double old_posB_set = 0.0;
+double act_speed_B = 0.0;
 
-float speed_C = 1.0;
-float old_speed_C = 0.0;
-float old_posC_set = 0.0;
+double set_speed_C = 1.0;
+double old_set_speed_C = 0.0;
+double old_posC_set = 0.0;
+double act_speed_C = 0.0;
 
-float speed_D = 1.0;
-float old_speed_D = 0.0;
-float old_posD_set = 0.0;
+double set_speed_D = 1.0;
+double old_set_speed_D = 0.0;
+double old_posD_set = 0.0; //get rid of
+double act_speed_D = 0.0;
 
 float out = 0;
 unsigned long t = 0;
@@ -178,38 +186,45 @@ float swing_phase = 1 - stance_phase; // 0.8
 
 float stance_cycle = gait_period * stance_duration;
 float swing_cycle = gait_period - stance_cycle;
+float hold_cycle = 0.1*stance_cycle;
+bool justEntered = true;
+unsigned long t_hold;
+int n = 0;
 
 float st_f = stance_phase / stance_cycle; // the speed of the cleg during the stance period
 float sw_f = swing_phase / swing_cycle; // the speed of the cleg during the swing period 
 
 float x = 0;
-float m = (1/swing_phase)*(st_f-sw_f);    //(st_f-sw_f)/(swing_phase/2);//peak at sw_f    //(st_f - sw_f)*(4/swing_phase);(same integral as square)
-float b = sw_f;     //2*sw_f - st_f;
-// float a = (st_f-sw_f)/(pow(swing_phase/2,2));      //(st_f - sw_f)* (6/(pow(swing_phase,2.0)));          //(st_f - sw_f)* (6/(swing_phase^2));     // '^' does not mean to the power in c++
-// float c = sw_f;      //0.5*(3*sw_f - st_f);                    //st_f - (swing_phase^2)*(a/4);
-// float d = (st_f-sw_f)/swing_phase;//line from swing to stance
-float e = (1/stance_phase)*(sw_f-st_f);
+
   double const pi = 3.14159;
 
   double C = (st_f + sw_f)/2;
   double At = st_f - C;
   double Aw = sw_f - C;
-  double Tt_mark_A = 0;
-  double Tw_mark_A = 0;
-  double Tstag_tA = 0;
-  double Tstag_wA = 0;
-  double Tmove_tA = 0;
-  double Tmove_wA = 0;
-  double ft_A;
-  double fw_A;
-  bool t_tflagA;
-  bool t_wflagA;
-  double time_A;
-  double dt_tA;
-  double dt_wA;
-  double t_tA;
-  double t_wA;
-  double output_A;
+  
+  double Tt_mark_A = 0; double Tstag_tA = 0; double Tmove_tA = 0;
+  double Tw_mark_A = 0; double Tstag_wA = 0; double Tmove_wA = 0;
+  double ft_A; double fw_A; bool t_tflagA; bool t_wflagA; 
+  double time_A; double dt_tA; double dt_wA; double t_tA; double t_wA;
+  double output_A; bool stance_wave_last_A; bool swing_wave_last_A;
+  
+  double Tt_mark_B = 0; double Tstag_tB = 0; double Tmove_tB = 0;
+  double Tw_mark_B = 0; double Tstag_wB = 0; double Tmove_wB = 0;
+  double ft_B; double fw_B; bool t_tflagB; bool t_wflagB; 
+  double time_B; double dt_tB; double dt_wB; double t_tB; double t_wB;
+  double output_B; bool stance_wave_last_B; bool swing_wave_last_B;
+  
+  double Tt_mark_C = 0; double Tstag_tC = 0; double Tmove_tC = 0;
+  double Tw_mark_C = 0; double Tstag_wC = 0; double Tmove_wC = 0;
+  double ft_C; double fw_C; bool t_tflagC; bool t_wflagC; 
+  double time_C; double dt_tC; double dt_wC; double t_tC; double t_wC;
+  double output_C; bool stance_wave_last_C; bool swing_wave_last_C;
+  
+  double Tt_mark_D = 0; double Tstag_tD = 0; double Tmove_tD = 0;
+  double Tw_mark_D = 0; double Tstag_wD = 0; double Tmove_wD = 0;
+  double ft_D; double fw_D; bool t_tflagD; bool t_wflagD; 
+  double time_D; double dt_tD; double dt_wD; double t_tD; double t_wD;
+  double output_D; bool stance_wave_last_D; bool swing_wave_last_D;
 
 
 cleg m1(motorA1, motorA2, motorA_PWM, encoder1PinA, encoder1PinB);
@@ -257,10 +272,11 @@ void setup() {
 
 
   Serial.begin (9600);
-      Serial.println("hi");
+      // Serial.println("hi");
   unsigned long t1 = millis();
-//  zeroPosition_all();
-      Serial.println("hi");
+// zeroPosition_all();
+ check_Positions();
+      // Serial.println("hi");
   dt = millis() - t1;
   // stand();
   // prep_for_gait();
@@ -278,17 +294,22 @@ void setup() {
 
 
 
-double set_speed_A = 1.0;
-double old_set_speed_A = 0.0;
-// double old_posA_set = 0.0;
-double act_speed_A = 0.0;
 
 double old_old_posA_act = 0;
 double old_posA_act = 0;
-double old_old_time_A = 0;
 double old_time_A = 0;
-double old_old_posA_set = 0;
-double old_posA_set = 0;
+
+double old_old_posB_act = 0;
+double old_posB_act = 0;
+double old_time_B = 0;
+
+double old_old_posC_act = 0;
+double old_posC_act = 0;
+double old_time_C = 0;
+
+double old_old_posD_act = 0;
+double old_posD_act = 0;
+double old_time_D = 0;
 
 void loop() {
   
@@ -298,12 +319,12 @@ void loop() {
 
 //  posA_set = 0.0;
 
-  posA_act = ((encoder1Pos) / (4480.0)); // outputs current position in terms of revolution
+//  posA_act = ((encoder1Pos) / (4480.0)); // outputs current position in terms of revolution
 
 
-   // set_speed_A = calculate_set_speed(posA_act); // changes the rotational speed modifier based on the position of the cleg
+   set_speed_A = calculate_set_speed(posA_act); // changes the rotational speed modifier based on the position of the cleg
 
-   set_speed_A = find_speed_A();
+   // set_speed_A = find_speed_A();
  
    // if (set_speed_A != old_set_speed_A){
      // intercept_A = old_posA_set - (set_speed_A/1000.0)*cur_time_A; // works according to the equation of a line and it is necessary for a smooth change in speed
@@ -314,10 +335,9 @@ void loop() {
       // Serial.print(intercept_A);Serial.print(",");
   
 //    posA_set = (cur_time_A)*(1.0/1000.0) + intercept_A;
-   posA_set += set_speed_A/100.0; //dont know why yet
 
-   
-   // old_time_A = cur_time_A;
+   posA_set += set_speed_A * ((cur_time_A - old_time_A)/1000.0);
+   old_time_A = cur_time_A;
   
    old_old_posA_act = old_posA_act;
    old_posA_act = posA_act;
@@ -346,19 +366,27 @@ void loop() {
 // //  posB_set = 0.0;
 
   // posB_act = (encoder2Pos) / (4480.0);
-
-   // speed_B = calculate_set_speed(posB_act);
-   // if (speed_B != old_speed_B){
-     // intercept_B = old_posB_set - (speed_B)*(cur_time_B/1000.0);
-   // }
   
-   // posB_set = (speed_B)*(cur_time_B/1000.0) + intercept_B;
+   // set_speed_B = find_speed_B();
+
+   // // speed_B = calculate_set_speed(posB_act);
+   // // if (speed_B != old_speed_B){
+     // // intercept_B = old_posB_set - (speed_B)*(cur_time_B/1000.0);
+   // // }
+  
+   // // posB_set = (speed_B)*(cur_time_B/1000.0) + intercept_B;
   
   // // posB_set = f*(cur_time_B/1000.0);
-
-   // old_posB_set = posB_set;
-   // old_speed_B = speed_B;
+   // // old_posB_set = posB_set;
+   // // old_speed_B = speed_B;
    
+  
+   // posB_set += set_speed_B * ((cur_time_B - old_time_B)/1000.0);
+   // old_time_B = cur_time_B;
+   // old_old_posB_act = old_posB_act;
+   // old_posB_act = posB_act;
+   
+
    // PWM_B_val = updatePid_B();
   // if (PWM_B_val == 0) PWM_B_val = pwm;
    // Serial.print(error_B);Serial.print(",");
@@ -378,15 +406,22 @@ void loop() {
 
   // posC_act = (encoder3Pos) / (4480.0);
   
-  // speed_C = calculate_set_speed(posC_act);
-   // if (speed_C != old_speed_C){
-     // intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
-   // }
+   // set_speed_C = find_speed_C();
+  // // speed_C = calculate_set_speed(posC_act);
+   // // if (speed_C != old_speed_C){
+     // // intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
+   // // }
   
-   // posC_set = (cur_time_C)* (speed_C/1000.0) + intercept_C;
+   // // posC_set = (cur_time_C)* (speed_C/1000.0) + intercept_C;
+   // // old_posC_set = posC_set;
+   // // old_speed_C = speed_C;
+   
+   // posC_set += set_speed_C * ((cur_time_C - old_time_C)/1000.0);
+   // old_time_C = cur_time_C;
+   // old_old_posC_act = old_posC_act;
+   // old_posC_act = posC_act;
+   
 // //  Serial.print(posC_act); Serial.print(",");
-   // old_posC_set = posC_set;
-   // old_speed_C = speed_C;
   // PWM_C_val = updatePid_C();
   // if (PWM_C_val == 0) PWM_C_val = pwm;
   // Serial.print(error_C);Serial.print(",");
@@ -404,16 +439,24 @@ void loop() {
   
 // //  Serial.print(posD_set); Serial.print(",");
   // posD_act = (encoder4Pos) / (4480.0);
+  // set_speed_D = find_speed_D();
+  
 // //  Serial.print(posD_act);Serial.print(",");
   
-  // speed_D = calculate_set_speed(posD_act);
-   // if (speed_D != old_speed_D){
-     // intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
-   // }  
-  // posD_set = (cur_time_D)* (speed_D/1000.0) + intercept_D;
-
-  // old_posD_set = posD_set;
-  // old_speed_D = speed_D;
+  // // speed_D = calculate_set_speed(posD_act);
+   // // if (speed_D != old_speed_D){
+     // // intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
+   // // }  
+  // // posD_set = (cur_time_D)* (speed_D/1000.0) + intercept_D;
+  // // old_posD_set = posD_set;
+  // // old_speed_D = speed_D;
+  
+  
+   // posD_set += set_speed_D * ((cur_time_D - old_time_D)/1000.0);
+   // old_time_D = cur_time_D;
+   // old_old_posD_act = old_posD_act;
+   // old_posD_act = posD_act;
+  
   // PWM_D_val = updatePid_D();
   // if (PWM_D_val == 0) PWM_D_val = pwm;
 // //  Serial.println(PWM_D_val);
@@ -459,22 +502,30 @@ float calculate_set_speed(float current_pos) { // this will only output positive
   // float current_pos_deg = current_pos * 360;
   pos = current_pos - floor(current_pos); // this brings it down to the basic unit circle (1 rev = 0)
   
-  if (pos >= min_stance && pos < max_stance  || current_pos < max_stance) {
+  
+  if (current_pos < max_stance) {
+    output = st_f;
+  } 
+  else if (pos >= min_stance && pos < max_stance) {
     // signifies that it is in the stance phase
-  x = pos - min_stance;
-    output = e*abs(x-stance_phase/2)+st_f;
+  if (justEntered) {
+    t_hold = millis();
+    n++;
+    justEntered = false;
+  }
+  
+  if (millis() - t_hold <= hold_cycle * 1000) {
+    // output = (n*min_stance - posA_set) / ((cur_time_A - old_time_A)/1000.0);
+    output = 0;
+  } 
+  else {
+    output = st_f;
+  }
   }
   else {
     // if it is not in the stance phase, it must be in the swing phase
-  if (pos >= max_stance){
-    x = pos - max_stance;
-  }
-  else if (pos < min_stance){
-    x = pos + (1-max_stance);
-  }
-  output = m*abs(x-swing_phase/2) + b; // triangular change in speed
-  // output = a*(pow((x-swing_phase/2),2.0)) + c;     //a*(x-swing_phase/2)^2 + c; // parabolic change in speed
-  // output = d*x + sw_f; //line from swing to stance
+  justEntered = true;
+  output = sw_f;
   }
   return (output);
 }
@@ -486,17 +537,18 @@ double find_speed_A() { // this will only output positive numbers
   time_A = now_A/ 1000.0; // converts the time to double and to seconds
   
   if (posA_act < min_stance){
-    output_A = C;
+    output_A = st_f;
+  swing_wave_last_A = true;
   }
   else{
-    if (pos_A >= min_stance && pos_A < max_stance) {
-    // signifies that it is in the stance phase
+    if (swing_wave_last_A){
+      // signifies that it just left the swing_phase (ie, in the stance phase)
     Tstag_wA = 0;
     t_wflagA = true; // resets the swing stagnant period value and the time flag variable
     if (t_tflagA){
       dt_tA = time_A; 
       t_tflagA = false; 
-    //grabs and saves the time when the leg first enters the stance phase
+      //grabs and saves the time when the leg first enters the stance phase
     }
     t_tA = time_A - dt_tA;
     //uses the saved time to effectively make t_tA go from 0 to the end of the stance duty cycle
@@ -513,9 +565,14 @@ double find_speed_A() { // this will only output positive numbers
   
     ft_A = pi/(Tmove_tA);
   
-    output_A = At*sin(ft_A*t_tA) + C; // plots the output speed as being dependent on time rather than position
+    // output_A = At*sin(ft_A*t_tA) + C; // plots the output speed as being dependent on time rather than position
+  output_A = st_f;
+    if (t_tA >= stance_cycle || t_tA != 0 && output_A >= C){
+      stance_wave_last_A = true;
+      swing_wave_last_A = false;
+    }
   }
-  else {
+  else if (stance_wave_last_A) { //i dont really like relying on an else if
     // if it is not in the stance phase, it must be in the swing phase
     Tstag_tA = 0;
     t_tflagA = true;
@@ -536,10 +593,213 @@ double find_speed_A() { // this will only output positive numbers
     Tmove_wA = swing_cycle - Tstag_wA;
     fw_A = pi/(Tmove_wA);
   
-    output_A = Aw*sin(fw_A*t_wA) + C; 
+    // output_A = Aw*sin(fw_A*t_wA) + C;
+  output_A = sw_f;
+    if (t_wA >= swing_cycle || t_wA != 0 && output_A <= C){
+      swing_wave_last_A = true;
+      stance_wave_last_A = false;
+    }
   }
   }
   return (output_A);
+}
+
+double find_speed_B() { 
+  double pos_B = posB_act - floor(posB_act); 
+  unsigned long now_B = millis();
+  time_B = now_B/ 1000.0; 
+  
+  if (posB_act < min_stance){
+    output_B = C;
+  swing_wave_last_B = true;
+  }
+  else{
+    if (swing_wave_last_B){
+    Tstag_wB = 0;
+    t_wflagB = true; 
+    if (t_tflagB){
+      dt_tB = time_B; 
+      t_tflagB = false; 
+    }
+    t_tB = time_B - dt_tB;
+  
+  
+    if (posB_act == old_posB_act && posB_act != old_old_posB_act){
+      Tt_mark_B = t_tB;
+    }
+    if (posB_act == old_posB_act){
+      Tstag_tB = t_tB - Tt_mark_B;
+    }
+  
+    Tmove_tB = stance_cycle - Tstag_tB;
+  
+    ft_B = pi/(Tmove_tB);
+  
+    output_B = At*sin(ft_B*t_tB) + C; 
+    if (t_tB >= stance_cycle || t_tB != 0 && output_B >= C){
+      stance_wave_last_B = true;
+      swing_wave_last_B = false;
+    }
+  }
+  else if (stance_wave_last_B) { 
+    Tstag_tB = 0;
+    t_tflagB = true; 
+    if (t_wflagB){
+      dt_wB = time_B;
+      t_wflagB = false;
+    }
+    t_wB = time_B - dt_wB;
+  
+  
+    if (posB_act == old_posB_act && posB_act != old_old_posB_act){
+      Tw_mark_B = t_wB; 
+    }
+    if (posB_act == old_posB_act){
+      Tstag_wB = t_wB - Tw_mark_B;
+    }
+    Tmove_wB = swing_cycle - Tstag_wB;
+    fw_B = pi/(Tmove_wB);
+  
+    output_B = Aw*sin(fw_B*t_wB) + C; 
+    if (t_wB >= swing_cycle || t_wB != 0 && output_B <= C){
+      swing_wave_last_B = true;
+      stance_wave_last_B = false;
+    }
+  }
+  }
+  return (output_B);
+}
+
+double find_speed_C() { 
+  double pos_C = posC_act - floor(posC_act); 
+  unsigned long now_C = millis();
+  time_C = now_C/ 1000.0; 
+  
+  if (posC_act < min_stance){
+    output_C = C;
+  swing_wave_last_C = true;
+  }
+  else{
+    if (swing_wave_last_C){
+    Tstag_wC = 0;
+    t_wflagC = true; 
+    if (t_tflagC){
+      dt_tC = time_C; 
+      t_tflagC = false; 
+    }
+    t_tC = time_C - dt_tC;
+  
+  
+    if (posC_act == old_posC_act && posC_act != old_old_posC_act){
+      Tt_mark_C = t_tC;
+    }
+    if (posC_act == old_posC_act){
+      Tstag_tC = t_tC - Tt_mark_C;
+    }
+  
+    Tmove_tC = stance_cycle - Tstag_tC;
+  
+    ft_C = pi/(Tmove_tC);
+  
+    output_C = At*sin(ft_C*t_tC) + C; 
+    if (t_tC >= stance_cycle || t_tC != 0 && output_C >= C){
+      stance_wave_last_C = true;
+      swing_wave_last_C = false;
+    }
+  }
+  else if (stance_wave_last_C) { 
+    Tstag_tC = 0;
+    t_tflagC = true; 
+    if (t_wflagC){
+      dt_wC = time_C;
+      t_wflagC = false;
+    }
+    t_wC = time_C - dt_wC;
+  
+  
+    if (posC_act == old_posC_act && posC_act != old_old_posC_act){
+      Tw_mark_C = t_wC; 
+    }
+    if (posC_act == old_posC_act){
+      Tstag_wC = t_wC - Tw_mark_C;
+    }
+    Tmove_wC = swing_cycle - Tstag_wC;
+    fw_C = pi/(Tmove_wC);
+  
+    output_C = Aw*sin(fw_C*t_wC) + C; 
+    if (t_wC >= swing_cycle || t_wC != 0 && output_C <= C){
+      swing_wave_last_C = true;
+      stance_wave_last_C = false;
+    }
+  }
+  }
+  return (output_C);
+}
+
+double find_speed_D() { 
+  double pos_D = posD_act - floor(posD_act); 
+  unsigned long now_D = millis();
+  time_D = now_D/ 1000.0; 
+  
+  if (posD_act < min_stance){
+    output_D = C;
+  swing_wave_last_D = true;
+  }
+  else{
+    if (swing_wave_last_D){
+    Tstag_wD = 0;
+    t_wflagD = true; 
+    if (t_tflagD){
+      dt_tD = time_D; 
+      t_tflagD = false; 
+    }
+    t_tD = time_D - dt_tD;
+  
+  
+    if (posD_act == old_posD_act && posD_act != old_old_posD_act){
+      Tt_mark_D = t_tD;
+    }
+    if (posD_act == old_posD_act){
+      Tstag_tD = t_tD - Tt_mark_D;
+    }
+  
+    Tmove_tD = stance_cycle - Tstag_tD;
+  
+    ft_D = pi/(Tmove_tD);
+  
+    output_D = At*sin(ft_D*t_tD) + C; 
+    if (t_tD >= stance_cycle || t_tD != 0 && output_B >= C){
+      stance_wave_last_D = true;
+      swing_wave_last_D = false;
+    }
+  }
+  else if (stance_wave_last_D) { 
+    Tstag_tD = 0;
+    t_tflagD = true; 
+    if (t_wflagD){
+      dt_wD = time_D;
+      t_wflagD = false;
+    }
+    t_wD = time_D - dt_wD;
+  
+  
+    if (posD_act == old_posD_act && posD_act != old_old_posD_act){
+      Tw_mark_D = t_wD; 
+    }
+    if (posD_act == old_posD_act){
+      Tstag_wD = t_wD - Tw_mark_D;
+    }
+    Tmove_wD = swing_cycle - Tstag_wD;
+    fw_D = pi/(Tmove_wD);
+  
+    output_D = Aw*sin(fw_D*t_wD) + C; 
+    if (t_wD >= swing_cycle || t_wD != 0 && output_D <= C){
+      swing_wave_last_D = true;
+      stance_wave_last_D = false;
+    }
+  }
+  }
+  return (output_D);
 }
 
 
@@ -548,24 +808,21 @@ int updatePid_A()   {            // compute PWM value
   unsigned long now_A = millis();
   timeChange_A = (double)(now_A - lastTime_A);
   error_A = posA_set - posA_act;
-  //    double error_A2 = 2*pi - abs(error_A);
-  //    if (error_A >= 0) error_A2 = -error_A2;
-  //    if (abs(error_A2) < abs(error_A)){
-  //      error_A = error_A2;
-  //    }
-  //    else{
-  //      error_A = error_A;
-  //    }
-  dInput_A = posA_act - lastInput_A;
-  iTerm_A += Ki * (error_A - Ka * PID_feedback_A);
-  pidTerm_A = (Kp * error_A) - (Kd * dInput_A) + iTerm_A;
+  errP_A = b*posA_set - posA_act;
+  errD_A = c*posA_set - posA_act;
+  
+  dTerm_A = (errD_A - last_errD_A) / (timeChange_A);
+  iTerm_A += error_A * (timeChange_A);
+  
+  pidTerm_A = (Kp * errP_A) + (Kd * dTerm_A) + Ki*iTerm_A;
 //      Serial.print(Kd*dInput_A); Serial.print(",");
 //      Serial.print(iTerm_A); Serial.print(",");
 //      Serial.print(Kp*error_A); Serial.print(",");
 //      Serial.print(pidTerm_A);Serial.print(",");
 //      Serial.print(pidTerm_A + command_A);Serial.print(",");
-  last_error_A = error_A;
+  dInput_A = (posA_act - lastInput_A); //purposefully wrong
   lastTime_A = now_A;
+  last_errD_A = errD_A;
   lastInput_A = posA_act;
   PID_feedback_A = pidTerm_A - constrain(pidTerm_A, -255, 255);
   return constrain(pidTerm_A, -255, 255);
@@ -576,10 +833,10 @@ int updatePid_B()   {             // compute PWM value
   double timeChange_B = (double)(now_B - lastTime_B);
   error_B = posB_set - posB_act;
   
-  dInput_B = posB_act - lastInput_B;
-  iTerm_B += Ki * (error_B - Ka * PID_feedback_B);
+  dInput_B = (posB_act - lastInput_B) / (timeChange_B);
+  iTerm_B += error_B * timeChange_B;
 
-  pidTerm_B = 0;//(Kp * error_B) - (Kd * dInput_B) + iTerm_B;
+  pidTerm_B = (Kp * error_B) - (Kd * dInput_B) + Ki*iTerm_B;
   last_error_B = error_B;
   lastTime_B = now_B;
   lastInput_B = posB_act;
@@ -592,10 +849,10 @@ int updatePid_C()   {             // compute PWM value
   double timeChange_C = (double)(now_C - lastTime_C);
   error_C = posC_set - posC_act;
   
-  dInput_C = posC_act - lastInput_C;
-  iTerm_C += Ki * (error_C - Ka * PID_feedback_C);
+  dInput_C = (posC_act - lastInput_C) / timeChange_C;
+  iTerm_C += error_C * timeChange_C;
 
-  pidTerm_C = (Kp * error_C) - (Kd * dInput_C) + iTerm_C;
+  pidTerm_C = (Kp * error_C) - (Kd * dInput_C) + Ki*iTerm_C;
   last_error_C = error_C;
   lastTime_C = now_C;
   lastInput_C = posC_act;
@@ -608,10 +865,10 @@ int updatePid_D()   {             // compute PWM value
   double timeChange_D = (double)(now_D - lastTime_D);
   error_D = posD_set - posD_act;
   
-  dInput_D = posD_act - lastInput_D;
-  iTerm_D += Ki * (error_D - Ka * PID_feedback_D);
+  dInput_D = (posD_act - lastInput_D) / timeChange_D;
+  iTerm_D += error_D * timeChange_D;
 
-  pidTerm_D = (Kp * error_D) - (Kd * dInput_D) + iTerm_D;
+  pidTerm_D = (Kp * error_D) - (Kd * dInput_D) + Ki*iTerm_D;
   last_error_D = error_D;
   lastTime_D = now_D;
   lastInput_D = posD_act;
@@ -627,6 +884,7 @@ void doEncoder1A(){
   A1_set = digitalRead(encoder1PinA) == HIGH;
   // and adjust encoder1Poser + if A leads B
   encoder1Pos += (A1_set != B1_set) ? +1 : -1;
+//  posA_act = ((encoder1Pos) / (4480.0));
 //  if (digitalRead(hallEffect_A) == HIGH) encoder1Pos = 0;
 }
 
@@ -636,6 +894,7 @@ void doEncoder1B(){
   B1_set = digitalRead(encoder1PinB) == HIGH;
   // and adjust counter + if B follows A
   encoder1Pos += (A1_set == B1_set) ? +1 : -1;
+//  posA_act = ((encoder1Pos) / (4480.0));
 //  if (digitalRead(hallEffect_A) == HIGH) encoder1Pos = 0;
 }
 
@@ -885,279 +1144,279 @@ void stand(){
 }
 
 
-void prep_for_gait(){
-  unsigned long t5 = millis();
-  float a = 1;//1.5
-  while (millis() - t5 <= 10000){
+// void prep_for_gait(){
+  // unsigned long t5 = millis();
+  // float a = 1;//1.5
+  // while (millis() - t5 <= 10000){
 
-  cur_time_B = millis() - dt;
-  Serial.print(cur_time_B); Serial.print(",");
+  // cur_time_B = millis() - dt;
+  // Serial.print(cur_time_B); Serial.print(",");
 
-  posB_act = (encoder2Pos) / (4480.0);
-  if (posB_act >= gait_prep_pos-a*thres_prep) {
-    posB_set = gait_prep_pos;
-  }
-  else{
-    posB_set = f_prep*(cur_time_B/1000.0);
-  }
-//  if (posB_set >= gait_prep_pos) posB_set = gait_prep_pos;
+  // posB_act = (encoder2Pos) / (4480.0);
+  // if (posB_act >= gait_prep_pos-a*thres_prep) {
+    // posB_set = gait_prep_pos;
+  // }
+  // else{
+    // posB_set = f_prep*(cur_time_B/1000.0);
+  // }
+// //  if (posB_set >= gait_prep_pos) posB_set = gait_prep_pos;
 
-  PWM_B_val = updatePid_B();
-  Serial.print(error_B);Serial.print(",");
+  // PWM_B_val = updatePid_B();
+  // Serial.print(error_B);Serial.print(",");
 
 
-  cur_time_C = millis()-dt;
-  if (posC_act >= gait_prep_pos-a*thres_prep) {
-    posC_set = gait_prep_pos;
-  }
-  else{
-    posC_set = f_prep*(cur_time_C/1000.0);
-  }
-//  if (posC_set >= gait_prep_pos) posC_set = gait_prep_pos;
+  // cur_time_C = millis()-dt;
+  // if (posC_act >= gait_prep_pos-a*thres_prep) {
+    // posC_set = gait_prep_pos;
+  // }
+  // else{
+    // posC_set = f_prep*(cur_time_C/1000.0);
+  // }
+// //  if (posC_set >= gait_prep_pos) posC_set = gait_prep_pos;
 
-  posC_act = (encoder3Pos) / (4480.0);
-  PWM_C_val = updatePid_C();
-  Serial.print(error_C);Serial.print(",");
+  // posC_act = (encoder3Pos) / (4480.0);
+  // PWM_C_val = updatePid_C();
+  // Serial.print(error_C);Serial.print(",");
 
   
-  cur_time_D = millis()-dt;
+  // cur_time_D = millis()-dt;
 
-  if (posD_act >= gait_prep_pos-a*thres_prep) {
-    posD_set = gait_prep_pos;
-  }
-  else{
-    posD_set = f_prep*(cur_time_D/1000.0);
-  }
-//  if (posD_set >= gait_prep_pos) posD_set = gait_prep_pos;
+  // if (posD_act >= gait_prep_pos-a*thres_prep) {
+    // posD_set = gait_prep_pos;
+  // }
+  // else{
+    // posD_set = f_prep*(cur_time_D/1000.0);
+  // }
+// //  if (posD_set >= gait_prep_pos) posD_set = gait_prep_pos;
   
-  posD_act = (encoder4Pos) / (4480.0);
-  PWM_D_val = updatePid_D();
-  Serial.print(error_D);Serial.print(",");
+  // posD_act = (encoder4Pos) / (4480.0);
+  // PWM_D_val = updatePid_D();
+  // Serial.print(error_D);Serial.print(",");
   
-  cur_time_A = millis() - dt;
+  // cur_time_A = millis() - dt;
 
-  posA_act = ((encoder1Pos) / (4480.0)); 
-  if (posA_act >= gait_prep_pos-a*thres_prep) {
-    posA_set = gait_prep_pos;
-  }
-  else{
-    posA_set = f_prep*(cur_time_A/1000.0);
-  }
-//  if (posA_set >= gait_prep_pos) posA_set =gait_prep_pos;
+  // posA_act = ((encoder1Pos) / (4480.0)); 
+  // if (posA_act >= gait_prep_pos-a*thres_prep) {
+    // posA_set = gait_prep_pos;
+  // }
+  // else{
+    // posA_set = f_prep*(cur_time_A/1000.0);
+  // }
+// //  if (posA_set >= gait_prep_pos) posA_set =gait_prep_pos;
 
-  PWM_A_val = updatePid_A();
-      Serial.println(error_A);
+  // PWM_A_val = updatePid_A();
+      // Serial.println(error_A);
     
   
-  // these if statements make the motor stop when it is within 0.025 of the the target value 
-  if (posA_act >= gait_prep_pos-thres_prep && posA_act <= gait_prep_pos+thres_prep) {
-    PWM_A_val = 0;
-  }
-  if (posB_act >= gait_prep_pos-thres_prep && posB_act <= gait_prep_pos+thres_prep) {
-    PWM_B_val = 0;
-  }
-  if (posC_act >= gait_prep_pos-thres_prep && posC_act <= gait_prep_pos+thres_prep) {
-    PWM_C_val = 0;
-  }
-  if (posD_act >= gait_prep_pos-thres_prep && posD_act <= gait_prep_pos+thres_prep) {
-    PWM_D_val = 0;
-  }
+  // // these if statements make the motor stop when it is within 0.025 of the the target value 
+  // if (posA_act >= gait_prep_pos-thres_prep && posA_act <= gait_prep_pos+thres_prep) {
+    // PWM_A_val = 0;
+  // }
+  // if (posB_act >= gait_prep_pos-thres_prep && posB_act <= gait_prep_pos+thres_prep) {
+    // PWM_B_val = 0;
+  // }
+  // if (posC_act >= gait_prep_pos-thres_prep && posC_act <= gait_prep_pos+thres_prep) {
+    // PWM_C_val = 0;
+  // }
+  // if (posD_act >= gait_prep_pos-thres_prep && posD_act <= gait_prep_pos+thres_prep) {
+    // PWM_D_val = 0;
+  // }
   
 
-  if (PWM_A_val >= 0) {
-    m1.rotCW(abs(PWM_A_val));
-  }
-  else {
-    m1.rotCCW(abs(PWM_A_val));
-  }
+  // if (PWM_A_val >= 0) {
+    // m1.rotCW(abs(PWM_A_val));
+  // }
+  // else {
+    // m1.rotCCW(abs(PWM_A_val));
+  // }
 
-  if (PWM_B_val >= 0) {
-    m2.rotCW(abs(PWM_B_val));
-  }
-  else {
-    m2.rotCCW(abs(PWM_B_val));
-  }
+  // if (PWM_B_val >= 0) {
+    // m2.rotCW(abs(PWM_B_val));
+  // }
+  // else {
+    // m2.rotCCW(abs(PWM_B_val));
+  // }
 
-  if (PWM_C_val >= 0) {
-    m3.rotCCW(abs(PWM_C_val));
-  }
-  else {
-    m3.rotCW(abs(PWM_C_val));
-  }
+  // if (PWM_C_val >= 0) {
+    // m3.rotCCW(abs(PWM_C_val));
+  // }
+  // else {
+    // m3.rotCW(abs(PWM_C_val));
+  // }
 
-  if (PWM_D_val >= 0) {
-    m4.rotCCW(abs(PWM_D_val));
-  }
-  else {
-    m4.rotCW(abs(PWM_D_val));
-  }
-  }
-  return;
-}
+  // if (PWM_D_val >= 0) {
+    // m4.rotCCW(abs(PWM_D_val));
+  // }
+  // else {
+    // m4.rotCW(abs(PWM_D_val));
+  // }
+  // }
+  // return;
+// }
 
 
-void set_offset_lateral_gait(){
-  t4 = millis();
-  bool A_past_min = false;
-  bool t5_flag = false;
-  bool t6_flag = false;
-  bool t7_flag = false;
-  PWM_A_val = 0;
-  PWM_B_val = 0;
-  PWM_C_val = 0;
-  PWM_D_val = 0;
-  // include a portion where the starting leg rotates and enters the very beginning of the stance phase because rn it starts off in the swing phase
-  while(millis() - t4 <= gait_period*1000.0 || A_past_min){ 
-  // A portion
-    cur_time_A = millis() - t4;
-    Serial.print(cur_time_A); Serial.print(",");
-    posA_act = (encoder1Pos) / (4480.0);
-    if (posA_act >= min_stance && !A_past_min){
-      A_past_min = true;
-      t4 = millis();
-    old_posA_set = (encoder1Pos) / (4480.0);
-    }
+// void set_offset_lateral_gait(){
+  // t4 = millis();
+  // bool A_past_min = false;
+  // bool t5_flag = false;
+  // bool t6_flag = false;
+  // bool t7_flag = false;
+  // PWM_A_val = 0;
+  // PWM_B_val = 0;
+  // PWM_C_val = 0;
+  // PWM_D_val = 0;
+  // // include a portion where the starting leg rotates and enters the very beginning of the stance phase because rn it starts off in the swing phase
+  // while(millis() - t4 <= gait_period*1000.0 || A_past_min){ 
+  // // A portion
+    // cur_time_A = millis() - t4;
+    // Serial.print(cur_time_A); Serial.print(",");
+    // posA_act = (encoder1Pos) / (4480.0);
+    // if (posA_act >= min_stance && !A_past_min){
+      // A_past_min = true;
+      // t4 = millis();
+    // old_posA_set = (encoder1Pos) / (4480.0);
+    // }
   
-    if (A_past_min){
-      set_speed_A = calculate_set_speed(posA_act);
-      if (set_speed_A != old_set_speed_A || old_posA_set == posA_act){
-        intercept_A = old_posA_set - (set_speed_A)*(cur_time_A/1000.0);
-      }
+    // if (A_past_min){
+      // set_speed_A = calculate_set_speed(posA_act);
+      // if (set_speed_A != old_set_speed_A || old_posA_set == posA_act){
+        // intercept_A = old_posA_set - (set_speed_A)*(cur_time_A/1000.0);
+      // }
   
-      posA_set = (set_speed_A)*(cur_time_A/1000.0) + intercept_A;
+      // posA_set = (set_speed_A)*(cur_time_A/1000.0) + intercept_A;
 
-      old_posA_set = posA_set;
-      old_set_speed_A = set_speed_A;
+      // old_posA_set = posA_set;
+      // old_set_speed_A = set_speed_A;
    
-      PWM_A_val = updatePid_A();
-    }
-    else{
-      PWM_A_val = 50; //35 when not on ground
-    }
-  if (PWM_A_val == 0) PWM_A_val = pwm;
+      // PWM_A_val = updatePid_A();
+    // }
+    // else{
+      // PWM_A_val = 50; //35 when not on ground
+    // }
+  // if (PWM_A_val == 0) PWM_A_val = pwm;
   
-    if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
-      Serial.print(error_A);Serial.print(",");
-    }
-    else{
-      Serial.print(error_A);Serial.println(",0,0,0");
-    }
+    // if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
+      // Serial.print(error_A);Serial.print(",");
+    // }
+    // else{
+      // Serial.print(error_A);Serial.println(",0,0,0");
+    // }
 
 
-    if (millis() - t4 >= gait_period*phase_lag*1000.0 && !t5_flag && A_past_min){
-    t5 = millis();
-      t5_flag = true;
-    old_posB_set = (encoder2Pos) / (4480.0);
-    }
+    // if (millis() - t4 >= gait_period*phase_lag*1000.0 && !t5_flag && A_past_min){
+    // t5 = millis();
+      // t5_flag = true;
+    // old_posB_set = (encoder2Pos) / (4480.0);
+    // }
     
     
-    // B portion
-    if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
-      cur_time_B = millis() - t5;
-      posB_act = ((encoder2Pos) / (4480.0));
-      speed_B = calculate_set_speed(posB_act);
-      if (speed_B != old_speed_B || old_posB_set == posB_act){
-        intercept_B = old_posB_set - (speed_B/1000.0)*cur_time_B;
-      }
-      posB_set = (cur_time_B)*(speed_B/1000.0) + intercept_B;
-      old_posB_set = posB_set;
-      old_speed_B = speed_B;
-      PWM_B_val = updatePid_B();
-    if (PWM_B_val == 0) PWM_B_val = pwm;
+    // // B portion
+    // if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
+      // cur_time_B = millis() - t5;
+      // posB_act = ((encoder2Pos) / (4480.0));
+      // speed_B = calculate_set_speed(posB_act);
+      // if (speed_B != old_speed_B || old_posB_set == posB_act){
+        // intercept_B = old_posB_set - (speed_B/1000.0)*cur_time_B;
+      // }
+      // posB_set = (cur_time_B)*(speed_B/1000.0) + intercept_B;
+      // old_posB_set = posB_set;
+      // old_speed_B = speed_B;
+      // PWM_B_val = updatePid_B();
+    // if (PWM_B_val == 0) PWM_B_val = pwm;
     
-      if (millis() - t4 >= gait_period*2*phase_lag*1000.0){
-        Serial.print(error_B);Serial.print(",");
-      }
-      else{
-        Serial.print(error_B);Serial.println(",0,0");
-      }
+      // if (millis() - t4 >= gait_period*2*phase_lag*1000.0){
+        // Serial.print(error_B);Serial.print(",");
+      // }
+      // else{
+        // Serial.print(error_B);Serial.println(",0,0");
+      // }
       
-      if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && !t6_flag){
-        t6 = millis();
-        t6_flag  = true;
-      old_posC_set = (encoder3Pos) / (4480.0);
-      }
-    }
+      // if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && !t6_flag){
+        // t6 = millis();
+        // t6_flag  = true;
+      // old_posC_set = (encoder3Pos) / (4480.0);
+      // }
+    // }
 
 
-    // C portion
-    if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && A_past_min){
-      cur_time_C = millis() - t6;
-      posC_act = ((encoder3Pos) / (4480.0));
-      speed_C = calculate_set_speed(posC_act);
-      if (speed_C != old_speed_C || old_posC_set == posC_act){
-        intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
-      }
-      posC_set = (cur_time_C)*(speed_C/1000.0) + intercept_C;
-      old_posC_set = posC_set;
-      old_speed_C = speed_C;
-      PWM_C_val = updatePid_C();
-    if (PWM_C_val == 0) PWM_C_val = pwm;
+    // // C portion
+    // if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && A_past_min){
+      // cur_time_C = millis() - t6;
+      // posC_act = ((encoder3Pos) / (4480.0));
+      // speed_C = calculate_set_speed(posC_act);
+      // if (speed_C != old_speed_C || old_posC_set == posC_act){
+        // intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
+      // }
+      // posC_set = (cur_time_C)*(speed_C/1000.0) + intercept_C;
+      // old_posC_set = posC_set;
+      // old_speed_C = speed_C;
+      // PWM_C_val = updatePid_C();
+    // if (PWM_C_val == 0) PWM_C_val = pwm;
   
-      if (millis() - t4 >= gait_period*3*phase_lag*1000.0){
-        Serial.print(error_C);Serial.print(",");
-      }
-      else{
-        Serial.print(error_C);Serial.println(",0");
-      }
-      if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && !t7_flag){
-        t7 = millis();
-        t7_flag  = true;  
-      old_posD_set = (encoder4Pos) / (4480.0);      
-      }
-    }
+      // if (millis() - t4 >= gait_period*3*phase_lag*1000.0){
+        // Serial.print(error_C);Serial.print(",");
+      // }
+      // else{
+        // Serial.print(error_C);Serial.println(",0");
+      // }
+      // if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && !t7_flag){
+        // t7 = millis();
+        // t7_flag  = true;  
+      // old_posD_set = (encoder4Pos) / (4480.0);      
+      // }
+    // }
 
 
 
-    // D portion
-    if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && A_past_min){
-      cur_time_D = millis() - t7;
-      posD_act = ((encoder4Pos) / (4480.0));
-      speed_D = calculate_set_speed(posD_act);
-      if (speed_D != old_speed_D || old_posD_set == posD_act){
-        intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
-      }
-      posD_set = (cur_time_D)*(speed_D/1000.0) + intercept_D;
-      old_posD_set = posD_set;
-      old_speed_D = speed_D;
-      PWM_D_val = updatePid_D();
-    if (PWM_D_val == 0) PWM_D_val = pwm;
-      Serial.println(error_D);
-    }
+    // // D portion
+    // if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && A_past_min){
+      // cur_time_D = millis() - t7;
+      // posD_act = ((encoder4Pos) / (4480.0));
+      // speed_D = calculate_set_speed(posD_act);
+      // if (speed_D != old_speed_D || old_posD_set == posD_act){
+        // intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
+      // }
+      // posD_set = (cur_time_D)*(speed_D/1000.0) + intercept_D;
+      // old_posD_set = posD_set;
+      // old_speed_D = speed_D;
+      // PWM_D_val = updatePid_D();
+    // if (PWM_D_val == 0) PWM_D_val = pwm;
+      // Serial.println(error_D);
+    // }
   
    
-  if (PWM_A_val >= 0) {
-    m1.rotCW(abs(PWM_A_val));
-  }
-  else {
-    m1.rotCCW(abs(PWM_A_val));
-  }
+  // if (PWM_A_val >= 0) {
+    // m1.rotCW(abs(PWM_A_val));
+  // }
+  // else {
+    // m1.rotCCW(abs(PWM_A_val));
+  // }
 
-  if (PWM_B_val >= 0) {
-    m2.rotCW(abs(PWM_B_val));
-  }
-  else {
-    m2.rotCCW(abs(PWM_B_val));
-  }
+  // if (PWM_B_val >= 0) {
+    // m2.rotCW(abs(PWM_B_val));
+  // }
+  // else {
+    // m2.rotCCW(abs(PWM_B_val));
+  // }
 
-  if (PWM_C_val >= 0) {
-    m3.rotCCW(abs(PWM_C_val));
-  }
-  else {
-    m3.rotCW(abs(PWM_C_val));
-  }
+  // if (PWM_C_val >= 0) {
+    // m3.rotCCW(abs(PWM_C_val));
+  // }
+  // else {
+    // m3.rotCW(abs(PWM_C_val));
+  // }
 
-  if (PWM_D_val >= 0) {
-    m4.rotCCW(abs(PWM_D_val));
-  }
-  else {
-    m4.rotCW(abs(PWM_D_val));
-  }
-  }
-  return;
+  // if (PWM_D_val >= 0) {
+    // m4.rotCCW(abs(PWM_D_val));
+  // }
+  // else {
+    // m4.rotCW(abs(PWM_D_val));
+  // }
+  // }
+  // return;
   
   
-}
+// }
 
 void check_Positions(){
   while(1){
@@ -1178,163 +1437,163 @@ void check_Positions(){
 
 
 
-void set_180_offset_gait(){
-    t4 = millis();
-  bool A_past_min = true;
-  bool D_is_done = false;
-  bool t5_flag = false;
-  bool t6_flag = false;
-  bool t7_flag = false;
-  PWM_A_val = 0;
-  PWM_B_val = 0;
-  PWM_C_val = 0;
-  PWM_D_val = 0;
-  // include a portion where the starting leg rotates and enters the very beginning of the stance phase because rn it starts off in the swing phase
-  while(millis() - t4 <= gait_period*1000.0 || !D_is_done){ 
-  // A portion
-    cur_time_A = millis() - t4;
-    Serial.print(cur_time_A); Serial.print(",");
-    posA_act = (encoder1Pos) / (4480.0);
+// void set_180_offset_gait(){
+    // t4 = millis();
+  // bool A_past_min = true;
+  // bool D_is_done = false;
+  // bool t5_flag = false;
+  // bool t6_flag = false;
+  // bool t7_flag = false;
+  // PWM_A_val = 0;
+  // PWM_B_val = 0;
+  // PWM_C_val = 0;
+  // PWM_D_val = 0;
+  // // include a portion where the starting leg rotates and enters the very beginning of the stance phase because rn it starts off in the swing phase
+  // while(millis() - t4 <= gait_period*1000.0 || !D_is_done){ 
+  // // A portion
+    // cur_time_A = millis() - t4;
+    // Serial.print(cur_time_A); Serial.print(",");
+    // posA_act = (encoder1Pos) / (4480.0);
 
   
-    if (A_past_min){
-      set_speed_A = f; //calculate_set_speed(posA_act);
-      if (set_speed_A != old_set_speed_A || old_posA_set == posA_act){
-        intercept_A = old_posA_set - (set_speed_A)*(cur_time_A/1000.0);
-      }
+    // if (A_past_min){
+      // set_speed_A = f; //calculate_set_speed(posA_act);
+      // if (set_speed_A != old_set_speed_A || old_posA_set == posA_act){
+        // intercept_A = old_posA_set - (set_speed_A)*(cur_time_A/1000.0);
+      // }
   
-      posA_set = (set_speed_A)*(cur_time_A/1000.0) + intercept_A;
+      // posA_set = (set_speed_A)*(cur_time_A/1000.0) + intercept_A;
 
-      old_posA_set = posA_set;
-      old_set_speed_A = set_speed_A;
+      // old_posA_set = posA_set;
+      // old_set_speed_A = set_speed_A;
    
-      PWM_A_val = updatePid_A();
-    }
-    else{
-      PWM_A_val = 35; //35 when not on ground
-    }
-  if (PWM_A_val == 0) PWM_A_val = pwm;
+      // PWM_A_val = updatePid_A();
+    // }
+    // else{
+      // PWM_A_val = 35; //35 when not on ground
+    // }
+  // if (PWM_A_val == 0) PWM_A_val = pwm;
   
-    if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
-      Serial.print(error_A);Serial.print(",");
-    }
-    else{
-      Serial.print(error_A);Serial.println(",0,0,0");
-    }
+    // if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
+      // Serial.print(error_A);Serial.print(",");
+    // }
+    // else{
+      // Serial.print(error_A);Serial.println(",0,0,0");
+    // }
 
 
-    if (millis() - t4 >= gait_period*phase_lag*1000.0 && !t5_flag && A_past_min){
-    t5 = millis();
-      t5_flag = true;
-    old_posB_set = (encoder2Pos) / (4480.0);
-    }
+    // if (millis() - t4 >= gait_period*phase_lag*1000.0 && !t5_flag && A_past_min){
+    // t5 = millis();
+      // t5_flag = true;
+    // old_posB_set = (encoder2Pos) / (4480.0);
+    // }
     
     
-    // B portion
-    if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
-      cur_time_B = millis() - t5;
-      posB_act = ((encoder2Pos) / (4480.0));
-      speed_B = 0;
-      if (speed_B != old_speed_B || old_posB_set == posB_act){
-        intercept_B = old_posB_set - (speed_B/1000.0)*cur_time_B;
-      }
-      posB_set = (cur_time_B)*(speed_B/1000.0) + intercept_B;
-      old_posB_set = posB_set;
-      old_speed_B = speed_B;
-      PWM_B_val = updatePid_B();
-    if (PWM_B_val == 0) PWM_B_val = pwm;
+    // // B portion
+    // if (millis() - t4 >= gait_period*phase_lag*1000.0 && A_past_min){
+      // cur_time_B = millis() - t5;
+      // posB_act = ((encoder2Pos) / (4480.0));
+      // speed_B = 0;
+      // if (speed_B != old_speed_B || old_posB_set == posB_act){
+        // intercept_B = old_posB_set - (speed_B/1000.0)*cur_time_B;
+      // }
+      // posB_set = (cur_time_B)*(speed_B/1000.0) + intercept_B;
+      // old_posB_set = posB_set;
+      // old_speed_B = speed_B;
+      // PWM_B_val = updatePid_B();
+    // if (PWM_B_val == 0) PWM_B_val = pwm;
     
-      if (millis() - t4 >= gait_period*2*phase_lag*1000.0){
-        Serial.print(error_B);Serial.print(",");
-      }
-      else{
-        Serial.print(error_B);Serial.println(",0,0");
-      }
+      // if (millis() - t4 >= gait_period*2*phase_lag*1000.0){
+        // Serial.print(error_B);Serial.print(",");
+      // }
+      // else{
+        // Serial.print(error_B);Serial.println(",0,0");
+      // }
       
-      if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && !t6_flag){
-        t6 = millis();
-        t6_flag  = true;
-      old_posC_set = (encoder3Pos) / (4480.0);
-      }
-    }
+      // if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && !t6_flag){
+        // t6 = millis();
+        // t6_flag  = true;
+      // old_posC_set = (encoder3Pos) / (4480.0);
+      // }
+    // }
 
 
-    // C portion
-    if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && A_past_min){
-      cur_time_C = millis() - t6;
-      posC_act = ((encoder3Pos) / (4480.0));
-      speed_C = f;
-      if (speed_C != old_speed_C || old_posC_set == posC_act){
-        intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
-      }
-      posC_set = (cur_time_C)*(speed_C/1000.0) + intercept_C;
-      old_posC_set = posC_set;
-      old_speed_C = speed_C;
-      PWM_C_val = updatePid_C();
-    if (PWM_C_val == 0) PWM_C_val = pwm;
+    // // C portion
+    // if (millis() - t4 >= gait_period*2*phase_lag*1000.0 && A_past_min){
+      // cur_time_C = millis() - t6;
+      // posC_act = ((encoder3Pos) / (4480.0));
+      // speed_C = f;
+      // if (speed_C != old_speed_C || old_posC_set == posC_act){
+        // intercept_C = old_posC_set - (speed_C/1000.0)*cur_time_C;
+      // }
+      // posC_set = (cur_time_C)*(speed_C/1000.0) + intercept_C;
+      // old_posC_set = posC_set;
+      // old_speed_C = speed_C;
+      // PWM_C_val = updatePid_C();
+    // if (PWM_C_val == 0) PWM_C_val = pwm;
   
-      if (millis() - t4 >= gait_period*3*phase_lag*1000.0){
-        Serial.print(error_C);Serial.print(",");
-      }
-      else{
-        Serial.print(error_C);Serial.println(",0");
-      }
-      if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && !t7_flag){
-        t7 = millis();
-        t7_flag  = true;  
-      old_posD_set = (encoder4Pos) / (4480.0);      
-      }
-    }
+      // if (millis() - t4 >= gait_period*3*phase_lag*1000.0){
+        // Serial.print(error_C);Serial.print(",");
+      // }
+      // else{
+        // Serial.print(error_C);Serial.println(",0");
+      // }
+      // if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && !t7_flag){
+        // t7 = millis();
+        // t7_flag  = true;  
+      // old_posD_set = (encoder4Pos) / (4480.0);      
+      // }
+    // }
 
 
 
-    // D portion
-    if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && A_past_min){
-    D_is_done = true;
-      cur_time_D = millis() - t7;
-      posD_act = ((encoder4Pos) / (4480.0));
-      speed_D = f;
-      if (speed_D != old_speed_D || old_posD_set == posD_act){
-        intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
-      }
-      posD_set = (cur_time_D)*(speed_D/1000.0) + intercept_D;
-      old_posD_set = posD_set;
-      old_speed_D = speed_D;
-      PWM_D_val = updatePid_D();
-    if (PWM_D_val == 0) PWM_D_val = pwm;
-      Serial.println(error_D);
-    }
+    // // D portion
+    // if (millis() - t4 >= gait_period*3*phase_lag*1000.0 && A_past_min){
+    // D_is_done = true;
+      // cur_time_D = millis() - t7;
+      // posD_act = ((encoder4Pos) / (4480.0));
+      // speed_D = f;
+      // if (speed_D != old_speed_D || old_posD_set == posD_act){
+        // intercept_D = old_posD_set - (speed_D/1000.0)*cur_time_D;
+      // }
+      // posD_set = (cur_time_D)*(speed_D/1000.0) + intercept_D;
+      // old_posD_set = posD_set;
+      // old_speed_D = speed_D;
+      // PWM_D_val = updatePid_D();
+    // if (PWM_D_val == 0) PWM_D_val = pwm;
+      // Serial.println(error_D);
+    // }
   
    
-  if (PWM_A_val >= 0) {
-    m1.rotCW(abs(PWM_A_val));
-  }
-  else {
-    m1.rotCCW(abs(PWM_A_val));
-  }
+  // if (PWM_A_val >= 0) {
+    // m1.rotCW(abs(PWM_A_val));
+  // }
+  // else {
+    // m1.rotCCW(abs(PWM_A_val));
+  // }
 
-  if (PWM_B_val >= 0) {
-    m2.rotCW(abs(PWM_B_val));
-  }
-  else {
-    m2.rotCCW(abs(PWM_B_val));
-  }
+  // if (PWM_B_val >= 0) {
+    // m2.rotCW(abs(PWM_B_val));
+  // }
+  // else {
+    // m2.rotCCW(abs(PWM_B_val));
+  // }
 
-  if (PWM_C_val >= 0) {
-    m3.rotCCW(abs(PWM_C_val));
-  }
-  else {
-    m3.rotCW(abs(PWM_C_val));
-  }
+  // if (PWM_C_val >= 0) {
+    // m3.rotCCW(abs(PWM_C_val));
+  // }
+  // else {
+    // m3.rotCW(abs(PWM_C_val));
+  // }
 
-  if (PWM_D_val >= 0) {
-    m4.rotCCW(abs(PWM_D_val));
-  }
-  else {
-    m4.rotCW(abs(PWM_D_val));
-  }
-  }
-  return;
+  // if (PWM_D_val >= 0) {
+    // m4.rotCCW(abs(PWM_D_val));
+  // }
+  // else {
+    // m4.rotCW(abs(PWM_D_val));
+  // }
+  // }
+  // return;
   
   
-}
+// }
